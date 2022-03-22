@@ -4,9 +4,9 @@ server:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8081/eureka
+      defaultZone: http://md-registry:8081/eureka
     register-with-eureka: false
     fetch-registry: false
   instance:
     prefer-ip-address: true
-    hostname: localhost
+    hostname: md-registry
