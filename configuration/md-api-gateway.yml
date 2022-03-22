@@ -1,3 +1,31 @@
+server:
+  port: 8082
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    hostname: md-
+    prefer-ip-address: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty.http.client: DEBUG
+
+
+## SECURITY BASED CONFIGURATIONS
+app:
+  config:
+    keycloak:
+      url: http://localhost:8080/auth
+      realm: SpringBootKeycloak
+      client-secret: d0cce31e-99a3-4b45-bfb4-2283cc32e8b3
+      client-id: internet-banking-core-client
+
 spring:
   ## API SECURITY WITH KEYCLOAK PROVIDER
   security:
@@ -55,30 +83,3 @@ spring:
             - Path=/utility-payment/**
           filters:
             - StripPrefix=1
-
-## SECURITY BASED CONFIGURATIONS
-app:
-  config:
-    keycloak:
-      url: http://localhost:8080/auth
-      realm: SpringBootKeycloak
-      client-secret: d0cce31e-99a3-4b45-bfb4-2283cc32e8b3
-      client-id: internet-banking-core-client
-
-server:
-  port: 8082
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8081/eureka
-    fetch-registry: true
-    register-with-eureka: true
-  instance:
-    hostname: localhost
-    prefer-ip-address: true
-
-logging:
-  level:
-    org.springframework.cloud.gateway: DEBUG
-    reactor.netty.http.client: DEBUG
