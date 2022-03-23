@@ -83,9 +83,9 @@ spring:
             - Path=/utility-payment/**
           filters:
             - StripPrefix=1
-        - id: md-yahoo-feed
-          uri: lb://md-yahoo-feed
+        - id: md-data-feed
+          uri: lb://md-data-feed
           predicates:
-            - Path=/yahoo-feed/**
+            - Path=/data-feed/**
           filters:
             - StripPrefix=1
