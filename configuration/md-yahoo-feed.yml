@@ -1,6 +1,11 @@
 server:
   port: 8183
 
+logging:
+  level:
+    root: info
+    yahoofinance: warn
+
 eureka:
   client:
     service-url:
