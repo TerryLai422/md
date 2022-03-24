@@ -4,7 +4,9 @@ MD microservices
 - Euraka server
 - API gateway
 
-ActiveMQ
-Keycloak
-MySQL
-MongoDB
+- ActiveMQ
+- Keycloak
+- MySQL
+- MongoDB
+
+- Docker
