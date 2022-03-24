@@ -1,2 +1,2 @@
 # md
-MD configuration
+MD
