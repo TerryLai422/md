@@ -4,7 +4,7 @@ server:
 logging:
   level:
     root: info
-    yahoofinance: debug
+    yahoofinance: warn
 
 eureka:
   client:
