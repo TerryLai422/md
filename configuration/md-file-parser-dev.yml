@@ -1,0 +1,6 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://md-registry:8081/eureka
+  instance:
+    hostname: md-file-parser

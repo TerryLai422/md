@@ -1,0 +1,20 @@
+server:
+  port: 8184
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+
+app:
+  config:
+    keycloak:
+      server-url: http://localhost:8080/auth
+      realm: SpringBootKeycloak
+      clientId: internet-banking-api-client
+      client-secret: a231cefe-e481-49d5-b041-61994581a949
