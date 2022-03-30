@@ -6,15 +6,15 @@ logging:
     root: info
     yahoofinance: warn
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8081/eureka
-    fetch-registry: false
-    register-with-eureka: false
-  instance:
-    hostname: localhost
-    prefer-ip-address: true
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8081/eureka
+#    fetch-registry: true
+#    register-with-eureka: true
+#  instance:
+#    hostname: localhost
+#    prefer-ip-address: true
 
 app:
   config:
