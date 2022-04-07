@@ -1,0 +1,4 @@
+spring:
+  cloud:
+    config:
+      uri: http://md-config:8090
