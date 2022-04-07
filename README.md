@@ -1,12 +1,11 @@
-# md
-MD microservices
+# Market Data Microservices
 - Config Server
 - Euraka server
 - API gateway
 
 
 Components
-- ActiveMQ
+- Kafka
 - Keycloak
 - MySQL
 - MongoDB
