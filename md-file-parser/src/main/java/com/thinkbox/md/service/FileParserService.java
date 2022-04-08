@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -24,6 +25,12 @@ public class FileParserService {
 	private final Logger logger = LoggerFactory.getLogger(FileParserService.class);
 
 	private final static String USER_HOME = "user.home";
+	
+	private final static String HISTORICAL_DIRECTORY = "historical";
+	
+	private final static String EXCHANGE_DIRECTORY = "exchange";
+
+	private final static String HISTORICAL_DAILY_FILE_POSTFIX = "-d-historical";
 
 	private final static String FILE_EXTENSION = ".txt";
 
@@ -34,20 +41,20 @@ public class FileParserService {
 	private final static String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
 
 	@Value("${app.data.directory:-}")
-	private String directory;
+	private String dataDirectory;
 
 	@PostConstruct
-	public void init(){
-		if (directory != null && directory.equals("-")) {
-			directory = System.getProperty(USER_HOME);
-		}		
+	public void init() {
+		if (dataDirectory != null && dataDirectory.equals("-")) {
+			dataDirectory = System.getProperty(USER_HOME);
+		}
 	}
-	
+
 	public List<Map<String, Object>> parseHistoricalFile(final String symbol) {
 
-		String fileName = directory + File.separator + "historical" + File.separator + symbol + "-historical"
-				+ FILE_EXTENSION;
-		
+		String fileName = dataDirectory + File.separator + HISTORICAL_DIRECTORY + File.separator + symbol
+				+ HISTORICAL_DAILY_FILE_POSTFIX + FILE_EXTENSION;
+
 		logger.info(fileName);
 
 		CSVFileReader csvFileReader = new CSVFileReader();
@@ -70,6 +77,7 @@ public class FileParserService {
 				calendar.set(Calendar.HOUR, 0);
 				map = new TreeMap<String, Object>();
 
+				map.put("type",new String("daily"));
 				map.put("symbol", new String(symbol));
 				map.put("date", new String(x[0]));
 				map.put("year", calendar.get(Calendar.YEAR));
@@ -88,25 +96,25 @@ public class FileParserService {
 				logger.info(e.toString());
 			}
 			return map;
-		}).filter(x -> x != null).toList();
+		}).filter(x -> x != null).collect(Collectors.toList());
 	}
 
 	public List<Map<String, Object>> parseExchangeFile(String exchange) {
 
-		String fileName = directory + File.separator + "exchange" + File.separator + exchange + FILE_EXTENSION;
-		
+		String fileName = dataDirectory + File.separator + EXCHANGE_DIRECTORY + File.separator + exchange + FILE_EXTENSION;
+
 		logger.info(fileName);
-		
+
 		CSVFileReader csvFileReader = new CSVFileReader();
-		
+
 		List<String[]> list = csvFileReader.read(fileName, TAB_SEPERATOR, null);
-		
+
 		return list.stream().map(x -> {
 			Map<String, Object> map = new TreeMap<String, Object>();
 			map.put("symbol", x[0]);
 			map.put("name", x[1]);
 			return map;
-		}).toList();
+		}).collect(Collectors.toList());
 	}
 
 }

@@ -20,25 +20,47 @@ public class KafkaService {
 	private KafkaTemplate<String, List<Map<String, Object>>> kafkaTemplate;
 
 	@Autowired
-	FileParserService fileParserService;
+	private FileParserService fileParserService;
 	
-	@Async("asyncExecutor")
-	@KafkaListener(topics = "parse.exchange.data", containerFactory = "mapListener")
+	private final String ASYNC_EXECUTOR = "asyncExecutor";
+	
+	private final String TOPIC_PARSE_EXCHANGE_DATA = "parse.exchange.data";
+	
+	private final String TOPIC_PARSE_HISTORICAL_DATA = "parse.historical.data";
+	
+	private final String TOPIC_SAVE_EXCHANGE_DATA_LIST = "save.exchange.data.list";
+	
+	private final String TOPIC_SAVE_HISTORICAL_DATA_LIST = "save.historical.data.list";
+	
+	private final String CONTAINER_FACTORY_MAP = "mapListener";
+
+	@Async(ASYNC_EXECUTOR)
+	public void publish(String topic, List<Map<String, Object>> map) {
+		logger.info(String.format("Sent topic: %s -> %s", topic, map));
+		
+		kafkaTemplate.send(topic, map);
+	}
+	
+	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_PARSE_EXCHANGE_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseExchangeFile(Map<String, Object> map) {
-		logger.info("topic: parse.exchange.data - map: {}", map);
+		logger.info("Received topic: %s -> map: %s", TOPIC_PARSE_EXCHANGE_DATA, map);
+		
 		String exchange = map.getOrDefault("exchange", "-").toString();
 		List<Map<String, Object>> list = fileParserService.parseExchangeFile(exchange);
 		list.forEach(System.out::println);
+		kafkaTemplate.send(TOPIC_SAVE_EXCHANGE_DATA_LIST, list);
 	}
 
-	@Async("asyncExecutor")
-	@KafkaListener(topics = "parse.historical.data", containerFactory = "mapListener")
+	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void processHistericalData(Map<String, Object> map) {
-		logger.info("receive topic: parse.historical.data - map: {}", map);
+		logger.info("Received topic: %s -> map: %s", TOPIC_PARSE_HISTORICAL_DATA, map);
+		
 		String symbol = map.getOrDefault("symbol", "-").toString();
 		List<Map<String, Object>> list = fileParserService.parseHistoricalFile(symbol);
 		list.forEach(System.out::println);
-		kafkaTemplate.send("save.historical.data", list);
+		publish(TOPIC_SAVE_HISTORICAL_DATA_LIST, list);
 	}
 	
 }
