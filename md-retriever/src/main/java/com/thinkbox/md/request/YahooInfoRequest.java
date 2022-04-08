@@ -14,7 +14,6 @@ import java.net.URLConnection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-
 public class YahooInfoRequest extends YahooRequest {
 
     private static final Logger log = LoggerFactory.getLogger(YahooInfoRequest.class);

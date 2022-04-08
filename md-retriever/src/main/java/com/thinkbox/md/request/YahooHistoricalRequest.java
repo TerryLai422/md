@@ -32,7 +32,7 @@ public class YahooHistoricalRequest extends YahooRequest {
 		DEFAULT_FROM.add(Calendar.YEAR, -1);
 	}
 
-	private static final Logger log = LoggerFactory.getLogger(YahooHistoricalRequest.class);
+	private static final Logger logger = LoggerFactory.getLogger(YahooHistoricalRequest.class);
 
 	private final String symbol;
 
@@ -49,22 +49,30 @@ public class YahooHistoricalRequest extends YahooRequest {
 	}
 
 	public YahooHistoricalRequest(String symbol, Calendar from) {
-		this(symbol, from, DEFAULT_TO, DEFAULT_INTERVAL, false);
+		this(symbol, DEFAULT_INTERVAL, from, DEFAULT_TO, false);
 	}
-
+	
 	public YahooHistoricalRequest(String symbol, String interval) {
-		this(symbol, DEFAULT_FROM, DEFAULT_TO, interval, false);
+		this(symbol, interval, DEFAULT_FROM, DEFAULT_TO, false);
+	}
+	
+	public YahooHistoricalRequest(String symbol, String interval, Calendar from) {
+		this(symbol, interval, from, DEFAULT_TO, false);
 	}
 
 	public YahooHistoricalRequest(String symbol, Calendar from, Calendar to) {
-		this(symbol, from, to, DEFAULT_INTERVAL, false);
+		this(symbol, DEFAULT_INTERVAL, from, to, false);
 	}
 
-	public YahooHistoricalRequest(String symbol, Calendar from, Calendar to, String interval, boolean displayOnly) {
+	public YahooHistoricalRequest(String symbol, String interval, Calendar from, Calendar to, boolean displayOnly) {
+		if (interval!= null && (interval.equals(INTERVAL_DAILY) || interval.equals(INTERVAL_WEEKLY) || interval.equals(INTERVAL_MONTHLY))) {
+			this.interval = interval;
+		} else {
+			this.interval = INTERVAL_DAILY;
+		}
 		this.symbol = symbol;
 		this.from = this.cleanHistCalendar(from);
 		this.to = this.cleanHistCalendar(to);
-		this.interval = interval;
 		this.displayOnly = displayOnly;
 	}
 
@@ -91,7 +99,7 @@ public class YahooHistoricalRequest extends YahooRequest {
 	public void get() throws IOException {
 
 		if (this.from.after(this.to)) {
-			log.warn("Unable to retrieve historical quotes. " + "From-date should not be after to-date. From: "
+			logger.warn("Unable to retrieve historical quotes. " + "From-date should not be after to-date. From: "
 					+ this.from.getTime() + ", to: " + this.to.getTime());
 			return;
 		}
@@ -104,7 +112,7 @@ public class YahooHistoricalRequest extends YahooRequest {
 
 		String url = HISTQUOTES2_BASE_URL + URLEncoder.encode(this.symbol, UTF8_ENCODING) + "?" + getURLParameters(params);
 
-		log.info("Sending request: " + url);
+		logger.info("Sending request: " + url);
 
 		URL request = new URL(url);
 		RedirectableRequest redirectableRequest = new RedirectableRequest(request, 5);
@@ -124,9 +132,13 @@ public class YahooHistoricalRequest extends YahooRequest {
 
 	private void saveAsFile(InputStream inputStream, String fileName, String fileExtension) throws IOException {
 		String homeDirectory = System.getProperty(USER_HOME);
-		String fullFilePath = homeDirectory + File.separator + "historical" + File.separator + fileName + fileExtension;
-
-		File targetFile = new File(fullFilePath);
+		String fileFullPath = null;
+		if (interval.equals(INTERVAL_DAILY)) {
+			fileFullPath = homeDirectory + File.separator + "historical"  + File.separator + fileName + "-d" + fileExtension;
+		} else {
+			fileFullPath = homeDirectory + File.separator + "historical"  + File.separator + fileName  + fileExtension;
+		}
+		File targetFile = new File(fileFullPath);
 
 		java.nio.file.Files.copy(inputStream, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	}
@@ -136,7 +148,7 @@ public class YahooHistoricalRequest extends YahooRequest {
 		BufferedReader br = new BufferedReader(is);
 		br.readLine(); // skip the first line
 		for (String line = br.readLine(); line != null; line = br.readLine()) {
-			log.info("Parsing CSV line: " + unescape(line));
+			logger.info("Parsing CSV line: " + unescape(line));
 		}
 	}
 
