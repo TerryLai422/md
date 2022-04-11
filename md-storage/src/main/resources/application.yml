@@ -1,6 +1,6 @@
 spring:
   application:
-    name: md-retriever
+    name: md-storage
   kafka:
     consumer:
       bootstrap-servers: localhost:9092
@@ -12,22 +12,22 @@ spring:
       bootstrap-servers: localhost:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
+  data:
+    mongodb:
+      authentication-database: admin
+      username: root
+      password: example
+      database: marketdata
+      port: 27017
+      host: localhost
+      
 tpd:
   topic-name: advice-topic
-  messages-per-request: 10
-    
+  messages-per-request: 10    
+  
 server:
-  port: 8188
-
-parameter:
-  topic:
-    retrieve.info.data:
-      - symbol
-    retrieve.historical.data:
-      - symbol
-      - date
-    parse.historical.data:
-      - symbol
-    parse.exchange.data:
-      - exchange
+  port: 8186
+   
+md-storage:
+  controller:
+    enabled: true

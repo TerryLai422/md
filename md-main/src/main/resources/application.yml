@@ -1,6 +1,9 @@
+server:
+  port: 8187
+
 spring:
   application:
-    name: md-retriever
+    name: md-main
   kafka:
     consumer:
       bootstrap-servers: localhost:9092
@@ -16,11 +19,8 @@ spring:
 tpd:
   topic-name: advice-topic
   messages-per-request: 10
-    
-server:
-  port: 8188
-
-parameter:
+  
+rest-parameter:
   topic:
     retrieve.info.data:
       - symbol

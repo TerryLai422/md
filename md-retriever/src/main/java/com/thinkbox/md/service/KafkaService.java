@@ -31,7 +31,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, Map<String, Object> map) {
-		logger.info(String.format("Sent topic: %s -> %s", topic, map));
+		logger.info("Sent topic: {} -> {}", topic, map);
 		
 		kafkaTemplate.send(topic, map);
 	}
@@ -39,7 +39,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_RETRIEVE_INFO_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void processInfo(Map<String, Object> map) {
-		logger.info("Received topic: %s -> map: %s", TOPIC_RETRIEVE_INFO_DATA, map);
+		logger.info("Received topic: {} -> map: {}", TOPIC_RETRIEVE_INFO_DATA, map);
 		
 		retrieverService.processInfo(map);
 	}
@@ -47,7 +47,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_RETRIEVE_HISTORICAL_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void processHistorical(Map<String, Object> map) {
-		logger.info("Received topic: %s -> map: %s", TOPIC_RETRIEVE_HISTORICAL_DATA, map);
+		logger.info("Received topic: {} -> map: {}", TOPIC_RETRIEVE_HISTORICAL_DATA, map);
 		
 		retrieverService.processHistorical(map);
 	}

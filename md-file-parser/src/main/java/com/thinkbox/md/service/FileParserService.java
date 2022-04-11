@@ -1,6 +1,7 @@
 package com.thinkbox.md.service;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -25,9 +26,9 @@ public class FileParserService {
 	private final Logger logger = LoggerFactory.getLogger(FileParserService.class);
 
 	private final static String USER_HOME = "user.home";
-	
+
 	private final static String HISTORICAL_DIRECTORY = "historical";
-	
+
 	private final static String EXCHANGE_DIRECTORY = "exchange";
 
 	private final static String HISTORICAL_DAILY_FILE_POSTFIX = "-d-historical";
@@ -50,7 +51,7 @@ public class FileParserService {
 		}
 	}
 
-	public List<Map<String, Object>> parseHistoricalFile(final String symbol) {
+	public List<Map<String, Object>> parseHistoricalFile(final String symbol) throws IOException {
 
 		String fileName = dataDirectory + File.separator + HISTORICAL_DIRECTORY + File.separator + symbol
 				+ HISTORICAL_DAILY_FILE_POSTFIX + FILE_EXTENSION;
@@ -61,7 +62,7 @@ public class FileParserService {
 
 		List<String[]> list = csvFileReader.read(fileName, COMMA_SEPERATOR, null);
 
-		return list.stream().map(x -> {
+		List<Map<String, Object>> mapList = list.stream().map(x -> {
 			Map<String, Object> map = null;
 
 			try {
@@ -77,7 +78,7 @@ public class FileParserService {
 				calendar.set(Calendar.HOUR, 0);
 				map = new TreeMap<String, Object>();
 
-				map.put("type",new String("daily"));
+				map.put("type", new String("daily"));
 				map.put("symbol", new String(symbol));
 				map.put("date", new String(x[0]));
 				map.put("year", calendar.get(Calendar.YEAR));
@@ -97,11 +98,25 @@ public class FileParserService {
 			}
 			return map;
 		}).filter(x -> x != null).collect(Collectors.toList());
+		
+		Map<String, Object> first = mapList.get(0);
+		Map<String, Object> last = mapList.get(mapList.size() - 1);
+		
+		Map<String, Object> index = new TreeMap<String, Object>();
+		index.put("type", new String("daily"));
+		index.put("symbol", new String(symbol));
+		index.put("from", first.get("date"));
+		index.put("to", last.get("date"));
+		index.put("total", Long.valueOf(mapList.size()));
+		mapList.add(0, index);
+		
+		return mapList;
 	}
 
-	public List<Map<String, Object>> parseExchangeFile(String exchange) {
+	public List<Map<String, Object>> parseExchangeFile(String exchange) throws IOException {
 
-		String fileName = dataDirectory + File.separator + EXCHANGE_DIRECTORY + File.separator + exchange + FILE_EXTENSION;
+		String fileName = dataDirectory + File.separator + EXCHANGE_DIRECTORY + File.separator + exchange
+				+ FILE_EXTENSION;
 
 		logger.info(fileName);
 
@@ -109,12 +124,19 @@ public class FileParserService {
 
 		List<String[]> list = csvFileReader.read(fileName, TAB_SEPERATOR, null);
 
-		return list.stream().map(x -> {
+		List<Map<String, Object>> mapList = list.stream().map(x -> {
 			Map<String, Object> map = new TreeMap<String, Object>();
 			map.put("symbol", x[0]);
 			map.put("name", x[1]);
 			return map;
 		}).collect(Collectors.toList());
+				
+		Map<String, Object> index = new TreeMap<String, Object>();
+		index.put("exchange", new String(exchange));
+		index.put("total", Long.valueOf(mapList.size()));
+		mapList.add(0, index);
+		
+		return mapList;
 	}
 
 }
