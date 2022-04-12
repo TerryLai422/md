@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MDConsolidatorApplication {
+public class MDEnricherApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MDConsolidatorApplication.class, args);
+		SpringApplication.run(MDEnricherApplication.class, args);
 	}
 
 }

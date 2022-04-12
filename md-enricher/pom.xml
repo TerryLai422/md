@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.thinkbox.md</groupId>
-	<artifactId>md-consolidator</artifactId>
+	<artifactId>md-enricher</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>md-consolidator</name>
 	<description>Demo project for Spring Boot</description>
@@ -38,7 +38,10 @@
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>	
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

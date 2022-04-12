@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: md-consolidator
+    name: md-enricher
   cloud:
     config:
       enabled: false    
@@ -22,3 +22,22 @@ spring:
 tpd:
   topic-name: advice-topic
   messages-per-request: 10    
+
+parameter:
+  keyType: type
+  keySymbol: symbol
+  keyDate: date
+  keyOpen: open
+  keyHigh: high
+  keyLow: low    
+  keyClose: close
+  keyAdjClose: adjClose
+  keyVolume: volume
+  keyYear: year
+  keyMonth: month
+  keyDay: day
+  keyWeekOfYear: weekOfYear
+  keyYearForWeek: yearForWeek
+  valueDaily: daily
+  valueWeekly: weekly
+  valueMonthly: monthly
