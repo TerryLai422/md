@@ -15,9 +15,11 @@ import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.thinkbox.md.config.ParameterProperties;
 import com.thinkbox.md.util.CSVFileReader;
 
 @Component
@@ -44,6 +46,9 @@ public class FileParserService {
 	@Value("${app.data.directory:-}")
 	private String dataDirectory;
 
+	@Autowired
+	private ParameterProperties parameter;
+	
 	@PostConstruct
 	public void init() {
 		if (dataDirectory != null && dataDirectory.equals("-")) {
@@ -83,28 +88,28 @@ public class FileParserService {
 
 				map = new TreeMap<String, Object>();
 
-				map.put("type", new String("daily"));
-				map.put("symbol", new String(symbol));
-				map.put("date", new String(x[0]));
-				map.put("year", year);
-				map.put("month", calendar.get(Calendar.MONTH) + 1);
-				map.put("day", calendar.get(Calendar.DATE));
-				map.put("dayOfYear", dayOfYear);
-				map.put("weekOfYear", weekOfYear);
-				map.put("dayOfWeek", calendar.get(Calendar.DAY_OF_WEEK));
+				map.put(parameter.getKeyType(), new String(parameter.getValueDaily()));
+				map.put(parameter.getKeySymbol(), new String(symbol));
+				map.put(parameter.getKeyDate(), new String(x[0]));
+				map.put(parameter.getKeyYear(), year);
+				map.put(parameter.getKeyMonth(), calendar.get(Calendar.MONTH) + 1);
+				map.put(parameter.getKeyDay(), calendar.get(Calendar.DATE));
+				map.put(parameter.getKeyDayOfYear(), dayOfYear);
+				map.put(parameter.getKeyWeekOfYear(), weekOfYear);
+				map.put(parameter.getKeyDayOfWeek(), calendar.get(Calendar.DAY_OF_WEEK));
 				if (weekOfYear == 1 && ((year % 4 != 0 && dayOfYear >= 362)
 						|| (((year % 4 == 0 && year % 100 != 0) || year % 400 == 0)
 								&& dayOfYear >= 363))) {
-					map.put("yearForWeek", year + 1);
+					map.put(parameter.getKeyYearForWeek(), year + 1);
 				} else {
-					map.put("yearForWeek", year);
+					map.put(parameter.getKeyYearForWeek(), year);
 				}
-				map.put("open", Double.parseDouble(x[1]));
-				map.put("high", Double.parseDouble(x[2]));
-				map.put("low", Double.parseDouble(x[3]));
-				map.put("close", Double.parseDouble(x[4]));
-				map.put("adjClose", Double.parseDouble(x[5]));
-				map.put("volume", Long.parseLong(x[6]));
+				map.put(parameter.getKeyOpen(), Double.parseDouble(x[1]));
+				map.put(parameter.getKeyHigh(), Double.parseDouble(x[2]));
+				map.put(parameter.getKeyLow(), Double.parseDouble(x[3]));
+				map.put(parameter.getKeyClose(), Double.parseDouble(x[4]));
+				map.put(parameter.getKeyAdjClose(), Double.parseDouble(x[5]));
+				map.put(parameter.getKeyVolume(), Long.parseLong(x[6]));
 
 			} catch (ParseException e) {
 				logger.info(e.toString());
