@@ -76,16 +76,29 @@ public class FileParserService {
 				calendar.set(Calendar.SECOND, 0);
 				calendar.set(Calendar.MINUTE, 0);
 				calendar.set(Calendar.HOUR, 0);
+
+				int year = calendar.get(Calendar.YEAR);
+				int dayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
+				int weekOfYear = calendar.get(Calendar.WEEK_OF_YEAR);
+
 				map = new TreeMap<String, Object>();
 
 				map.put("type", new String("daily"));
 				map.put("symbol", new String(symbol));
 				map.put("date", new String(x[0]));
-				map.put("year", calendar.get(Calendar.YEAR));
+				map.put("year", year);
 				map.put("month", calendar.get(Calendar.MONTH) + 1);
 				map.put("day", calendar.get(Calendar.DATE));
-				map.put("weekOfYear", calendar.get(Calendar.WEEK_OF_YEAR));
+				map.put("dayOfYear", dayOfYear);
+				map.put("weekOfYear", weekOfYear);
 				map.put("dayOfWeek", calendar.get(Calendar.DAY_OF_WEEK));
+				if (weekOfYear == 1 && ((year % 4 != 0 && dayOfYear >= 362)
+						|| (((year % 4 == 0 && year % 100 != 0) || year % 400 == 0)
+								&& dayOfYear >= 363))) {
+					map.put("yearForWeek", year + 1);
+				} else {
+					map.put("yearForWeek", year);
+				}
 				map.put("open", Double.parseDouble(x[1]));
 				map.put("high", Double.parseDouble(x[2]));
 				map.put("low", Double.parseDouble(x[3]));
@@ -98,18 +111,31 @@ public class FileParserService {
 			}
 			return map;
 		}).filter(x -> x != null).collect(Collectors.toList());
-		
+
 		Map<String, Object> first = mapList.get(0);
 		Map<String, Object> last = mapList.get(mapList.size() - 1);
-		
+
 		Map<String, Object> index = new TreeMap<String, Object>();
+
 		index.put("type", new String("daily"));
 		index.put("symbol", new String(symbol));
 		index.put("from", first.get("date"));
+		index.put("fromYear", first.get("year"));
+		index.put("fromMonth", first.get("month"));
+		index.put("fromDay", first.get("day"));
+		index.put("fromWeekOfYear", first.get("weekOfYear"));
+		index.put("fromDayOfWeek", first.get("dayOfWeek"));
+
 		index.put("to", last.get("date"));
+		index.put("toYear", last.get("year"));
+		index.put("toMonth", last.get("month"));
+		index.put("toDay", last.get("day"));
+		index.put("toWeekOfYear", last.get("weekOfYear"));
+		index.put("toDayOfWeek", last.get("dayOfWeek"));
+
 		index.put("total", Long.valueOf(mapList.size()));
 		mapList.add(0, index);
-		
+
 		return mapList;
 	}
 
@@ -130,12 +156,12 @@ public class FileParserService {
 			map.put("name", x[1]);
 			return map;
 		}).collect(Collectors.toList());
-				
+
 		Map<String, Object> index = new TreeMap<String, Object>();
 		index.put("exchange", new String(exchange));
 		index.put("total", Long.valueOf(mapList.size()));
 		mapList.add(0, index);
-		
+
 		return mapList;
 	}
 

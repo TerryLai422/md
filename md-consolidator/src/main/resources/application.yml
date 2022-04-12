@@ -1,12 +1,12 @@
 server:
-  port: 8186
-  
+  port: 8185
+
 spring:
   application:
-    name: md-file-parser
+    name: md-consolidator
   cloud:
     config:
-      enabled: false
+      enabled: false    
   kafka:
     consumer:
       bootstrap-servers: localhost:9092
