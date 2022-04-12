@@ -1,8 +1,5 @@
 package com.thinkbox.md.config;
 
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -47,10 +44,14 @@ public class ParameterProperties {
 	
 	private String keyYearForWeek;
 	
+	private String keyDayOfYear;
+	
+	private String keyDayOfWeek;
+	
 	private String valueDaily;
 	
 	private String valueWeekly;
 	
 	private String valueMonthly;
-
+	
 }

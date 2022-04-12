@@ -38,6 +38,8 @@ parameter:
   keyDay: day
   keyWeekOfYear: weekOfYear
   keyYearForWeek: yearForWeek
+  keyDayOfYear: dayOfYear
+  keyDayOfWeek: dayOfWeek
   valueDaily: daily
   valueWeekly: weekly
   valueMonthly: monthly
