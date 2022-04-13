@@ -37,6 +37,13 @@ public class SimpleMovingAverage {
 		sum += data;
 	}
 	
+	public Double getAverage() {
+		if (size < period) 
+			return 0d;
+		
+		return sum/period;
+	}
+	
 	public String getPrefix() {
 		return "SMA-" + period + "-";
 	}
