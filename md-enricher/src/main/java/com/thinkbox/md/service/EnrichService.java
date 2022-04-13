@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.thinkbox.md.component.SimpleMovingAverage;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.MapValueParameter;
 
@@ -19,25 +20,43 @@ import com.thinkbox.md.config.MapValueParameter;
 public class EnrichService {
 
 	private final Logger logger = LoggerFactory.getLogger(EnrichService.class);
-	
+
 	@Autowired
 	private MapKeyParameter mapKey;
-	
+
 	@Autowired
 	private MapValueParameter mapValue;
 
-	public List<Map<String, Object>> consolidateWeekly(List<Map<String, Object>> list) {
-		
-		return consolidate(mapValue.getWeekly(), mapKey.getYearForWeek(), mapKey.getWeekOfYear(), list);
+	public List<Map<String, Object>> enrich(List<Map<String, Object>> list) {
+		final List<SimpleMovingAverage> smaList = Arrays.asList(new SimpleMovingAverage(21),
+				new SimpleMovingAverage(50));
+		return list.stream().skip(1)
+				.sorted((i, j) -> i.get(mapKey.getDate()).toString().compareTo(j.get(mapKey.getDate()).toString()))
+				.map(x -> {
+					for (SimpleMovingAverage sma : smaList) {
+						sma.add((Double) x.get("close"));
+						x.put(sma.getPrefix() + "ma", sma.getAverage());
+						x.put(sma.getPrefix() + "sum", sma.getSum());
+						x.put(sma.getPrefix() + "first", sma.getFirst());
+						x.put(sma.getPrefix() + "size", sma.getSize());
+					}
+					return x;
+				}).collect(Collectors.toList());
 	}
 
-	public List<Map<String, Object>> consolidateMonthly(List<Map<String, Object>> list) {
-		
-		return consolidate(mapValue.getMonthly(), mapKey.getYear(), mapKey.getMonth(), list);
+	public List<Map<String, Object>> consolidate(String type, List<Map<String, Object>> list) {
+
+		if (type.equals(mapValue.getWeekly())) {
+			return consolidate(mapValue.getWeekly(), mapKey.getYearForWeek(), mapKey.getWeekOfYear(), list);
+		} else if (type.equals(mapValue.getMonthly())) {
+			return consolidate(mapValue.getMonthly(), mapKey.getYear(), mapKey.getMonth(), list);
+		}
+		return null;
 	}
 
-	public List<Map<String, Object>> consolidate(final String type, final String firstCriterion, final String secondCriterion, List<Map<String, Object>> list) {
-		
+	public List<Map<String, Object>> consolidate(final String type, final String firstCriterion,
+			final String secondCriterion, List<Map<String, Object>> list) {
+
 		Map<Object, List<Map<String, Object>>> inputMapList = list.stream().skip(1)
 				.collect(Collectors.groupingBy(
 						x -> new ArrayList<Integer>(
@@ -66,9 +85,11 @@ public class EnrichService {
 			map.put(mapKey.getDay(), last.get(mapKey.getDay()));
 			map.put(mapKey.getWeekOfYear(), last.get(mapKey.getWeekOfYear()));
 
-			map.put(mapKey.getHigh(), x.stream().mapToDouble(a -> (Double) a.get(mapKey.getHigh())).max().getAsDouble());
+			map.put(mapKey.getHigh(),
+					x.stream().mapToDouble(a -> (Double) a.get(mapKey.getHigh())).max().getAsDouble());
 			map.put(mapKey.getLow(), x.stream().mapToDouble(a -> (Double) a.get(mapKey.getLow())).min().getAsDouble());
-			map.put(mapKey.getVolume(), x.stream().mapToLong(a -> Long.valueOf(a.get(mapKey.getVolume()).toString())).sum());
+			map.put(mapKey.getVolume(),
+					x.stream().mapToLong(a -> Long.valueOf(a.get(mapKey.getVolume()).toString())).sum());
 
 			return map;
 
