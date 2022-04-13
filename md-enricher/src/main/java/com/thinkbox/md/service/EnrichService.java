@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.thinkbox.md.component.SimpleMovingAverage;
+import com.thinkbox.md.component.WeekHighLow;
 import com.thinkbox.md.config.IndicatorProperties;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.MapValueParameter;
@@ -41,6 +42,7 @@ public class EnrichService {
 
 	public List<Map<String, Object>> enrich(List<Map<String, Object>> list) {
 		final List<SimpleMovingAverage> smaList = getSMAList();
+		final WeekHighLow weekHighLow = new WeekHighLow(52);
 		return list.stream().skip(1)
 				.sorted((i, j) -> i.get(mapKey.getDate()).toString().compareTo(j.get(mapKey.getDate()).toString()))
 				.map(x -> {
@@ -51,6 +53,9 @@ public class EnrichService {
 						x.put(sma.getPrefix() + mapKey.getSuffixFirst(), sma.getFirst());
 						x.put(sma.getPrefix() + mapKey.getSuffixSize(), sma.getSize());
 					}
+					weekHighLow.add((Integer) x.get(mapKey.getYear()), (Integer) x.get(mapKey.getDayOfYear()), (Double) x.get(mapKey.getClose()));
+					x.put(weekHighLow.getPrefix() + "High", weekHighLow.getHigh());
+					x.put(weekHighLow.getPrefix() + "Low", weekHighLow.getLow());
 					return x;
 				}).collect(Collectors.toList());
 	}
