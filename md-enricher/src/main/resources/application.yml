@@ -23,23 +23,42 @@ tpd:
   topic-name: advice-topic
   messages-per-request: 10    
 
-parameter:
-  keyType: type
-  keySymbol: symbol
-  keyDate: date
-  keyOpen: open
-  keyHigh: high
-  keyLow: low    
-  keyClose: close
-  keyAdjClose: adjClose
-  keyVolume: volume
-  keyYear: year
-  keyMonth: month
-  keyDay: day
-  keyWeekOfYear: weekOfYear
-  keyYearForWeek: yearForWeek
-  keyDayOfYear: dayOfYear
-  keyDayOfWeek: dayOfWeek
-  valueDaily: daily
-  valueWeekly: weekly
-  valueMonthly: monthly
+map-key-parameter:
+  total: total
+  type: type
+  exchange: exchange
+  name: name
+  symbol: symbol
+  date: date
+  open: open
+  high: high
+  low: low    
+  close: close
+  adjClose: adjClose
+  volume: volume
+  year: year
+  month: month
+  day: day
+  weekOfYear: weekOfYear
+  yearForWeek: yearForWeek
+  dayOfYear: dayOfYear
+  dayOfWeek: dayOfWeek  
+  fromDate: fromDate
+  fromYear: fromYear
+  fromMonth: fromMonth
+  fromDay: fromDay
+  fromWeekOfYear: fromWeekOfYear
+  fromDayOfWeek: fromDayOfWeek
+  fromYearForWeek: fromYearForWeek
+  toDate: toDate
+  toYear: toYear
+  toMonth: toMonth
+  toDay: toDay
+  toWeekOfYear: toWeekOfYear
+  toDayOfWeek: toDayOfWeek
+  toYearForWeek: toYearForWeek 
+  
+map-value-parameter:
+  daily: daily
+  weekly: weekly
+  monthly: monthly

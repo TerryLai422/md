@@ -19,7 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.thinkbox.md.config.ParameterProperties;
+import com.thinkbox.md.config.MapKeyParameter;
+import com.thinkbox.md.config.MapValueParameter;
 import com.thinkbox.md.util.CSVFileReader;
 
 @Component
@@ -47,7 +48,11 @@ public class FileParserService {
 	private String dataDirectory;
 
 	@Autowired
-	private ParameterProperties parameter;
+	private MapKeyParameter mapKey;
+	
+	@Autowired
+	private MapValueParameter mapValue;
+	
 	
 	@PostConstruct
 	public void init() {
@@ -88,28 +93,28 @@ public class FileParserService {
 
 				map = new TreeMap<String, Object>();
 
-				map.put(parameter.getKeyType(), new String(parameter.getValueDaily()));
-				map.put(parameter.getKeySymbol(), new String(symbol));
-				map.put(parameter.getKeyDate(), new String(x[0]));
-				map.put(parameter.getKeyYear(), year);
-				map.put(parameter.getKeyMonth(), calendar.get(Calendar.MONTH) + 1);
-				map.put(parameter.getKeyDay(), calendar.get(Calendar.DATE));
-				map.put(parameter.getKeyDayOfYear(), dayOfYear);
-				map.put(parameter.getKeyWeekOfYear(), weekOfYear);
-				map.put(parameter.getKeyDayOfWeek(), calendar.get(Calendar.DAY_OF_WEEK));
+				map.put(mapKey.getType(), new String(mapValue.getDaily()));
+				map.put(mapKey.getSymbol(), new String(symbol));
+				map.put(mapKey.getDate(), new String(x[0]));
+				map.put(mapKey.getYear(), year);
+				map.put(mapKey.getMonth(), calendar.get(Calendar.MONTH) + 1);
+				map.put(mapKey.getDay(), calendar.get(Calendar.DATE));
+				map.put(mapKey.getDayOfYear(), dayOfYear);
+				map.put(mapKey.getWeekOfYear(), weekOfYear);
+				map.put(mapKey.getDayOfWeek(), calendar.get(Calendar.DAY_OF_WEEK));
 				if (weekOfYear == 1 && ((year % 4 != 0 && dayOfYear >= 362)
 						|| (((year % 4 == 0 && year % 100 != 0) || year % 400 == 0)
 								&& dayOfYear >= 363))) {
-					map.put(parameter.getKeyYearForWeek(), year + 1);
+					map.put(mapKey.getYearForWeek(), year + 1);
 				} else {
-					map.put(parameter.getKeyYearForWeek(), year);
+					map.put(mapKey.getYearForWeek(), year);
 				}
-				map.put(parameter.getKeyOpen(), Double.parseDouble(x[1]));
-				map.put(parameter.getKeyHigh(), Double.parseDouble(x[2]));
-				map.put(parameter.getKeyLow(), Double.parseDouble(x[3]));
-				map.put(parameter.getKeyClose(), Double.parseDouble(x[4]));
-				map.put(parameter.getKeyAdjClose(), Double.parseDouble(x[5]));
-				map.put(parameter.getKeyVolume(), Long.parseLong(x[6]));
+				map.put(mapKey.getOpen(), Double.parseDouble(x[1]));
+				map.put(mapKey.getHigh(), Double.parseDouble(x[2]));
+				map.put(mapKey.getLow(), Double.parseDouble(x[3]));
+				map.put(mapKey.getClose(), Double.parseDouble(x[4]));
+				map.put(mapKey.getAdjClose(), Double.parseDouble(x[5]));
+				map.put(mapKey.getVolume(), Long.parseLong(x[6]));
 
 			} catch (ParseException e) {
 				logger.info(e.toString());
@@ -122,23 +127,23 @@ public class FileParserService {
 
 		Map<String, Object> index = new TreeMap<String, Object>();
 
-		index.put("type", new String("daily"));
-		index.put("symbol", new String(symbol));
-		index.put("from", first.get("date"));
-		index.put("fromYear", first.get("year"));
-		index.put("fromMonth", first.get("month"));
-		index.put("fromDay", first.get("day"));
-		index.put("fromWeekOfYear", first.get("weekOfYear"));
-		index.put("fromDayOfWeek", first.get("dayOfWeek"));
+		index.put(mapKey.getType(), new String(mapValue.getDaily()));
+		index.put(mapKey.getSymbol(), new String(symbol));
+		index.put(mapKey.getFromDate(), first.get(mapKey.getDate()));
+		index.put(mapKey.getFromYear(), first.get(mapKey.getYear()));
+		index.put(mapKey.getFromMonth(), first.get(mapKey.getMonth()));
+		index.put(mapKey.getFromDay(), first.get(mapKey.getDay()));
+		index.put(mapKey.getFromWeekOfYear(), first.get(mapKey.getWeekOfYear()));
+		index.put(mapKey.getFromDayOfWeek(), first.get(mapKey.getDayOfWeek()));
 
-		index.put("to", last.get("date"));
-		index.put("toYear", last.get("year"));
-		index.put("toMonth", last.get("month"));
-		index.put("toDay", last.get("day"));
-		index.put("toWeekOfYear", last.get("weekOfYear"));
-		index.put("toDayOfWeek", last.get("dayOfWeek"));
+		index.put(mapKey.getToDate(), last.get(mapKey.getDate()));
+		index.put(mapKey.getToYear(), last.get(mapKey.getYear()));
+		index.put(mapKey.getToMonth(), last.get(mapKey.getMonth()));
+		index.put(mapKey.getToDay(), last.get(mapKey.getDay()));
+		index.put(mapKey.getToWeekOfYear(), last.get(mapKey.getWeekOfYear()));
+		index.put(mapKey.getToDayOfWeek(), last.get(mapKey.getDayOfWeek()));
 
-		index.put("total", Long.valueOf(mapList.size()));
+		index.put(mapKey.getTotal(), Long.valueOf(mapList.size()));
 		mapList.add(0, index);
 
 		return mapList;
@@ -157,14 +162,14 @@ public class FileParserService {
 
 		List<Map<String, Object>> mapList = list.stream().map(x -> {
 			Map<String, Object> map = new TreeMap<String, Object>();
-			map.put("symbol", x[0]);
+			map.put(mapKey.getSymbol(), x[0]);
 			map.put("name", x[1]);
 			return map;
 		}).collect(Collectors.toList());
 
 		Map<String, Object> index = new TreeMap<String, Object>();
 		index.put("exchange", new String(exchange));
-		index.put("total", Long.valueOf(mapList.size()));
+		index.put(mapKey.getTotal(), Long.valueOf(mapList.size()));
 		mapList.add(0, index);
 
 		return mapList;
