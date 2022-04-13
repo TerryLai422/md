@@ -20,7 +20,7 @@ public class KafkaService {
 	private KafkaTemplate<String, Map<String, Object>> kafkaTemplate;
 
 	@Autowired
-	private StoreService storageService;
+	private StoreService storeService;
 	
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
@@ -45,7 +45,7 @@ public class KafkaService {
 	@KafkaListener(topics = TOPIC_SAVE_HISTORICAL_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveHistoricalList(List<Map<String, Object>> list) {
 		logger.info("Received topic: {} -> list: {}", TOPIC_SAVE_HISTORICAL_DATA_LIST, list.toString());
-		storageService.saveHistoricalList(list);
+		storeService.saveHistoricalList(list);
 	}
 
 }

@@ -21,7 +21,7 @@ public class KafkaService {
 	private KafkaTemplate<String, List<Map<String, Object>>> kafkaTemplate;
 
 	@Autowired
-	private FileParseService fileParserService;
+	private FileParseService fileParseService;
 	
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 	
@@ -54,7 +54,7 @@ public class KafkaService {
 		try {
 			String symbol = map.getOrDefault("symbol", "-").toString();
 			List<Map<String, Object>> list;
-			list = fileParserService.parseHistoricalFile(symbol);
+			list = fileParseService.parseHistoricalFile(symbol);
 //			list.forEach(System.out::println);
 			publish(TOPIC_PROCESS_HISTORICAL_DATA_LIST, list);
 		} catch (IOException e) {

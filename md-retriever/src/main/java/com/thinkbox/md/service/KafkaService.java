@@ -19,7 +19,7 @@ public class KafkaService {
 	private KafkaTemplate<String, Map<String, Object>> kafkaTemplate;
 
 	@Autowired
-	private RetrieveService retrieverService;
+	private RetrieveService retrieveService;
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
@@ -41,7 +41,7 @@ public class KafkaService {
 	public void processInfo(Map<String, Object> map) {
 		logger.info("Received topic: {} -> map: {}", TOPIC_RETRIEVE_INFO_DATA, map);
 		
-		retrieverService.processInfo(map);
+		retrieveService.processInfo(map);
 	}
 
 	@Async(ASYNC_EXECUTOR)
@@ -49,7 +49,7 @@ public class KafkaService {
 	public void processHistorical(Map<String, Object> map) {
 		logger.info("Received topic: {} -> map: {}", TOPIC_RETRIEVE_HISTORICAL_DATA, map);
 		
-		retrieverService.processHistorical(map);
+		retrieveService.processHistorical(map);
 	}
 
 }

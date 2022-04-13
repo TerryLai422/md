@@ -15,6 +15,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.thinkbox.md.config.MapValueParameter;
+
 @Service
 public class KafkaService {
 
@@ -24,7 +26,10 @@ public class KafkaService {
 	private KafkaTemplate<String, List<Map<String, Object>>> kafkaTemplate;
 
 	@Autowired
-	private EnrichService consolidatorService;
+	private EnrichService enrichService;
+	
+	@Autowired
+	private MapValueParameter mapValue;
 	
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
@@ -56,11 +61,14 @@ public class KafkaService {
 	public void processHistericalData(List<Map<String, Object>> list) {
 		logger.info("Received topic: {} -> list: {}", TOPIC_PROCESS_HISTORICAL_DATA_LIST, list.toString());
 
-		List<Map<String, Object>> weeklyList = consolidatorService.consolidateWeekly(list);
-		List<Map<String, Object>> monthlyList = consolidatorService.consolidateMonthly(list);
-
-		weeklyList.forEach(System.out::println);
-		monthlyList.forEach(System.out::println);
+//		List<Map<String, Object>> weeklyList = enrichService.consolidate(mapValue.getWeekly(), list);
+//		weeklyList.forEach(System.out::println);
+//		
+//		List<Map<String, Object>> monthlyList = enrichService.consolidate(mapValue.getMonthly(), list);	
+//		monthlyList.forEach(System.out::println);
+		
+		List<Map<String, Object>> outputList =  enrichService.enrich(list);
+		outputList.forEach(System.out::println);
 	}
 
 }
