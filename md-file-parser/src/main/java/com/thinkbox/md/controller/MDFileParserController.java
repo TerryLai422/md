@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.thinkbox.md.service.FileParserService;
+import com.thinkbox.md.service.FileParseService;
 
 @ConditionalOnProperty(name = "md-file-parser.controller.enabled", havingValue = "true")
 @RestController
@@ -23,7 +23,7 @@ public class MDFileParserController {
 	private final Logger logger = LoggerFactory.getLogger(MDFileParserController.class);
 
 	@Autowired
-	FileParserService fileParserService;
+	FileParseService fileParserService;
 
 	@PostMapping(path = "parseExchange", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<Object> parse(@RequestBody Map<String, Object> map) {

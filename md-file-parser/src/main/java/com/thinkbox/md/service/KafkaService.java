@@ -21,7 +21,7 @@ public class KafkaService {
 	private KafkaTemplate<String, List<Map<String, Object>>> kafkaTemplate;
 
 	@Autowired
-	private FileParserService fileParserService;
+	private FileParseService fileParserService;
 	
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 	

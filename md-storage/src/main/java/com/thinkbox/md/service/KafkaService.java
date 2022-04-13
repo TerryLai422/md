@@ -20,7 +20,7 @@ public class KafkaService {
 	private KafkaTemplate<String, Map<String, Object>> kafkaTemplate;
 
 	@Autowired
-	private StorageService storageService;
+	private StoreService storageService;
 	
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 

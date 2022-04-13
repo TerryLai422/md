@@ -12,7 +12,7 @@ import com.thinkbox.md.model.Historical;
 import com.thinkbox.md.repository.HistoricalRepository;
 
 @Component
-public class StorageService {
+public class StoreService {
 
 	@Autowired
 	private HistoricalRepository historicalRepository;

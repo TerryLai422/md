@@ -24,9 +24,9 @@ import com.thinkbox.md.config.MapValueParameter;
 import com.thinkbox.md.util.CSVFileReader;
 
 @Component
-public class FileParserService {
+public class FileParseService {
 
-	private final Logger logger = LoggerFactory.getLogger(FileParserService.class);
+	private final Logger logger = LoggerFactory.getLogger(FileParseService.class);
 
 	private final static String USER_HOME = "user.home";
 

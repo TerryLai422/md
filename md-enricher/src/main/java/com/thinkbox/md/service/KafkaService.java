@@ -24,7 +24,7 @@ public class KafkaService {
 	private KafkaTemplate<String, List<Map<String, Object>>> kafkaTemplate;
 
 	@Autowired
-	private EnricherService consolidatorService;
+	private EnrichService consolidatorService;
 	
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 

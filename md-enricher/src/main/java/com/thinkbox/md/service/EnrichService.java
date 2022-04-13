@@ -16,9 +16,9 @@ import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.MapValueParameter;
 
 @Component
-public class EnricherService {
+public class EnrichService {
 
-	private final Logger logger = LoggerFactory.getLogger(EnricherService.class);
+	private final Logger logger = LoggerFactory.getLogger(EnrichService.class);
 	
 	@Autowired
 	private MapKeyParameter mapKey;

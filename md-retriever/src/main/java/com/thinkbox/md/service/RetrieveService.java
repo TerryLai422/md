@@ -15,9 +15,9 @@ import com.thinkbox.md.request.YahooHistoricalRequest;
 import com.thinkbox.md.request.YahooInfoRequest;
 
 @Component
-public class RetrieverService {
+public class RetrieveService {
 
-	private final Logger logger = LoggerFactory.getLogger(RetrieverService.class);
+	private final Logger logger = LoggerFactory.getLogger(RetrieveService.class);
 
 	private final static String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
 
