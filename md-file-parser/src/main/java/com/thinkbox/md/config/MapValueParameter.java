@@ -10,8 +10,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Configuration
 @ConfigurationProperties(prefix = "map-value-parameter")
 public class MapValueParameter {
