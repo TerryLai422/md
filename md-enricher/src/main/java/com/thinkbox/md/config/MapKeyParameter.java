@@ -82,4 +82,13 @@ public class MapKeyParameter {
 
 	private String toYearForWeek;
 	
+	// suffix
+	private String suffixMA;
+	
+	private String suffixSum;
+	
+	private String suffixFirst;
+	
+	private String suffixSize;
+	
 }

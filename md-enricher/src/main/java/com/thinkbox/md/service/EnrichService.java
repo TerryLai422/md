@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.thinkbox.md.component.SimpleMovingAverage;
+import com.thinkbox.md.config.IndicatorProperties;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.MapValueParameter;
 
@@ -27,18 +28,28 @@ public class EnrichService {
 	@Autowired
 	private MapValueParameter mapValue;
 
+	@Autowired
+	private IndicatorProperties indicatorProperties;
+
+	private List<SimpleMovingAverage> getSMAList() {
+		List<SimpleMovingAverage> list = new ArrayList<>();
+		for (Integer i:indicatorProperties.getSma()) {
+			list.add(new SimpleMovingAverage(i));
+		}
+		return list;
+	}
+
 	public List<Map<String, Object>> enrich(List<Map<String, Object>> list) {
-		final List<SimpleMovingAverage> smaList = Arrays.asList(new SimpleMovingAverage(21),
-				new SimpleMovingAverage(50));
+		final List<SimpleMovingAverage> smaList = getSMAList();
 		return list.stream().skip(1)
 				.sorted((i, j) -> i.get(mapKey.getDate()).toString().compareTo(j.get(mapKey.getDate()).toString()))
 				.map(x -> {
 					for (SimpleMovingAverage sma : smaList) {
-						sma.add((Double) x.get("close"));
-						x.put(sma.getPrefix() + "ma", sma.getAverage());
-						x.put(sma.getPrefix() + "sum", sma.getSum());
-						x.put(sma.getPrefix() + "first", sma.getFirst());
-						x.put(sma.getPrefix() + "size", sma.getSize());
+						sma.add((Double) x.get(mapKey.getClose()));
+						x.put(sma.getPrefix() + mapKey.getSuffixMA(), sma.getAverage());
+						x.put(sma.getPrefix() + mapKey.getSuffixSum(), sma.getSum());
+						x.put(sma.getPrefix() + mapKey.getSuffixFirst(), sma.getFirst());
+						x.put(sma.getPrefix() + mapKey.getSuffixSize(), sma.getSize());
 					}
 					return x;
 				}).collect(Collectors.toList());
