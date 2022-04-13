@@ -91,4 +91,19 @@ public class MapKeyParameter {
 	
 	private String suffixSize;
 	
+	private String suffixHigh;
+	
+	private String suffixLow;
+	
+	private String historicalHigh;
+	
+	private String historicalLow;
+	
+	private String historicalHighDate;
+	
+	private String historicalLowDate;
+	
+	private String newHigh52W;
+	
+	private String newLow52W;
 }
