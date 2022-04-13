@@ -14,7 +14,7 @@ import lombok.Setter;
 @Setter
 @Configuration
 @ConfigurationProperties(prefix = "indicator")
-public class IndicatorConfig {
+public class IndicatorProperties {
 
 	private List<Integer> sma;
 	
