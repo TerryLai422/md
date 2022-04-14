@@ -3,9 +3,7 @@ package com.thinkbox.md.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
@@ -84,4 +82,28 @@ public class MapKeyParameter {
 
 	private String toYearForWeek;
 	
+	// suffix
+	private String suffixMA;
+	
+	private String suffixSum;
+	
+	private String suffixFirst;
+	
+	private String suffixSize;
+	
+	private String suffixHigh;
+	
+	private String suffixLow;
+	
+	private String historicalHigh;
+	
+	private String historicalLow;
+	
+	private String historicalHighDate;
+	
+	private String historicalLowDate;
+	
+	private String newHigh52W;
+	
+	private String newLow52W;
 }
