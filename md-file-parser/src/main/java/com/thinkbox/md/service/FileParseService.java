@@ -2,6 +2,7 @@ package com.thinkbox.md.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -19,6 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.MapValueParameter;
 import com.thinkbox.md.util.CSVFileReader;
@@ -34,7 +38,11 @@ public class FileParseService {
 
 	private final static String EXCHANGE_DIRECTORY = "exchange";
 
-	private final static String HISTORICAL_DAILY_FILE_POSTFIX = "-d-historical";
+	private final static String INFO_DIRECTORY = "info";
+
+	private final static String INFO_FILE_SUFFIX = "-info";
+
+	private final static String HISTORICAL_DAILY_FILE_SUFFIX = "-d-historical";
 
 	private final static String FILE_EXTENSION = ".txt";
 
@@ -49,11 +57,10 @@ public class FileParseService {
 
 	@Autowired
 	private MapKeyParameter mapKey;
-	
+
 	@Autowired
 	private MapValueParameter mapValue;
-	
-	
+
 	@PostConstruct
 	public void init() {
 		if (dataDirectory != null && dataDirectory.equals("-")) {
@@ -64,7 +71,7 @@ public class FileParseService {
 	public List<Map<String, Object>> parseHistoricalFile(final String symbol) throws IOException {
 
 		String fileName = dataDirectory + File.separator + HISTORICAL_DIRECTORY + File.separator + symbol
-				+ HISTORICAL_DAILY_FILE_POSTFIX + FILE_EXTENSION;
+				+ HISTORICAL_DAILY_FILE_SUFFIX + FILE_EXTENSION;
 
 		logger.info(fileName);
 
@@ -103,8 +110,7 @@ public class FileParseService {
 				map.put(mapKey.getWeekOfYear(), weekOfYear);
 				map.put(mapKey.getDayOfWeek(), calendar.get(Calendar.DAY_OF_WEEK));
 				if (weekOfYear == 1 && ((year % 4 != 0 && dayOfYear >= 362)
-						|| (((year % 4 == 0 && year % 100 != 0) || year % 400 == 0)
-								&& dayOfYear >= 363))) {
+						|| (((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) && dayOfYear >= 363))) {
 					map.put(mapKey.getYearForWeek(), year + 1);
 				} else {
 					map.put(mapKey.getYearForWeek(), year);
@@ -163,16 +169,31 @@ public class FileParseService {
 		List<Map<String, Object>> mapList = list.stream().map(x -> {
 			Map<String, Object> map = new TreeMap<String, Object>();
 			map.put(mapKey.getSymbol(), x[0]);
-			map.put("name", x[1]);
+			map.put(mapKey.getName(), x[1]);
+			map.put(mapKey.getExchange(), new String(exchange));
 			return map;
 		}).collect(Collectors.toList());
 
 		Map<String, Object> index = new TreeMap<String, Object>();
-		index.put("exchange", new String(exchange));
+		index.put(mapKey.getExchange(), new String(exchange));
 		index.put(mapKey.getTotal(), Long.valueOf(mapList.size()));
 		mapList.add(0, index);
 
 		return mapList;
 	}
 
+	public Map<String, Object> parseInfoFile(String symbol) throws IOException {
+
+		String fileName = dataDirectory + File.separator + INFO_DIRECTORY + File.separator + symbol + INFO_FILE_SUFFIX
+				+ FILE_EXTENSION;
+
+		File file = new File(fileName);
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		Map<String, Object> map = mapper.readValue(file, new TypeReference<Map<String, Object>>() {
+		});
+
+		return map;
+	}
 }
