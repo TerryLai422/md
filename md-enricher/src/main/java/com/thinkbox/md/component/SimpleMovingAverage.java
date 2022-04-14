@@ -38,7 +38,7 @@ public class SimpleMovingAverage {
 		queue.add(close);
 		sum += close;
 		
-		map.put(getPrefix() + mapKey.getSuffixMA(), getAverage());
+		map.put(getPrefix() + mapKey.getSuffixValue(), getAverage());
 		map.put(getPrefix() + mapKey.getSuffixSum(), sum);
 		map.put(getPrefix() + mapKey.getSuffixFirst(), first);
 		map.put(getPrefix() + mapKey.getSuffixSize(), size);

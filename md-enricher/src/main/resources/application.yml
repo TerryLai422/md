@@ -57,7 +57,7 @@ map-key-parameter:
   toWeekOfYear: toWeekOfYear
   toDayOfWeek: toDayOfWeek
   toYearForWeek: toYearForWeek 
-  suffixMA: ma
+  suffixValue: value
   suffixSum: sum
   suffixFirst: first
   suffixSize: size
@@ -67,8 +67,8 @@ map-key-parameter:
   historicalLow: historicalLow
   historicalHighDate: historicalHighDate
   historicalLowDate: historicalLowDate
-  newHigh52W: newHigh
-  newLow52W: newLow
+  newHigh: newHigh
+  newLow: newLow
   
 map-value-parameter:
   daily: daily

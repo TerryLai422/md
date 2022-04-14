@@ -91,6 +91,6 @@ public class WeekHighLow {
 	}
 
 	private String getPrefix() {
-		return "weekHL-" + period + "W-";
+		return "week" + period + "-";
 	}
 }
