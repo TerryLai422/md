@@ -6,15 +6,11 @@ import java.util.Queue;
 
 import com.thinkbox.md.config.MapKeyParameter;
 
-public class WeekHighLow {
+public class WeekHighLow extends Indicator {
 
 	private Queue<Integer> dayQueue = new LinkedList<>();
 
 	private Queue<Double> dataQueue = new LinkedList<>();
-
-	private MapKeyParameter mapKey;
-
-	private int period;
 
 	private int limit;
 
@@ -26,9 +22,12 @@ public class WeekHighLow {
 	
 	private String historicalLowDate;
 	
+	private WeekHighLow() {
+		super();
+	}
+	
 	public WeekHighLow(MapKeyParameter mapKey, int period) {
-		this.mapKey = mapKey;
-		this.period = period;
+		super(mapKey, period);
 		
 		if (period == 52) {
 			this.limit = 1000;

@@ -6,23 +6,22 @@ import java.util.Queue;
 
 import com.thinkbox.md.config.MapKeyParameter;
 
-public class SimpleMovingAverage {
+public class SimpleMovingAverage extends Indicator {
 
 	private Queue<Double> queue = new LinkedList<>();
 
-	private MapKeyParameter mapKey;
-
-	private int period;
-	
 	private int size = 0;
 	
 	private double sum = 0;
 	
-	private double first = 0;
+	private double first = 0;	
+
+	private SimpleMovingAverage() {
+		super();
+	}
 	
 	public SimpleMovingAverage(MapKeyParameter mapKey, int period) {
-		this.mapKey = mapKey;
-		this.period = period;
+		super(mapKey, period);
 	}
 
 	public void add(Map<String, Object> map) {
