@@ -45,7 +45,7 @@ public class EnrichService {
 		
 		final List<SimpleMovingAverage> smaList = getSMAList();
 		final WeekHighLow weekHighLow = new WeekHighLow(mapKey, 52);
-		final VolumeAverage volumeAverage = new VolumeAverage(50);
+		final VolumeAverage volumeAverage = new VolumeAverage(mapKey, 50);
 		
 		return list.stream().skip(1)
 				.sorted((i, j) -> i.get(mapKey.getDate()).toString().compareTo(j.get(mapKey.getDate()).toString()))
@@ -56,9 +56,8 @@ public class EnrichService {
 						sma.add(x);
 					}
 					weekHighLow.add(x);
+					volumeAverage.add(x);
 
-//					volumeAverage.add((Long) x.get(mapKey.getVolume()));
-					x.put(volumeAverage.getPrefix(), volumeAverage.getAverage());
 					return x;
 				}).collect(Collectors.toList());
 	}
