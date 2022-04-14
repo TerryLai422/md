@@ -36,7 +36,7 @@ public class EnrichService {
 	private List<SimpleMovingAverage> getSMAList() {
 		List<SimpleMovingAverage> list = new ArrayList<>();
 		for (Integer i : indicatorProperties.getSma()) {
-			list.add(new SimpleMovingAverage(i, this.mapKey));
+			list.add(new SimpleMovingAverage(mapKey, i));
 		}
 		return list;
 	}
@@ -44,34 +44,19 @@ public class EnrichService {
 	public List<Map<String, Object>> enrich(List<Map<String, Object>> list) {
 		
 		final List<SimpleMovingAverage> smaList = getSMAList();
-		final WeekHighLow weekHighLow = new WeekHighLow(52);
+		final WeekHighLow weekHighLow = new WeekHighLow(mapKey, 52);
 		final VolumeAverage volumeAverage = new VolumeAverage(50);
 		
 		return list.stream().skip(1)
 				.sorted((i, j) -> i.get(mapKey.getDate()).toString().compareTo(j.get(mapKey.getDate()).toString()))
 				.map(x -> {
 					
-					Double close = (Double) x.get(mapKey.getClose());
 					// SMA
 					for (SimpleMovingAverage sma : smaList) {
 						sma.add(x);
 					}
-					
-					// Week High Low
-					/*
-					weekHighLow.add((Integer) x.get(mapKey.getYear()), (Integer) x.get(mapKey.getDayOfYear()), x.get(mapKey.getDate()).toString(),
-							close);
-					Double week52High = weekHighLow.getHigh();
-					Double week52Low = weekHighLow.getLow();
-					x.put(mapKey.getNewHigh52W(), close.equals(week52High));
-					x.put(mapKey.getNewLow52W(), close.equals(week52Low));
-					x.put(mapKey.getHistoricalHigh(), weekHighLow.getHistoricalHigh());
-					x.put(mapKey.getHistoricalHighDate(), weekHighLow.getHistoricalHighDate());
-					x.put(mapKey.getHistoricalLow(), weekHighLow.getHistoricalLow());
-					x.put(mapKey.getHistoricalLowDate(), weekHighLow.getHistoricalLowDate());
-					x.put(weekHighLow.getPrefix() + mapKey.getSuffixHigh(), week52High);
-					x.put(weekHighLow.getPrefix() + mapKey.getSuffixLow(), week52Low);
-					*/
+					weekHighLow.add(x);
+
 //					volumeAverage.add((Long) x.get(mapKey.getVolume()));
 					x.put(volumeAverage.getPrefix(), volumeAverage.getAverage());
 					return x;
