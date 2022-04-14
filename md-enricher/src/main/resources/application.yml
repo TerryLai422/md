@@ -67,8 +67,8 @@ map-key-parameter:
   historicalLow: historicalLow
   historicalHighDate: historicalHighDate
   historicalLowDate: historicalLowDate
-  newHigh52W: newHigh52W
-  newLow52W: newLow52W
+  newHigh52W: newHigh
+  newLow52W: newLow
   
 map-value-parameter:
   daily: daily

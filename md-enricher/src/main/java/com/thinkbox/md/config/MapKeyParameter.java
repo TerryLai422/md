@@ -103,7 +103,7 @@ public class MapKeyParameter {
 	
 	private String historicalLowDate;
 	
-	private String newHigh52W;
+	private String newHigh;
 	
-	private String newLow52W;
+	private String newLow;
 }
