@@ -6,8 +6,6 @@ import java.util.Queue;
 
 import com.thinkbox.md.config.MapKeyParameter;
 
-import lombok.Getter;
-
 public class SimpleMovingAverage {
 
 	private Queue<Double> queue = new LinkedList<>();
@@ -22,9 +20,9 @@ public class SimpleMovingAverage {
 	
 	private double first = 0;
 	
-	public SimpleMovingAverage(int period, MapKeyParameter mapKey) {
-		this.period = period;
+	public SimpleMovingAverage(MapKeyParameter mapKey, int period) {
 		this.mapKey = mapKey;
+		this.period = period;
 	}
 
 	public void add(Map<String, Object> map) {
@@ -54,6 +52,6 @@ public class SimpleMovingAverage {
 	}
 	
 	private String getPrefix() {
-		return "SMA-" + period + "-";
+		return "sma-" + period + "-";
 	}
 }
