@@ -31,3 +31,5 @@ rest-parameter:
       - symbol
     parse.exchange.data:
       - exchange
+    parse.info.data:
+      - symbol
