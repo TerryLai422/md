@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.thinkbox.md.component.SimpleMovingAverage;
 import com.thinkbox.md.component.WeekHighLow;
+import com.thinkbox.md.component.VolumeAverage;
 import com.thinkbox.md.config.IndicatorProperties;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.MapValueParameter;
@@ -35,14 +36,17 @@ public class EnrichService {
 	private List<SimpleMovingAverage> getSMAList() {
 		List<SimpleMovingAverage> list = new ArrayList<>();
 		for (Integer i : indicatorProperties.getSma()) {
-			list.add(new SimpleMovingAverage(i));
+			list.add(new SimpleMovingAverage(i, this.mapKey));
 		}
 		return list;
 	}
 
 	public List<Map<String, Object>> enrich(List<Map<String, Object>> list) {
+		
 		final List<SimpleMovingAverage> smaList = getSMAList();
 		final WeekHighLow weekHighLow = new WeekHighLow(52);
+		final VolumeAverage volumeAverage = new VolumeAverage(50);
+		
 		return list.stream().skip(1)
 				.sorted((i, j) -> i.get(mapKey.getDate()).toString().compareTo(j.get(mapKey.getDate()).toString()))
 				.map(x -> {
@@ -50,14 +54,11 @@ public class EnrichService {
 					Double close = (Double) x.get(mapKey.getClose());
 					// SMA
 					for (SimpleMovingAverage sma : smaList) {
-						sma.add((Double) close);
-						x.put(sma.getPrefix() + mapKey.getSuffixMA(), sma.getAverage());
-						x.put(sma.getPrefix() + mapKey.getSuffixSum(), sma.getSum());
-						x.put(sma.getPrefix() + mapKey.getSuffixFirst(), sma.getFirst());
-						x.put(sma.getPrefix() + mapKey.getSuffixSize(), sma.getSize());
+						sma.add(x);
 					}
 					
 					// Week High Low
+					/*
 					weekHighLow.add((Integer) x.get(mapKey.getYear()), (Integer) x.get(mapKey.getDayOfYear()), x.get(mapKey.getDate()).toString(),
 							close);
 					Double week52High = weekHighLow.getHigh();
@@ -70,7 +71,9 @@ public class EnrichService {
 					x.put(mapKey.getHistoricalLowDate(), weekHighLow.getHistoricalLowDate());
 					x.put(weekHighLow.getPrefix() + mapKey.getSuffixHigh(), week52High);
 					x.put(weekHighLow.getPrefix() + mapKey.getSuffixLow(), week52Low);
-					
+					*/
+//					volumeAverage.add((Long) x.get(mapKey.getVolume()));
+					x.put(volumeAverage.getPrefix(), volumeAverage.getAverage());
 					return x;
 				}).collect(Collectors.toList());
 	}

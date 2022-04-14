@@ -1,30 +1,34 @@
 package com.thinkbox.md.component;
 
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
+
+import com.thinkbox.md.config.MapKeyParameter;
 
 import lombok.Getter;
 
 public class SimpleMovingAverage {
 
 	private Queue<Double> queue = new LinkedList<>();
-	
+
+	private MapKeyParameter mapKey;
+
 	private int period;
 	
-	@Getter
 	private int size = 0;
 	
-	@Getter
 	private double sum = 0;
 	
-	@Getter
 	private double first = 0;
 	
-	public SimpleMovingAverage(int period) {
+	public SimpleMovingAverage(int period, MapKeyParameter mapKey) {
 		this.period = period;
+		this.mapKey = mapKey;
 	}
-	
-	public void add(Double data) {
+
+	public void add(Map<String, Object> map) {
+		Double close = (Double) map.get(mapKey.getClose());
 		
 		if (size >= period) {
 			first = queue.poll();
@@ -33,18 +37,23 @@ public class SimpleMovingAverage {
 			size++;
 		}
  		
-		queue.add(data);
-		sum += data;
+		queue.add(close);
+		sum += close;
+		
+		map.put(getPrefix() + mapKey.getSuffixMA(), getAverage());
+		map.put(getPrefix() + mapKey.getSuffixSum(), sum);
+		map.put(getPrefix() + mapKey.getSuffixFirst(), first);
+		map.put(getPrefix() + mapKey.getSuffixSize(), size);
 	}
 	
-	public Double getAverage() {
+	private Double getAverage() {
 		if (size < period) 
 			return 0d;
 		
 		return sum/period;
 	}
 	
-	public String getPrefix() {
+	private String getPrefix() {
 		return "SMA-" + period + "-";
 	}
 }
