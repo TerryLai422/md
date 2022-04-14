@@ -39,6 +39,7 @@ public class KafkaService {
 	@KafkaListener(topics = TOPIC_SAVE_EXCHANGE_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveExchangeList(List<Map<String, Object>> list) {
 		logger.info("Received topic: {} -> list: {}", TOPIC_SAVE_EXCHANGE_DATA_LIST, list.toString());
+		storeService.saveInstrumentList(list);
 	}
 
 	@Async(ASYNC_EXECUTOR)

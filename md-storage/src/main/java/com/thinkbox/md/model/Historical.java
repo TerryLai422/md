@@ -36,6 +36,8 @@ public class Historical {
 	
 	private Integer dayOfWeek;
 	
+	private Integer dayOfYear;
+ 
 	private Double prevClose;
 	
 	private Double open;

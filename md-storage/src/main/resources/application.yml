@@ -26,8 +26,56 @@ tpd:
   messages-per-request: 10    
   
 server:
-  port: 8186
+  port: 8184
    
 md-storage:
   controller:
     enabled: true
+    
+    
+map-key-parameter:
+  total: total
+  type: type
+  exchange: exchange
+  name: name
+  symbol: symbol
+  date: date
+  open: open
+  high: high
+  low: low    
+  close: close
+  adjClose: adjClose
+  volume: volume
+  year: year
+  month: month
+  day: day
+  weekOfYear: weekOfYear
+  yearForWeek: yearForWeek
+  dayOfYear: dayOfYear
+  dayOfWeek: dayOfWeek  
+  fromDate: fromDate
+  fromYear: fromYear
+  fromMonth: fromMonth
+  fromDay: fromDay
+  fromWeekOfYear: fromWeekOfYear
+  fromDayOfWeek: fromDayOfWeek
+  fromYearForWeek: fromYearForWeek
+  toDate: toDate
+  toYear: toYear
+  toMonth: toMonth
+  toDay: toDay
+  toWeekOfYear: toWeekOfYear
+  toDayOfWeek: toDayOfWeek
+  toYearForWeek: toYearForWeek 
+  suffixMA: ma
+  suffixSum: sum
+  suffixFirst: first
+  suffixSize: size
+  suffixHigh: high
+  suffixLow: low
+  historicalHigh: historicalHigh
+  historicalLow: historicalLow
+  historicalHighDate: historicalHighDate
+  historicalLowDate: historicalLowDate
+  newHigh52W: newHigh52W
+  newLow52W: newLow52W
