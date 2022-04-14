@@ -83,7 +83,7 @@ public class MapKeyParameter {
 	private String toYearForWeek;
 	
 	// suffix
-	private String suffixMA;
+	private String suffixValue;
 	
 	private String suffixSum;
 	
