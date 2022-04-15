@@ -10,8 +10,6 @@ public class SimpleMovingAverage extends Indicator {
 
 	private Queue<Double> queue = new LinkedList<>();
 
-	private int size = 0;
-	
 	private double sum = 0;
 	
 	private double first = 0;	
@@ -27,24 +25,25 @@ public class SimpleMovingAverage extends Indicator {
 	public void add(Map<String, Object> map) {
 		Double close = (Double) map.get(mapKey.getClose());
 		
-		if (size >= period) {
-			first = queue.poll();
-			sum -= first;
-		} else {
-			size++;
-		}
- 		
 		queue.add(close);
 		sum += close;
+
+		
+		if (queue.size() > period) {
+			sum -= queue.poll();
+		}
+				
+		first = queue.peek();
+
 		
 		map.put(getPrefix() + mapKey.getSuffixValue(), getAverage());
 		map.put(getPrefix() + mapKey.getSuffixSum(), sum);
 		map.put(getPrefix() + mapKey.getSuffixFirst(), first);
-		map.put(getPrefix() + mapKey.getSuffixSize(), size);
+		map.put(getPrefix() + mapKey.getSuffixSize(), queue.size());
 	}
 	
 	private Double getAverage() {
-		if (size < period) 
+		if (queue.size() < period) 
 			return 0d;
 		
 		return sum/period;

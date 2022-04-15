@@ -10,8 +10,6 @@ public class VolumeAverage extends Indicator {
 
 	private Queue<Long> queue = new LinkedList<>();
 
-	private int size = 0;
-
 	private Long sum = 0L;
 
 	private Long first;
@@ -35,25 +33,26 @@ public class VolumeAverage extends Indicator {
 			volume = (Long) vol;
 		}
 
-		if (size >= period) {
-			first = queue.poll();
-			sum -= first;
-		} else {
-			size++;
-		}
-
 		queue.add(volume);
 		sum += volume;
+
+		
+		if (queue.size() > period) {
+			sum -= queue.poll();
+		}
+				
+		first = queue.peek();
+
 
 		map.put(getPrefix() + mapKey.getSuffixValue(), getAverage());
 		map.put(getPrefix() + mapKey.getSuffixSum(), sum);
 		map.put(getPrefix() + mapKey.getSuffixFirst(), first);
-		map.put(getPrefix() + mapKey.getSuffixSize(), size);
+		map.put(getPrefix() + mapKey.getSuffixSize(), queue.size());
 
 	}
 
 	private Double getAverage() {
-		if (size < period)
+		if (queue.size() < period)
 			return 0d;
 
 		return sum.doubleValue() / period;
