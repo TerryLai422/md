@@ -12,8 +12,6 @@ public class VolumeAverage extends Indicator {
 
 	private Long sum = 0L;
 
-	private Long first;
-
 	private VolumeAverage() {
 		super();
 	}
@@ -41,13 +39,7 @@ public class VolumeAverage extends Indicator {
 			sum -= queue.poll();
 		}
 				
-		first = queue.peek();
-
-
-		map.put(getPrefix() + mapKey.getSuffixValue(), getAverage());
-		map.put(getPrefix() + mapKey.getSuffixSum(), sum);
-		map.put(getPrefix() + mapKey.getSuffixFirst(), first);
-		map.put(getPrefix() + mapKey.getSuffixSize(), queue.size());
+		map.put(getKey(), getAverage());
 
 	}
 
@@ -58,7 +50,7 @@ public class VolumeAverage extends Indicator {
 		return sum.doubleValue() / period;
 	}
 
-	private String getPrefix() {
-		return "AvgVol" + period + "-";
+	private String getKey() {
+		return "AvgVol" + period;
 	}
 }

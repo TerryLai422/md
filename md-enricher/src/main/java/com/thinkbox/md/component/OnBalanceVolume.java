@@ -45,10 +45,10 @@ public class OnBalanceVolume extends Indicator {
 
 		last = close;
 
-		map.put(getPrefix(), sum);
+		map.put(getKey(), sum);
 	}
 
-	private String getPrefix() {
+	private String getKey() {
 		return "OBV";
 	}
 }
