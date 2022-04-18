@@ -1,9 +1,5 @@
 package com.thinkbox.md.request;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
@@ -20,6 +16,8 @@ public abstract class YahooRequest {
 	
 	protected static final String INFO_FILE_EXTENSION = "-info.txt";
 
+	protected static final String DETAIL_FILE_EXTENSION = "-detail.txt";
+
 	protected static final int CONNECTION_TIMEOUT = Integer
 			.parseInt(System.getProperty("yahoofinance.connection.timeout", "10000"));
 
@@ -27,6 +25,8 @@ public abstract class YahooRequest {
 			"https://query1.finance.yahoo.com/v7/finance/download/");
 
 	protected static final String QUOTES_QUERY1V7_BASE_URL = System.getProperty("yahoofinance.baseurl.quotesquery1v7", "https://query1.finance.yahoo.com/v7/finance/quote");
+
+	protected static final String QUOTES_QUERY2V10_BASE_URL = System.getProperty("yahoofinance.baseurl.quotesquery2v10", "https://query2.finance.yahoo.com/v10/finance/quoteSummary/");
 
 	protected static final String UTF8_ENCODING = "UTF-8";
 	
