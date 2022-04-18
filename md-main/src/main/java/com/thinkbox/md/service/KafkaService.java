@@ -21,7 +21,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, Map<String, Object> map) {
-		logger.info(String.format("Sent topic: {} -> {}", topic, map));
+		logger.info("Sent topic: {} -> {}", topic, map.toString());
 		kafkaTemplate.send(topic, map);
 	}
 

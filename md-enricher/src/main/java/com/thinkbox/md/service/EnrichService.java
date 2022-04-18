@@ -42,17 +42,17 @@ public class EnrichService {
 		return list;
 	}
 
-	public List<Map<String, Object>> enrich(List<Map<String, Object>> list) {
-		
+	public List<Map<String, Object>> enrichHistorical(List<Map<String, Object>> list) {
+
 		final List<SimpleMovingAverage> smaList = getSMAList();
 		final WeekHighLow weekHighLow = new WeekHighLow(mapKey, 52);
 		final VolumeAverage volumeAverage = new VolumeAverage(mapKey, 50);
 		final OnBalanceVolume onBalanceVolume = new OnBalanceVolume(mapKey, 0);
-		
+
 		return list.stream().skip(1)
 				.sorted((i, j) -> i.get(mapKey.getDate()).toString().compareTo(j.get(mapKey.getDate()).toString()))
 				.map(x -> {
-					
+
 					// SMA
 					for (SimpleMovingAverage sma : smaList) {
 						sma.add(x);
@@ -60,9 +60,45 @@ public class EnrichService {
 					weekHighLow.add(x);
 					volumeAverage.add(x);
 					onBalanceVolume.add(x);
-					
+
 					return x;
 				}).collect(Collectors.toList());
+	}
+
+	public List<Map<String, Object>> enrichExchange(List<Map<String, Object>> list) {
+
+		Map<String, Object> first = list.get(0);
+		final String exchange = (String) first.get(mapKey.getExchange());
+		final String suffix = (exchange.equals("TSX")) ? ".TO" : (exchange.equals("TSXV")) ? ".V" : "";
+		final boolean neededSuffix = (exchange.equals("TSX") || exchange.equals("TSXV")) ? true : false;
+
+		List<Map<String, Object>> outputList = list.stream().skip(1).map(x -> {
+			String symbol = (String) x.get(mapKey.getSymbol());
+			String ticker = symbol;
+			
+			if (neededSuffix) {
+				long count = symbol.chars().filter(ch -> ch == '.').count();
+				if (count == 0) {
+					ticker = symbol + suffix;
+				} else if (count == 1) {
+					ticker = symbol.replace('.', '-') + suffix;
+				} else {
+					ticker = "-";
+				}
+			}
+
+			x.put(mapKey.getTicker(), ticker);
+			
+			return x;
+		}).collect(Collectors.toList());
+		
+		Map<String, Object> index = new TreeMap<String, Object>();
+
+		index.put(mapKey.getTotal(), Long.valueOf(outputList.size()));
+
+		outputList.add(0, index);
+		
+		return outputList;
 	}
 
 	public List<Map<String, Object>> consolidate(String type, List<Map<String, Object>> list) {

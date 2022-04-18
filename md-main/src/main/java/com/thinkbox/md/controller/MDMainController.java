@@ -32,14 +32,36 @@ public class MDMainController {
 	@PostMapping(consumes = APPLICATION_JSON_TYPE, produces = APPLICATION_JSON_TYPE)
 	public ResponseEntity<Object> process(@RequestBody Map<String, Object> map) {
 		logger.info("Received map: {}", map.toString());
-		String topic = map.getOrDefault("topic", "-").toString();
 
-		if (!topic.equals("-")) {
+		Object objNext = map.get("next");
+		int next = 0;
+		if (objNext == null) {
+			map.put("next", next);
+		} else {
+			next = Integer.valueOf(objNext.toString());
+		}
+
+		Object objStep = map.get("steps");
+		if (objStep == null) {
+			logger.info("Missing Steps -> {}", map.toString());
+			return ResponseEntity.badRequest().body("Missing Steps");
+		}
+
+		@SuppressWarnings("unchecked")
+		List<String> stepList = (List<String>) objStep;
+		if (stepList.size() == 0) {
+			logger.info("Empty Step -> {}", map.toString());
+			return ResponseEntity.badRequest().body("Empty Step");			
+		}
+
+		String topic = stepList.get(next).toString();
+
+		if (topic != null) {
 			List<String> parameterList = restParameterProperties.getTopic().get(topic);
 
 			if (parameterList == null) {
-				logger.info("Cannot find topic: {}", topic);
-				return ResponseEntity.badRequest().body("Cannot find topic: " + topic);
+				logger.info("Cannot find matched topic configuration -> {}", topic);
+				return ResponseEntity.badRequest().body("Cannot find matched topic configuration: " + topic);
 			} else {
 				String missing = "";
 
@@ -50,16 +72,16 @@ public class MDMainController {
 				}
 
 				if (!missing.equals("")) {
-					logger.info("Missing parameter -> {}", missing);
+					logger.info("Missing Parameter -> {}", missing);
 					return ResponseEntity.badRequest().body("Missing Parameter: " + missing);
 
 				}
-				kafKaService.publish(topic, map);
 
+				kafKaService.publish(topic, map);
 			}
 		} else {
-			logger.info("Missing topic -> {}", map.toString());
-			return ResponseEntity.badRequest().body("Missing Topic");
+			logger.info("Incorrect Step -> {}", map.toString());
+			return ResponseEntity.badRequest().body("Incorrect Step");
 		}
 
 		return ResponseEntity.ok(map);

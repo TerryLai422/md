@@ -12,6 +12,8 @@ import lombok.Setter;
 @ConfigurationProperties(prefix = "map-key-parameter")
 public class MapKeyParameter {
 
+	private String wait;
+	
 	private String steps;
 	
 	private String next;

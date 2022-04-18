@@ -23,13 +23,23 @@ tpd:
 rest-parameter:
   topic:
     retrieve.info.data:
+      - steps
+      - next
       - symbol
     retrieve.historical.data:
+      - steps
+      - next
       - symbol
       - date
     parse.historical.data:
+      - steps
+      - next
       - symbol
     parse.exchange.data:
+      - steps
+      - next
       - exchange
     parse.info.data:
+      - steps
+      - next
       - symbol

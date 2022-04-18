@@ -18,16 +18,55 @@ tpd:
   messages-per-request: 10
     
 server:
-  port: 8188
+  port: 8183
 
-parameter:
-  topic:
-    retrieve.info.data:
-      - symbol
-    retrieve.historical.data:
-      - symbol
-      - date
-    parse.historical.data:
-      - symbol
-    parse.exchange.data:
-      - exchange
+map-key-parameter:
+  wait: wait
+  steps: steps
+  next: next
+  total: total
+  type: type
+  exchange: exchange
+  name: name
+  ticker: ticker
+  symbol: symbol
+  date: date
+  open: open
+  high: high
+  low: low    
+  close: close
+  adjClose: adjClose
+  volume: volume
+  year: year
+  month: month
+  day: day
+  weekOfYear: weekOfYear
+  yearForWeek: yearForWeek
+  dayOfYear: dayOfYear
+  dayOfWeek: dayOfWeek  
+  fromDate: fromDate
+  fromYear: fromYear
+  fromMonth: fromMonth
+  fromDay: fromDay
+  fromWeekOfYear: fromWeekOfYear
+  fromDayOfWeek: fromDayOfWeek
+  fromYearForWeek: fromYearForWeek
+  toDate: toDate
+  toYear: toYear
+  toMonth: toMonth
+  toDay: toDay
+  toWeekOfYear: toWeekOfYear
+  toDayOfWeek: toDayOfWeek
+  toYearForWeek: toYearForWeek 
+  suffixValue: value
+  suffixSum: sum
+  suffixFirst: first
+  suffixSize: size
+  suffixHigh: high
+  suffixLow: low
+  historicalHigh: historicalHigh
+  historicalLow: historicalLow
+  historicalHighDate: historicalHighDate
+  historicalLowDate: historicalLowDate
+  newHigh: newHigh
+  newLow: newLow

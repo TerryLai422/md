@@ -1,12 +1,12 @@
 server:
-  port: 8186
-  
+  port: 8185
+
 spring:
   application:
-    name: md-file-parser
+    name: md-enricher
   cloud:
     config:
-      enabled: false
+      enabled: false    
   kafka:
     consumer:
       bootstrap-servers: localhost:9092
@@ -18,16 +18,19 @@ spring:
       bootstrap-servers: localhost:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      
+
 tpd:
   topic-name: advice-topic
   messages-per-request: 10    
 
 map-key-parameter:
+  steps: steps
+  next: next
   total: total
   type: type
   exchange: exchange
   name: name
+  ticker: ticker
   symbol: symbol
   date: date
   open: open
@@ -57,7 +60,7 @@ map-key-parameter:
   toWeekOfYear: toWeekOfYear
   toDayOfWeek: toDayOfWeek
   toYearForWeek: toYearForWeek 
-  suffixMA: ma
+  suffixValue: value
   suffixSum: sum
   suffixFirst: first
   suffixSize: size
@@ -67,10 +70,17 @@ map-key-parameter:
   historicalLow: historicalLow
   historicalHighDate: historicalHighDate
   historicalLowDate: historicalLowDate
-  newHigh52W: newHigh52W
-  newLow52W: newLow52W
+  newHigh: newHigh
+  newLow: newLow
   
 map-value-parameter:
-  daily: daily
-  weekly: weekly
-  monthly: monthly
+  daily: D
+  weekly: W 
+  onthly: M
+  
+indicator:
+  sma:
+    - 21
+    - 50
+    - 150
+    - 200

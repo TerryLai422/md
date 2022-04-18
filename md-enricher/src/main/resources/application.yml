@@ -1,5 +1,5 @@
 server:
-  port: 8185
+  port: 8184
 
 spring:
   application:
@@ -24,10 +24,13 @@ tpd:
   messages-per-request: 10    
 
 map-key-parameter:
+  steps: steps
+  next: next
   total: total
   type: type
   exchange: exchange
   name: name
+  ticker: ticker
   symbol: symbol
   date: date
   open: open
@@ -71,9 +74,9 @@ map-key-parameter:
   newLow: newLow
   
 map-value-parameter:
-  daily: daily
-  weekly: weekly
-  monthly: monthly
+  daily: D
+  weekly: W
+  monthly: M
   
 indicator:
   sma:

@@ -2,7 +2,6 @@ package com.thinkbox.md.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -21,7 +20,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.MapValueParameter;
@@ -79,7 +77,7 @@ public class FileParseService {
 
 		List<String[]> list = csvFileReader.read(fileName, COMMA_SEPERATOR, null);
 
-		List<Map<String, Object>> mapList = list.stream().map(x -> {
+		List<Map<String, Object>> outputList = list.stream().map(x -> {
 			Map<String, Object> map = null;
 
 			try {
@@ -128,8 +126,8 @@ public class FileParseService {
 			return map;
 		}).filter(x -> x != null).collect(Collectors.toList());
 
-		Map<String, Object> first = mapList.get(0);
-		Map<String, Object> last = mapList.get(mapList.size() - 1);
+		Map<String, Object> first = outputList.get(0);
+		Map<String, Object> last = outputList.get(outputList.size() - 1);
 
 		Map<String, Object> index = new TreeMap<String, Object>();
 
@@ -149,34 +147,58 @@ public class FileParseService {
 		index.put(mapKey.getToWeekOfYear(), last.get(mapKey.getWeekOfYear()));
 		index.put(mapKey.getToDayOfWeek(), last.get(mapKey.getDayOfWeek()));
 
-		index.put(mapKey.getTotal(), Long.valueOf(mapList.size()));
-		mapList.add(0, index);
+		index.put(mapKey.getTotal(), Long.valueOf(outputList.size()));
 
-		return mapList;
+		outputList.add(0, index);
+
+		return outputList;
 	}
 
-	public List<Map<String, Object>> parseExchangeFile(String exchange) throws IOException {
+	public List<Map<String, Object>> parseExchangeFile(final String exchange) throws IOException {
 
 		String fileName = dataDirectory + File.separator + EXCHANGE_DIRECTORY + File.separator + exchange
 				+ FILE_EXTENSION;
 
 		logger.info(fileName);
 
+		final String suffix = (exchange.equals("TSX")) ? ".TO" : (exchange.equals("TSXV")) ? ".V" : "";
+
+		final boolean neededSuffix = (exchange.equals("TSX") || exchange.equals("TSXV")) ? true : false;
+
 		CSVFileReader csvFileReader = new CSVFileReader();
 
 		List<String[]> list = csvFileReader.read(fileName, TAB_SEPERATOR, null);
 
 		List<Map<String, Object>> mapList = list.stream().map(x -> {
+
+			String symbol = x[0];
+			String ticker = symbol;
+
 			Map<String, Object> map = new TreeMap<String, Object>();
 			map.put(mapKey.getSymbol(), x[0]);
 			map.put(mapKey.getName(), x[1]);
 			map.put(mapKey.getExchange(), new String(exchange));
+
+			if (neededSuffix) {
+				long count = symbol.chars().filter(ch -> ch == '.').count();
+				if (count == 0) {
+					ticker = symbol + suffix;
+				} else if (count == 1) {
+					ticker = symbol.replace('.', '-') + suffix;
+				} else {
+					ticker = "-";
+				}
+			}
+
+			map.put(mapKey.getTicker(), ticker);
+
 			return map;
 		}).collect(Collectors.toList());
 
 		Map<String, Object> index = new TreeMap<String, Object>();
 		index.put(mapKey.getExchange(), new String(exchange));
 		index.put(mapKey.getTotal(), Long.valueOf(mapList.size()));
+
 		mapList.add(0, index);
 
 		return mapList;
