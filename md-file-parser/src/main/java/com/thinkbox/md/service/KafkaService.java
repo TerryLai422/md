@@ -118,9 +118,6 @@ public class KafkaService {
 
 			final String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
 
-			final int finalNext = next;
-			final int totalSteps = getNumberOfTopic(map);
-
 			List<String> list = fileParseService.getSymbols(subExchange);
 
 			list.stream().forEach(x -> {
@@ -209,15 +206,6 @@ public class KafkaService {
 		} catch (IOException e) {
 			logger.info(e.toString());
 		}
-	}
-
-	private int getNumberOfTopic(Map<String, Object> map) {
-
-		Object objStep = map.get(mapKey.getSteps());
-
-		@SuppressWarnings("unchecked")
-		List<String> stepList = (List<String>) objStep;
-		return stepList.size();
 	}
 
 	private String getTopicFromList(Map<String, Object> map, int next) {
