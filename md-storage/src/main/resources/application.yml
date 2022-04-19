@@ -34,10 +34,14 @@ md-storage:
     
     
 map-key-parameter:
+  wait: wait
+  steps: steps
+  next: next
   total: total
   type: type
   exchange: exchange
   name: name
+  ticker: ticker
   symbol: symbol
   date: date
   time: time
@@ -68,9 +72,7 @@ map-key-parameter:
   toWeekOfYear: toWeekOfYear
   toDayOfWeek: toDayOfWeek
   toYearForWeek: toYearForWeek 
-  suffixMA: ma
-  suffixSum: sum
-  suffixFirst: first
+  suffixValue: value
   suffixSize: size
   suffixHigh: high
   suffixLow: low
@@ -78,8 +80,8 @@ map-key-parameter:
   historicalLow: historicalLow
   historicalHighDate: historicalHighDate
   historicalLowDate: historicalLowDate
-  newHigh52W: newHigh52W
-  newLow52W: newLow52W
+  newHigh: newHigh
+  newLow: newLow
   exchangeName: exchangeName
   country: country
   currency: currency

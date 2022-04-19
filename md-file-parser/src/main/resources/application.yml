@@ -24,6 +24,7 @@ tpd:
   messages-per-request: 10    
 
 map-key-parameter:
+  wait: wait
   steps: steps
   next: next
   total: total
@@ -33,6 +34,7 @@ map-key-parameter:
   ticker: ticker
   symbol: symbol
   date: date
+  time: time
   open: open
   high: high
   low: low    
@@ -61,8 +63,6 @@ map-key-parameter:
   toDayOfWeek: toDayOfWeek
   toYearForWeek: toYearForWeek 
   suffixValue: value
-  suffixSum: sum
-  suffixFirst: first
   suffixSize: size
   suffixHigh: high
   suffixLow: low
@@ -72,11 +72,21 @@ map-key-parameter:
   historicalLowDate: historicalLowDate
   newHigh: newHigh
   newLow: newLow
-  
+  exchangeName: exchangeName
+  country: country
+  currency: currency
+  industry: industry
+  sector: sector
+  beta: beta
+  forwardPE: forwardPE
+  priceToBook: priceToBook
+  sharesOutstanding: sharesOutstanding
+  marketCap: marketCap
+    
 map-value-parameter:
   daily: D
-  weekly: W 
-  onthly: M
+  weekly: W
+  monthly: M
   
 indicator:
   sma:
@@ -84,7 +94,7 @@ indicator:
     - 50
     - 150
     - 200
-    
+
 json-node:
   property:
     forwardPE:

@@ -13,7 +13,7 @@ import lombok.Setter;
 public class MapKeyParameter {
 
 	private String wait;
-	
+
 	private String steps;
 	
 	private String next;
@@ -31,7 +31,9 @@ public class MapKeyParameter {
 	private String symbol;
 
 	private String date;
-
+	
+	private String time;
+	
 	private String open;
 
 	private String high;
@@ -92,11 +94,7 @@ public class MapKeyParameter {
 	
 	// suffix
 	private String suffixValue;
-	
-	private String suffixSum;
-	
-	private String suffixFirst;
-	
+
 	private String suffixSize;
 	
 	private String suffixHigh;
@@ -114,4 +112,26 @@ public class MapKeyParameter {
 	private String newHigh;
 	
 	private String newLow;
+	
+	// instrument
+	
+	private String exchangeName;
+	
+	private String country;
+	
+	private String currency;
+	
+	private String industry;
+	
+	private String sector;
+	
+	private String beta;
+	
+	private String forwardPE;
+	
+	private String priceToBook;
+	
+	private String sharesOutstanding;
+	
+	private String marketCap;
 }

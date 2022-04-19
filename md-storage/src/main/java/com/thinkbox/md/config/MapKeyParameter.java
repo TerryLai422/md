@@ -12,6 +12,12 @@ import lombok.Setter;
 @ConfigurationProperties(prefix = "map-key-parameter")
 public class MapKeyParameter {
 
+	private String wait;
+
+	private String steps;
+	
+	private String next;
+	
 	private String total;
 	
 	private String type;
@@ -20,6 +26,8 @@ public class MapKeyParameter {
 
 	private String name;
 		
+	private String ticker;
+	
 	private String symbol;
 
 	private String date;
@@ -85,12 +93,8 @@ public class MapKeyParameter {
 	private String toYearForWeek;
 	
 	// suffix
-	private String suffixMA;
-	
-	private String suffixSum;
-	
-	private String suffixFirst;
-	
+	private String suffixValue;
+
 	private String suffixSize;
 	
 	private String suffixHigh;
@@ -105,9 +109,9 @@ public class MapKeyParameter {
 	
 	private String historicalLowDate;
 	
-	private String newHigh52W;
+	private String newHigh;
 	
-	private String newLow52W;
+	private String newLow;
 	
 	// instrument
 	
