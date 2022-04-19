@@ -82,7 +82,7 @@ public class KafkaService {
 
 			String topic = getTopicFromList(map, next);
 
-			String exchange = map.getOrDefault(mapKey.getExchange(), "-").toString();
+			String exchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
 
 			List<Map<String, Object>> outputList = fileParseService.parseExchangeFile(exchange);
 
@@ -118,7 +118,7 @@ public class KafkaService {
 
 			final String topic = getTopicFromList(map, next);
 
-			final String exchange = map.getOrDefault("exchange", "-").toString();
+			final String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
 
 			if (topic != null) {
 				next++;
@@ -127,12 +127,12 @@ public class KafkaService {
 			final int finalNext = next;
 			final int totalSteps = getNumberOfTopic(map);
 
-			List<String> list = fileParseService.getSymbols(exchange);
+			List<String> list = fileParseService.getSymbols(subExchange);
 
 			list.stream().forEach(x -> {
 				Map<String, Object> outputMap;
 				try {
-					outputMap = fileParseService.parseDetailFile(exchange, x);
+					outputMap = fileParseService.parseDetailFile(subExchange, x);
 
 					if (topic != null) {
 						if ((finalNext + 1) == totalSteps) {
@@ -171,10 +171,10 @@ public class KafkaService {
 
 			String topic = getTopicFromList(map, next);
 
-			String symbol = map.getOrDefault("symbol", "-").toString();
-			String exchange = map.getOrDefault("exchange", "-").toString();
+			String symbol = map.getOrDefault(mapKey.getSymbol(), "-").toString();
+			String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
 
-			Map<String, Object> outputMap = fileParseService.parseDetailFile(exchange, symbol);
+			Map<String, Object> outputMap = fileParseService.parseDetailFile(subExchange, symbol);
 
 			if (topic != null) {
 				List<Map<String, Object>> outputList = new ArrayList<>();
@@ -198,7 +198,7 @@ public class KafkaService {
 		logger.info("Received topic: {} -> map: {}", TOPIC_PARSE_HISTORICAL_DATA, map.toString());
 
 		try {
-			String symbol = map.getOrDefault("symbol", "-").toString();
+			String symbol = map.getOrDefault(mapKey.getSymbol(), "-").toString();
 //			<List>String next = (List<String>) map.get("next");
 			List<Map<String, Object>> list = fileParseService.parseHistoricalFile(symbol);
 //			list.forEach(System.out::println);
@@ -214,7 +214,7 @@ public class KafkaService {
 		logger.info("Received topic: {} -> map: {}", TOPIC_PARSE_INFO_DATA, map.toString());
 
 		try {
-			String symbol = map.getOrDefault("symbol", "-").toString();
+			String symbol = map.getOrDefault(mapKey.getSymbol(), "-").toString();
 			Map<String, Object> outMap;
 			outMap = fileParseService.parseInfoFile(symbol);
 //			list.forEach(System.out::println);

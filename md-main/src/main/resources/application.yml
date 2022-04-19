@@ -38,7 +38,7 @@ rest-parameter:
     parse.exchange.data:
       - steps
       - next
-      - exchange
+      - subExchange
     parse.info.data:
       - steps
       - next
@@ -46,4 +46,4 @@ rest-parameter:
     parse.detail.data.list:
       - steps
       - next
-      - exchange
+      - subExchange

@@ -30,6 +30,7 @@ map-key-parameter:
   total: total
   type: type
   exchange: exchange
+  subExchange: subExchange
   name: name
   ticker: ticker
   symbol: symbol
@@ -131,7 +132,7 @@ json-node:
     type:
       - price
       - quoteType
-    symbol:
+    ticker:
       - price
       - symbol
     name:

@@ -82,9 +82,9 @@ public class FileParseService {
 		}
 	}
 
-	public List<String> getSymbols(final String exchange) throws IOException {
+	public List<String> getSymbols(final String subExchange) throws IOException {
 
-		String directory = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + exchange;
+		String directory = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExchange;
 
 		logger.info(directory);
 		File directoryPath = new File(directory);
@@ -96,9 +96,9 @@ public class FileParseService {
 
 	}
 
-	public Map<String, Object> parseDetailFile(final String exchange, final String symbol) throws IOException {
+	public Map<String, Object> parseDetailFile(final String subExchange, final String symbol) throws IOException {
 
-		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + exchange + File.separator
+		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExchange + File.separator
 				+ symbol + DETAIL_FILE_SUFFIX + FILE_EXTENSION;
 
 		logger.info(fileName);
@@ -115,7 +115,9 @@ public class FileParseService {
 				map.put(x, object);
 			}
 		});
-
+		map.put(mapKey.getSymbol(), symbol);
+		map.put(mapKey.getExchange(), subExchange);
+		
 		return map;
 	}
 
