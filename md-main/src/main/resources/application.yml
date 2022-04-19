@@ -43,3 +43,8 @@ rest-parameter:
       - steps
       - next
       - symbol
+    parse.detail.data:
+      - steps
+      - next
+      - symbol
+      - exchange
