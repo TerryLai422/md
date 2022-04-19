@@ -84,3 +84,54 @@ indicator:
     - 50
     - 150
     - 200
+    
+json-node:
+  property:
+    forwardPE:
+      - defaultKeyStatistics
+      - forwardPE
+      - raw
+    sharesOutstanding:
+      - defaultKeyStatistics
+      - sharesOutstanding
+      - raw
+    beta:
+      - defaultKeyStatistics
+      - beta
+      - raw
+    priceToBook:
+      - defaultKeyStatistics
+      - priceToBook
+      - raw
+    industry:
+      - summaryProfile
+      - industry
+    sector:
+      - summaryProfile
+      - sector
+    country:
+      - summaryProfile
+      - country
+    exchange:
+      - price
+      - exchange
+    exchangeName:
+      - price 
+      - exchangeName
+    type:
+      - price
+      - quoteType
+    symbol:
+      - price
+      - symbol
+    name:
+      - price
+      - longName
+    currency:
+      - price
+      - currency
+    marketCap:
+      - price
+      - marketCap
+      - raw
+    

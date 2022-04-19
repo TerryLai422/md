@@ -34,6 +34,8 @@ public class KafkaService {
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
+	private final String TOPIC_PARSE_DETAIL_DATA = "parse.detail.data";
+
 	private final String TOPIC_PARSE_INFO_DATA = "parse.info.data";
 
 	private final String TOPIC_PARSE_EXCHANGE_DATA = "parse.exchange.data";
@@ -102,6 +104,22 @@ public class KafkaService {
 		}
 	}
 
+	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_PARSE_DETAIL_DATA, containerFactory = CONTAINER_FACTORY_MAP)
+	public void parseDetailData(Map<String, Object> map) {
+		logger.info("Received topic: {} -> map: {}", TOPIC_PARSE_DETAIL_DATA, map.toString());
+
+		try {
+			String symbol = map.getOrDefault("symbol", "-").toString();
+			String exchange = map.getOrDefault("exchange", "-").toString();
+			
+			Map<String, Object> outputMap = fileParseService.parseDetailFile(exchange, symbol);
+			System.out.println(outputMap.toString());
+		} catch (IOException e) {
+			logger.info(e.toString());
+		}
+	}
+	
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseHistericalData(Map<String, Object> map) {

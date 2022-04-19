@@ -1,9 +1,13 @@
 package com.thinkbox.md.service;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -20,7 +24,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbox.md.config.JsonProperties;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.MapValueParameter;
 import com.thinkbox.md.util.CSVFileReader;
@@ -30,13 +36,19 @@ public class FileParseService {
 
 	private final Logger logger = LoggerFactory.getLogger(FileParseService.class);
 
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
 	private final static String USER_HOME = "user.home";
+
+	private final static String DETAIL_DIRECTORY = "detail";
 
 	private final static String HISTORICAL_DIRECTORY = "historical";
 
 	private final static String EXCHANGE_DIRECTORY = "exchange";
 
 	private final static String INFO_DIRECTORY = "info";
+
+	private final static String DETAIL_FILE_SUFFIX = "-detail";
 
 	private final static String INFO_FILE_SUFFIX = "-info";
 
@@ -59,6 +71,9 @@ public class FileParseService {
 	@Autowired
 	private MapValueParameter mapValue;
 
+	@Autowired
+	private JsonProperties jsonProperties;
+
 	@PostConstruct
 	public void init() {
 		if (dataDirectory != null && dataDirectory.equals("-")) {
@@ -66,6 +81,55 @@ public class FileParseService {
 		}
 	}
 
+	public Map<String, Object> parseDetailFile(final String exchange, final String symbol) throws IOException {
+
+		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + exchange + File.separator +  symbol 
+				+ DETAIL_FILE_SUFFIX + FILE_EXTENSION;
+
+		logger.info(fileName);
+
+		File file = new File(fileName);
+		
+        InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file));
+        JsonNode node = objectMapper.readTree(inputStreamReader);
+
+        Map<String, Object> map = new TreeMap<>();
+		jsonProperties.getProperty().forEach((x, y) -> {
+			Object object = getNodeValue(node, y);	
+			if (object != null) {
+				map.put(x, object);
+			}
+		});
+        
+		return map;
+	}
+	
+	private Object getNodeValue(JsonNode node, List<String> list) {
+		boolean has = true;
+		for (String name: list) {
+			if (node.has(name)) {
+				node = node.get(name);
+			} else {
+				has = false;
+				break;
+			}
+		}
+
+		if (has) {
+			if (node.isNumber()) {
+				if (node.isDouble()) {
+					return node.asDouble();
+				} else if (node.isInt()) {
+					return node.asInt();
+				}
+			} else if (node.isBoolean()) {
+				return node.asBoolean();
+			}
+			return node.asText();
+		}
+		return null;
+	}
+	
 	public List<Map<String, Object>> parseHistoricalFile(final String symbol) throws IOException {
 
 		String fileName = dataDirectory + File.separator + HISTORICAL_DIRECTORY + File.separator + symbol
