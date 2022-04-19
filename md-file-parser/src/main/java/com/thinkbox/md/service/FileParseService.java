@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
@@ -36,7 +37,7 @@ public class FileParseService {
 
 	private final Logger logger = LoggerFactory.getLogger(FileParseService.class);
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	private final static String USER_HOME = "user.home";
 
@@ -81,32 +82,46 @@ public class FileParseService {
 		}
 	}
 
+	public List<String> getSymbols(final String exchange) throws IOException {
+
+		String directory = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + exchange;
+
+		logger.info(directory);
+		File directoryPath = new File(directory);
+
+		return Stream.of(directoryPath.listFiles()).filter(x -> !x.isDirectory()).map(x -> {
+			String name = x.getName();
+			return name.substring(0, name.length() - 11);
+		}).collect(Collectors.toList());
+
+	}
+
 	public Map<String, Object> parseDetailFile(final String exchange, final String symbol) throws IOException {
 
-		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + exchange + File.separator +  symbol 
-				+ DETAIL_FILE_SUFFIX + FILE_EXTENSION;
+		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + exchange + File.separator
+				+ symbol + DETAIL_FILE_SUFFIX + FILE_EXTENSION;
 
 		logger.info(fileName);
 
 		File file = new File(fileName);
-		
-        InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file));
-        JsonNode node = objectMapper.readTree(inputStreamReader);
 
-        Map<String, Object> map = new TreeMap<>();
+		InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file));
+		JsonNode node = objectMapper.readTree(inputStreamReader);
+
+		Map<String, Object> map = new TreeMap<>();
 		jsonProperties.getProperty().forEach((x, y) -> {
-			Object object = getNodeValue(node, y);	
+			Object object = getNodeValue(node, y);
 			if (object != null) {
 				map.put(x, object);
 			}
 		});
-        
+
 		return map;
 	}
-	
+
 	private Object getNodeValue(JsonNode node, List<String> list) {
 		boolean has = true;
-		for (String name: list) {
+		for (String name : list) {
 			if (node.has(name)) {
 				node = node.get(name);
 			} else {
@@ -129,7 +144,7 @@ public class FileParseService {
 		}
 		return null;
 	}
-	
+
 	public List<Map<String, Object>> parseHistoricalFile(final String symbol) throws IOException {
 
 		String fileName = dataDirectory + File.separator + HISTORICAL_DIRECTORY + File.separator + symbol

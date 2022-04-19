@@ -1,6 +1,7 @@
 package com.thinkbox.md.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,11 +29,13 @@ public class KafkaService {
 
 	@Autowired
 	private MapKeyParameter mapKey;
-	
+
 	@Autowired
 	private FileParseService fileParseService;
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
+
+	private final String TOPIC_PARSE_DETAIL_DATA_LIST = "parse.detail.data.list";
 
 	private final String TOPIC_PARSE_DETAIL_DATA = "parse.detail.data";
 
@@ -88,8 +91,8 @@ public class KafkaService {
 				map.forEach((x, y) -> {
 					first.put(x, y);
 				});
-				
-				next++;				
+
+				next++;
 				first.put(mapKey.getNext(), next);
 				outputList.add(0, first);
 
@@ -97,8 +100,61 @@ public class KafkaService {
 
 				publish(topic, outputList);
 			} else {
-				outputList.forEach(System.out::println);				
+				outputList.forEach(System.out::println);
 			}
+		} catch (IOException e) {
+			logger.info(e.toString());
+		}
+	}
+
+	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_PARSE_DETAIL_DATA_LIST, containerFactory = CONTAINER_FACTORY_MAP)
+	public void parseDetailDataList(Map<String, Object> map) {
+		logger.info("Received topic: {} -> map: {}", TOPIC_PARSE_DETAIL_DATA_LIST, map.toString());
+
+		try {
+			Object objNext = map.get(mapKey.getNext());
+			int next = Integer.valueOf(objNext.toString());
+
+			final String topic = getTopicFromList(map, next);
+
+			final String exchange = map.getOrDefault("exchange", "-").toString();
+
+			if (topic != null) {
+				next++;
+				map.put(mapKey.getNext(), next);
+			}
+			final int finalNext = next;
+			final int totalSteps = getNumberOfTopic(map);
+
+			List<String> list = fileParseService.getSymbols(exchange);
+
+			list.stream().forEach(x -> {
+				Map<String, Object> outputMap;
+				try {
+					outputMap = fileParseService.parseDetailFile(exchange, x);
+
+					if (topic != null) {
+						if ((finalNext + 1) == totalSteps) {
+							logger.info(outputMap.toString());
+							publish(topic, outputMap);
+						} else {
+							List<Map<String, Object>> outputList = new ArrayList<>();
+
+							outputList.add(0, map);
+							outputList.add(outputMap);
+
+							logger.info(outputList.toString());
+
+							publish(topic, outputList);
+						}
+					} else {
+						logger.info(outputMap.toString());
+					}
+				} catch (IOException e) {
+					logger.info(e.toString());
+				}
+			});
 		} catch (IOException e) {
 			logger.info(e.toString());
 		}
@@ -110,16 +166,32 @@ public class KafkaService {
 		logger.info("Received topic: {} -> map: {}", TOPIC_PARSE_DETAIL_DATA, map.toString());
 
 		try {
+			Object objNext = map.get(mapKey.getNext());
+			int next = Integer.valueOf(objNext.toString());
+
+			String topic = getTopicFromList(map, next);
+
 			String symbol = map.getOrDefault("symbol", "-").toString();
 			String exchange = map.getOrDefault("exchange", "-").toString();
-			
+
 			Map<String, Object> outputMap = fileParseService.parseDetailFile(exchange, symbol);
-			System.out.println(outputMap.toString());
+
+			if (topic != null) {
+				List<Map<String, Object>> outputList = new ArrayList<>();
+
+				next++;
+				map.put(mapKey.getNext(), next);
+				outputList.add(0, map);
+
+				publish(topic, outputList);
+			} else {
+				System.out.println(outputMap.toString());
+			}
 		} catch (IOException e) {
 			logger.info(e.toString());
 		}
 	}
-	
+
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseHistericalData(Map<String, Object> map) {
@@ -151,7 +223,16 @@ public class KafkaService {
 			logger.info(e.toString());
 		}
 	}
-	
+
+	private int getNumberOfTopic(Map<String, Object> map) {
+
+		Object objStep = map.get(mapKey.getSteps());
+
+		@SuppressWarnings("unchecked")
+		List<String> stepList = (List<String>) objStep;
+		return stepList.size();
+	}
+
 	private String getTopicFromList(Map<String, Object> map, int next) {
 
 		Object objStep = map.get(mapKey.getSteps());

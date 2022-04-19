@@ -79,3 +79,13 @@ map-key-parameter:
   historicalLowDate: historicalLowDate
   newHigh52W: newHigh52W
   newLow52W: newLow52W
+  exchangeName: exchangeName
+  country: country
+  currency: currency
+  industry: industry
+  sector: sector
+  beta: beta
+  forwardPE: forwardPE
+  priceToBook: priceToBook
+  sharesOutstanding: sharesOutstanding
+  marketCap: marketCap

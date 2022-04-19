@@ -28,7 +28,11 @@ public class KafkaService {
 	
 	private final String TOPIC_SAVE_HISTORICAL_DATA_LIST = "save.historical.data.list";
 
+	private final String TOPIC_SAVE_DETAIL_DATA = "save.detail.data";
+	
 	private final String CONTAINER_FACTORY_LIST = "listListener";
+
+	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
 	public void publish(String topic, Map<String, Object> map) {
 		logger.info(String.format("Sent topic: -> {}", map.toString()));
@@ -48,5 +52,11 @@ public class KafkaService {
 		logger.info("Received topic: {} -> list: {}", TOPIC_SAVE_HISTORICAL_DATA_LIST, list.toString());
 		storeService.saveHistoricalList(list);
 	}
-
+	
+	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_SAVE_DETAIL_DATA, containerFactory = CONTAINER_FACTORY_MAP)
+	public void saveDetail(Map<String, Object> map) {
+		logger.info("Received topic: {} -> map: {}", TOPIC_SAVE_DETAIL_DATA, map.toString());
+		storeService.saveInstrument(map);
+	}
 }
