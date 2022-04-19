@@ -26,7 +26,7 @@ public class DataMapper {
 		Historical historical = new Historical();
 
 		historical
-				.setId(map.get(mapKey.getType()) + "-" + map.get(mapKey.getSymbol()) + "@" + map.get(mapKey.getDate()));
+				.setId(map.get(mapKey.getType()) + "-" + map.get(mapKey.getSymbol()) + "@" + map.get(mapKey.getDate()) + "-" + map.get(mapKey.getTime()));
 		historical.setType((String) map.get(mapKey.getType()));
 		historical.setSymbol((String) map.get(mapKey.getSymbol()));
 		historical.setDate((String) map.get(mapKey.getDate()));
