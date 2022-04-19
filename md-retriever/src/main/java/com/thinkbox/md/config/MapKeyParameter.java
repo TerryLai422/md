@@ -23,6 +23,8 @@ public class MapKeyParameter {
 	private String type;
 
 	private String exchange;
+	
+	private String subExchange;
 
 	private String name;
 		
@@ -33,7 +35,7 @@ public class MapKeyParameter {
 	private String date;
 	
 	private String time;
-	
+
 	private String open;
 
 	private String high;

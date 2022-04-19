@@ -21,7 +21,7 @@ public class DataMapper {
 
 	private final static long DEFAULT_LONG_VALUE = 0l;
 
-	public Historical convertHistorical(Map<String, Object> map) {
+	public Historical convertMapToHistorical(Map<String, Object> map) {
 
 		Historical historical = new Historical();
 
@@ -48,7 +48,7 @@ public class DataMapper {
 		return historical;
 	}
 
-	public Instrument convertInstrument(Map<String, Object> map) {
+	public Instrument convertMapToInstrument(Map<String, Object> map) {
 
 		Instrument instrument = new Instrument();
 

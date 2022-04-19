@@ -28,7 +28,7 @@ public class StoreService {
 	
 	public void saveHistoricalList(List<Map<String, Object>> list) {
 		
-		List<Historical> convertedList = list.stream().map(mapper::convertHistorical).collect(Collectors.toList());
+		List<Historical> convertedList = list.stream().map(mapper::convertMapToHistorical).collect(Collectors.toList());
 		
 		historicalRepository.saveAll(convertedList);
 	
@@ -36,7 +36,7 @@ public class StoreService {
 	
 	public void saveHistorical(Map<String, Object> map) {
 	
-		Historical historical = mapper.convertHistorical(map);
+		Historical historical = mapper.convertMapToHistorical(map);
 		
 		historicalRepository.save(historical);
 		
@@ -44,7 +44,7 @@ public class StoreService {
 	
 	public void saveInstrumentList(List<Map<String, Object>> list) {
 		
-		List<Instrument> convertedList = list.stream().skip(1).map(mapper::convertInstrument).collect(Collectors.toList());
+		List<Instrument> convertedList = list.stream().skip(1).map(mapper::convertMapToInstrument).collect(Collectors.toList());
 		
 		instrumentRepository.saveAll(convertedList);
 	
@@ -52,9 +52,16 @@ public class StoreService {
 	
 	public void saveInstrument(Map<String, Object> map) {
 	
-		Instrument instrument = mapper.convertInstrument(map);
+		Instrument instrument = mapper.convertMapToInstrument(map);
 		
 		instrumentRepository.save(instrument);
 		
 	}
+
+	public List<Instrument> getInstruments(final String subExchange) {
+			
+		return instrumentRepository.findBySubExchange(subExchange);
+		
+	}
+
 }
