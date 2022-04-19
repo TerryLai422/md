@@ -146,9 +146,6 @@ public class KafkaService {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DETAIL_DATA, map.toString());
 
 		try {
-			Object objNext = map.get(mapKey.getNext());
-			int next = Integer.valueOf(objNext.toString());
-
 			String topic = getTopicFromList(map);
 
 			String symbol = map.getOrDefault(mapKey.getSymbol(), "-").toString();
