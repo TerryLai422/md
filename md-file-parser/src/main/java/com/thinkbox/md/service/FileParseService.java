@@ -98,6 +98,8 @@ public class FileParseService {
 
 	public Map<String, Object> parseDetailFile(final String subExchange, final String symbol) throws IOException {
 
+		final String suffix = (subExchange.equals("TSX")) ? ".TO" : (subExchange.equals("TSXV")) ? ".V" : "";
+
 		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExchange + File.separator
 				+ symbol + DETAIL_FILE_SUFFIX + FILE_EXTENSION;
 
@@ -115,8 +117,8 @@ public class FileParseService {
 				map.put(x, object);
 			}
 		});
-		map.put(mapKey.getSymbol(), symbol);
-		map.put(mapKey.getExchange(), subExchange);
+		map.put(mapKey.getSymbol(), symbol.replaceAll(suffix, ""));
+		map.put(mapKey.getSubExchange(), subExchange);
 		
 		return map;
 	}
