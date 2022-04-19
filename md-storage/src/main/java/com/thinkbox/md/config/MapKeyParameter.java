@@ -106,4 +106,26 @@ public class MapKeyParameter {
 	private String newHigh52W;
 	
 	private String newLow52W;
+	
+	// instrument
+	
+	private String exchangeName;
+	
+	private String country;
+	
+	private String currency;
+	
+	private String industry;
+	
+	private String sector;
+	
+	private String beta;
+	
+	private String forwardPE;
+	
+	private String priceToBook;
+	
+	private String sharesOutstanding;
+	
+	private String marketCap;
 }

@@ -34,7 +34,7 @@ public class DataMapper {
 		historical.setClose((Double) map.get(mapKey.getClose()));	
 		historical.setAdjClose((Double) map.get(mapKey.getAdjClose()));	
 		historical.setVolume((Long) map.get(mapKey.getVolume()));	
-		historical.setDetails(map);	
+		historical.setOthers(map);	
 		
 		return historical; 
 	}
@@ -44,9 +44,20 @@ public class DataMapper {
 		Instrument instrument = new Instrument();
 		
 		instrument.setId(map.get(mapKey.getExchange()) + "@" + map.get(mapKey.getSymbol()));
-		instrument.setExchange((String) map.get(mapKey.getExchange()));
 		instrument.setSymbol((String) map.get(mapKey.getSymbol()));
 		instrument.setName((String) map.get(mapKey.getName()));
+		instrument.setExchange((String) map.get(mapKey.getName()));
+		instrument.setExchangeName((String) map.get(mapKey.getExchangeName()));
+		instrument.setCountry((String) map.get(mapKey.getCountry()));
+		instrument.setCurrency((String) map.get(mapKey.getCurrency()));
+		instrument.setIndustry((String) map.get(mapKey.getIndustry()));
+		instrument.setSector((String) map.get(mapKey.getSector()));
+		instrument.setType((String) map.get(mapKey.getType()));
+		instrument.setBeta((Double) map.get(mapKey.getBeta()));
+		instrument.setForwardPE((Double) map.get(mapKey.getForwardPE()));
+		instrument.setSharesOutstanding((Long) map.get(mapKey.getSharesOutstanding()));
+		instrument.setMarketCap((Long) map.get(mapKey.getMarketCap()));
+		instrument.setOthers(map);
 		
 		return instrument; 
 	}

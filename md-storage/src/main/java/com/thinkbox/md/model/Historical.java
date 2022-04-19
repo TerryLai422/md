@@ -52,6 +52,6 @@ public class Historical {
 	
 	private Long volume;
 	
-	private Map<String, Object> details;
+	private Map<String, Object> others;
 
 }
