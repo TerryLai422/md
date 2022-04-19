@@ -64,7 +64,7 @@ public class DataMapper {
 		instrument.setSector((String) map.getOrDefault(mapKey.getSector(), DEFAULT_STRING_VALUE));
 		instrument.setType((String) map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE));
 		instrument.setBeta((Double) map.getOrDefault(mapKey.getBeta(), DEFAULT_DOUBLE_VALUE));
-		instrument.setForwardPE((Double) map.getOrDefault(mapKey.getForwardPE(), DEFAULT_DOUBLE_VALUE));
+		instrument.setForwardPE(Double.valueOf(map.getOrDefault(mapKey.getForwardPE(), DEFAULT_DOUBLE_VALUE).toString()));
 		instrument.setSharesOutstanding(
 				Long.valueOf(map.getOrDefault(mapKey.getSharesOutstanding(), DEFAULT_LONG_VALUE).toString()));
 		instrument.setMarketCap(
