@@ -25,6 +25,8 @@ public class Historical {
 	private String symbol;
 	
 	private String date;
+	
+	private String time;
 
 	private Integer year;
 	

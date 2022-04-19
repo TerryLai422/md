@@ -23,6 +23,8 @@ public class MapKeyParameter {
 	private String symbol;
 
 	private String date;
+	
+	private String time;
 
 	private String open;
 
