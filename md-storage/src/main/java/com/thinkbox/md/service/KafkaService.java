@@ -75,7 +75,7 @@ public class KafkaService {
 		String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
 		
 		if (!subExchange.equals("-")) {
-			List<Instrument> instruments = storeService.getInstruments(subExchange);
+			List<Map<String, Object>> instruments = storeService.getInstruments(subExchange);
 			instruments.forEach(System.out::println);
 		}
 	}

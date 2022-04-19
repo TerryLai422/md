@@ -58,9 +58,11 @@ public class StoreService {
 		
 	}
 
-	public List<Instrument> getInstruments(final String subExchange) {
+	public List<Map<String, Object>> getInstruments(final String subExchange) {
 			
-		return instrumentRepository.findBySubExchange(subExchange);
+		List<Instrument> instruments = instrumentRepository.findBySubExchange(subExchange);
+		
+		return instruments.stream().map(x -> x.getOthers()).collect(Collectors.toList());
 		
 	}
 
