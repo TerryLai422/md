@@ -14,19 +14,19 @@ public class DataMapper {
 
 	@Autowired
 	private MapKeyParameter mapKey;
-	
-	private final static String DEFAULT_STRING_VALUE = "-"; 
+
+	private final static String DEFAULT_STRING_VALUE = "-";
 
 	private final static double DEFAULT_DOUBLE_VALUE = 0d;
-	
+
 	private final static long DEFAULT_LONG_VALUE = 0l;
-	
+
 	public Historical convertHistorical(Map<String, Object> map) {
 
 		Historical historical = new Historical();
 
-		historical
-				.setId(map.get(mapKey.getType()) + "-" + map.get(mapKey.getSymbol()) + "@" + map.get(mapKey.getDate()) + "-" + map.get(mapKey.getTime()));
+		historical.setId(map.get(mapKey.getType()) + "-" + map.get(mapKey.getSymbol()) + "@" + map.get(mapKey.getDate())
+				+ "-" + map.get(mapKey.getTime()));
 		historical.setType((String) map.get(mapKey.getType()));
 		historical.setSymbol((String) map.get(mapKey.getSymbol()));
 		historical.setDate((String) map.get(mapKey.getDate()));
@@ -52,7 +52,8 @@ public class DataMapper {
 
 		Instrument instrument = new Instrument();
 
-		instrument.setId(map.getOrDefault(mapKey.getExchange(), DEFAULT_STRING_VALUE) + "@" + map.get(mapKey.getSymbol()));
+		instrument.setId(
+				map.getOrDefault(mapKey.getExchange(), DEFAULT_STRING_VALUE) + "@" + map.get(mapKey.getSymbol()));
 		instrument.setSymbol((String) map.getOrDefault(mapKey.getSymbol(), DEFAULT_STRING_VALUE));
 		instrument.setName((String) map.getOrDefault(mapKey.getName(), DEFAULT_STRING_VALUE));
 		instrument.setExchange((String) map.getOrDefault(mapKey.getExchange(), DEFAULT_STRING_VALUE));
@@ -64,8 +65,10 @@ public class DataMapper {
 		instrument.setType((String) map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE));
 		instrument.setBeta((Double) map.getOrDefault(mapKey.getBeta(), DEFAULT_DOUBLE_VALUE));
 		instrument.setForwardPE((Double) map.getOrDefault(mapKey.getForwardPE(), DEFAULT_DOUBLE_VALUE));
-		instrument.setSharesOutstanding(Long.valueOf(map.getOrDefault(mapKey.getSharesOutstanding(), DEFAULT_LONG_VALUE).toString()));
-		instrument.setMarketCap(Long.valueOf(map.getOrDefault(mapKey.getSharesOutstanding(), DEFAULT_LONG_VALUE).toString()));
+		instrument.setSharesOutstanding(
+				Long.valueOf(map.getOrDefault(mapKey.getSharesOutstanding(), DEFAULT_LONG_VALUE).toString()));
+		instrument.setMarketCap(
+				Long.valueOf(map.getOrDefault(mapKey.getSharesOutstanding(), DEFAULT_LONG_VALUE).toString()));
 		instrument.setOthers(map);
 
 		return instrument;
