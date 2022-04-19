@@ -74,7 +74,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_EXCHANGE_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseExchangeData(Map<String, Object> map) {
-		logger.info("Received topic: {} -> map: {}", TOPIC_PARSE_EXCHANGE_DATA, map.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_EXCHANGE_DATA, map.toString());
 
 		try {
 			Object objNext = map.get(mapKey.getNext());
@@ -92,8 +92,6 @@ public class KafkaService {
 					first.put(x, y);
 				});
 
-				next++;
-				first.put(mapKey.getNext(), next);
 				outputList.add(0, first);
 
 				outputList.forEach(System.out::println);
@@ -110,7 +108,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_DETAIL_DATA_LIST, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDetailDataList(Map<String, Object> map) {
-		logger.info("Received topic: {} -> map: {}", TOPIC_PARSE_DETAIL_DATA_LIST, map.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DETAIL_DATA_LIST, map.toString());
 
 		try {
 			Object objNext = map.get(mapKey.getNext());
@@ -120,10 +118,6 @@ public class KafkaService {
 
 			final String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
 
-			if (topic != null) {
-				next++;
-				map.put(mapKey.getNext(), next);
-			}
 			final int finalNext = next;
 			final int totalSteps = getNumberOfTopic(map);
 
@@ -135,19 +129,14 @@ public class KafkaService {
 					outputMap = fileParseService.parseDetailFile(subExchange, x);
 
 					if (topic != null) {
-						if ((finalNext + 1) == totalSteps) {
-							logger.info(outputMap.toString());
-							publish(topic, outputMap);
-						} else {
-							List<Map<String, Object>> outputList = new ArrayList<>();
+						List<Map<String, Object>> outputList = new ArrayList<>();
 
-							outputList.add(0, map);
-							outputList.add(outputMap);
+						outputList.add(0, map);
+						outputList.add(outputMap);
 
-							logger.info(outputList.toString());
+						logger.info(outputList.toString());
 
-							publish(topic, outputList);
-						}
+						publish(topic, outputList);
 					} else {
 						logger.info(outputMap.toString());
 					}
@@ -163,7 +152,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_DETAIL_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDetailData(Map<String, Object> map) {
-		logger.info("Received topic: {} -> map: {}", TOPIC_PARSE_DETAIL_DATA, map.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DETAIL_DATA, map.toString());
 
 		try {
 			Object objNext = map.get(mapKey.getNext());
@@ -179,8 +168,6 @@ public class KafkaService {
 			if (topic != null) {
 				List<Map<String, Object>> outputList = new ArrayList<>();
 
-				next++;
-				map.put(mapKey.getNext(), next);
 				outputList.add(0, map);
 
 				publish(topic, outputList);
@@ -195,7 +182,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseHistericalData(Map<String, Object> map) {
-		logger.info("Received topic: {} -> map: {}", TOPIC_PARSE_HISTORICAL_DATA, map.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_HISTORICAL_DATA, map.toString());
 
 		try {
 			String symbol = map.getOrDefault(mapKey.getSymbol(), "-").toString();
@@ -211,7 +198,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_INFO_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseInfoData(Map<String, Object> map) {
-		logger.info("Received topic: {} -> map: {}", TOPIC_PARSE_INFO_DATA, map.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_INFO_DATA, map.toString());
 
 		try {
 			String symbol = map.getOrDefault(mapKey.getSymbol(), "-").toString();
@@ -245,6 +232,7 @@ public class KafkaService {
 		next++;
 		if (stepList.size() > next) {
 			topic = stepList.get(next);
+			map.put(mapKey.getNext(), next);
 		}
 		return topic;
 	}

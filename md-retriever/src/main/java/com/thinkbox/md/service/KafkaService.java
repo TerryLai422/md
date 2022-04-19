@@ -65,7 +65,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_RETRIEVE_INFO_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void retreiveInfo(Map<String, Object> map) {
-		logger.info("Received topic: {} -> map: {}", TOPIC_RETRIEVE_INFO_DATA, map);
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_INFO_DATA, map);
 		
 		retrieveService.retrieveInfo(map);
 	}
@@ -73,7 +73,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_RETRIEVE_DETAIL_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void retreiveDetail(Map<String, Object> map) {
-		logger.info("Received topic: {} -> map: {}", TOPIC_RETRIEVE_INFO_DATA, map);
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_INFO_DATA, map);
 		
 		retrieveService.retrieveDetail(map);
 	}
@@ -81,7 +81,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_RETRIEVE_HISTORICAL_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void retreiveHistorical(Map<String, Object> map) {
-		logger.info("Received topic: {} -> map: {}", TOPIC_RETRIEVE_HISTORICAL_DATA, map);
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_HISTORICAL_DATA, map);
 		
 		retrieveService.retrieveHistorical(map);
 	}
@@ -89,7 +89,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_RETRIEVE_INFO_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void retrieveInfoList(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> list: {}", TOPIC_RETRIEVE_INFO_DATA_LIST, list.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_INFO_DATA_LIST, list.toString());
 
 		Map<String, Object> firstMap = list.get(0);
 		
@@ -108,8 +108,6 @@ public class KafkaService {
 				first.put(x, y);
 			});
 
-			next++;
-			first.put(mapKey.getNext(), next);
 			outputList.add(0, first);
 
 			outputList.forEach(System.out::println);
@@ -122,7 +120,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_RETRIEVE_DETAIL_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void retrieveDetailList(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> list: {}", TOPIC_RETRIEVE_DETAIL_DATA_LIST, list.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_DETAIL_DATA_LIST, list.toString());
 
 		Map<String, Object> firstMap = list.get(0);
 		
@@ -141,8 +139,6 @@ public class KafkaService {
 				first.put(x, y);
 			});
 
-			next++;
-			first.put(mapKey.getNext(), next);
 			outputList.add(0, first);
 
 			outputList.forEach(System.out::println);
@@ -164,6 +160,7 @@ public class KafkaService {
 		next++;
 		if (stepList.size() > next) {
 			topic = stepList.get(next);
+			map.put(mapKey.getNext(), next);
 		}
 		return topic;
 	}

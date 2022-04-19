@@ -62,7 +62,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PROCESS_EXCHANGE_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void processExchangeData(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> list: {}", TOPIC_PROCESS_EXCHANGE_DATA_LIST, list.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_PROCESS_EXCHANGE_DATA_LIST, list.toString());
 
 		Map<String, Object> firstMap = list.get(0);
 
@@ -80,8 +80,6 @@ public class KafkaService {
 				first.put(x, y);
 			});
 
-			next++;
-			first.put(mapKey.getNext(), next);
 			outputList.add(0, first);
 
 			outputList.forEach(System.out::println);
@@ -96,7 +94,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PROCESS_HISTORICAL_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void processHistericalData(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> list: {}", TOPIC_PROCESS_HISTORICAL_DATA_LIST, list.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_PROCESS_HISTORICAL_DATA_LIST, list.toString());
 
 //		List<Map<String, Object>> weeklyList = enrichService.consolidate(mapValue.getWeekly(), list);
 //		weeklyList.forEach(System.out::println);
@@ -120,6 +118,7 @@ public class KafkaService {
 		next++;
 		if (stepList.size() > next) {
 			topic = stepList.get(next);
+			map.put(mapKey.getNext(), next);
 		}
 		return topic;
 	}
