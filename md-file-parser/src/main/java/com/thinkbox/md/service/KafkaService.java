@@ -77,10 +77,7 @@ public class KafkaService {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_EXCHANGE_DATA, map.toString());
 
 		try {
-			Object objNext = map.get(mapKey.getNext());
-			int next = Integer.valueOf(objNext.toString());
-
-			String topic = getTopicFromList(map, next);
+			String topic = getTopicFromList(map);
 
 			String exchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
 
@@ -111,10 +108,7 @@ public class KafkaService {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DETAIL_DATA_LIST, map.toString());
 
 		try {
-			Object objNext = map.get(mapKey.getNext());
-			int next = Integer.valueOf(objNext.toString());
-
-			final String topic = getTopicFromList(map, next);
+			final String topic = getTopicFromList(map);
 
 			final String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
 
@@ -155,7 +149,7 @@ public class KafkaService {
 			Object objNext = map.get(mapKey.getNext());
 			int next = Integer.valueOf(objNext.toString());
 
-			String topic = getTopicFromList(map, next);
+			String topic = getTopicFromList(map);
 
 			String symbol = map.getOrDefault(mapKey.getSymbol(), "-").toString();
 			String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
@@ -208,7 +202,10 @@ public class KafkaService {
 		}
 	}
 
-	private String getTopicFromList(Map<String, Object> map, int next) {
+	private String getTopicFromList(Map<String, Object> map) {
+
+		Object objNext = map.get(mapKey.getNext());
+		int next = Integer.valueOf(objNext.toString());
 
 		Object objStep = map.get(mapKey.getSteps());
 

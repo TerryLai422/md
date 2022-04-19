@@ -92,11 +92,8 @@ public class KafkaService {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_INFO_DATA_LIST, list.toString());
 
 		Map<String, Object> firstMap = list.get(0);
-		
-		Object objNext = firstMap.get(mapKey.getNext());
-		int next = Integer.valueOf(objNext.toString());
 
-		String topic = getTopicFromList(firstMap, next);
+		String topic = getTopicFromList(firstMap);
 
 		List<Map<String, Object>> outputList = retrieveService.retrieveInfoList(list);
 		outputList.forEach(System.out::println);
@@ -124,10 +121,7 @@ public class KafkaService {
 
 		Map<String, Object> firstMap = list.get(0);
 		
-		Object objNext = firstMap.get(mapKey.getNext());
-		int next = Integer.valueOf(objNext.toString());
-
-		String topic = getTopicFromList(firstMap, next);
+		String topic = getTopicFromList(firstMap);
 
 		List<Map<String, Object>> outputList = retrieveService.retrieveDetailList(list);
 		outputList.forEach(System.out::println);
@@ -148,7 +142,9 @@ public class KafkaService {
 		}
 	}
 	
-	private String getTopicFromList(Map<String, Object> map, int next) {
+	private String getTopicFromList(Map<String, Object> map) {
+		Object objNext = map.get(mapKey.getNext());
+		int next = Integer.valueOf(objNext.toString());
 
 		Object objStep = map.get(mapKey.getSteps());
 

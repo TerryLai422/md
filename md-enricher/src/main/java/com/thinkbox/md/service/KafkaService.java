@@ -66,10 +66,7 @@ public class KafkaService {
 
 		Map<String, Object> firstMap = list.get(0);
 
-		Object objNext = firstMap.get(mapKey.getNext());
-		int next = Integer.valueOf(objNext.toString());
-
-		String topic = getTopicFromList(firstMap, next);
+		String topic = getTopicFromList(firstMap);
 
 		List<Map<String, Object>> outputList = enrichService.enrichExchange(list);
 		outputList.forEach(System.out::println);
@@ -106,7 +103,9 @@ public class KafkaService {
 		outputList.forEach(System.out::println);
 	}
 
-	private String getTopicFromList(Map<String, Object> map, int next) {
+	private String getTopicFromList(Map<String, Object> map) {
+		Object objNext = map.get(mapKey.getNext());
+		int next = Integer.valueOf(objNext.toString());
 
 		Object objStep = map.get(mapKey.getSteps());
 
