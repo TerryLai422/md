@@ -22,9 +22,13 @@ public class Instrument {
 	
 	private String symbol;
 	
+	private String ticker;
+	
 	private String name;
 	
 	private String exchange;
+	
+	private String subExchange;
 	
 	private String exchangeName;
 	

@@ -40,6 +40,7 @@ map-key-parameter:
   total: total
   type: type
   exchange: exchange
+  subExchange: subExchange  
   name: name
   ticker: ticker
   symbol: symbol

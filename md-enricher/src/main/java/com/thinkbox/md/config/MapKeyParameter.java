@@ -23,6 +23,8 @@ public class MapKeyParameter {
 	private String type;
 
 	private String exchange;
+	
+	private String subExchange;
 
 	private String name;
 		
