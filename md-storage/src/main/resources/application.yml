@@ -93,3 +93,5 @@ map-key-parameter:
   priceToBook: priceToBook
   sharesOutstanding: sharesOutstanding
   marketCap: marketCap
+  yahooType: yahooType
+  from: from
