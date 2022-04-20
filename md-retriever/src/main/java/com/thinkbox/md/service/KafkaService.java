@@ -91,12 +91,11 @@ public class KafkaService {
 	public void retrieveInfoList(List<Map<String, Object>> list) {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_INFO_DATA_LIST, list.toString());
 
-		Map<String, Object> firstMap = list.get(0);
-
-		String topic = getTopicFromList(firstMap);
-
 		List<Map<String, Object>> outputList = retrieveService.retrieveInfoList(list);
 		outputList.forEach(System.out::println);
+
+		Map<String, Object> firstMap = list.get(0);
+		String topic = getTopicFromList(firstMap);
 
 		if (topic != null) {
 			
@@ -111,6 +110,9 @@ public class KafkaService {
 
 			publish(topic, outputList);
 
+		} else {
+			outputList.forEach(System.out::println);
+			logger.info("Finish Last Step: {}", firstMap.get(mapKey.getSteps().toString()));
 		}
 	}
 	
@@ -139,6 +141,9 @@ public class KafkaService {
 
 			publish(topic, outputList);
 
+		} else {
+			outputList.forEach(System.out::println);
+			logger.info("Finish Last Step: {}", firstMap.get(mapKey.getSteps().toString()));
 		}
 	}
 	

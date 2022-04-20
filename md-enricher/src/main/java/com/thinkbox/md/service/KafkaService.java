@@ -64,12 +64,10 @@ public class KafkaService {
 	public void processExchangeData(List<Map<String, Object>> list) {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_PROCESS_EXCHANGE_DATA_LIST, list.toString());
 
-		Map<String, Object> firstMap = list.get(0);
-
-		String topic = getTopicFromList(firstMap);
-
 		List<Map<String, Object>> outputList = enrichService.enrichExchange(list);
-		outputList.forEach(System.out::println);
+
+		Map<String, Object> firstMap = list.get(0);
+		String topic = getTopicFromList(firstMap);
 
 		if (topic != null) {
 			final Map<String, Object> first = outputList.remove(0);
@@ -78,13 +76,12 @@ public class KafkaService {
 			});
 
 			outputList.add(0, first);
-
 			outputList.forEach(System.out::println);
 
 			publish(topic, outputList);
 		} else {
-			logger.info("Topic is null");
 			outputList.forEach(System.out::println);
+			logger.info("Finish Last Step: {}", firstMap.get(mapKey.getSteps().toString()));
 		}
 	}
 

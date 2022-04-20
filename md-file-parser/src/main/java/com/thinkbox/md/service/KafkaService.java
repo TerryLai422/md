@@ -77,11 +77,13 @@ public class KafkaService {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_EXCHANGE_DATA, map.toString());
 
 		try {
-			String topic = getTopicFromList(map);
-
 			String exchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
 
 			List<Map<String, Object>> outputList = fileParseService.parseExchangeFile(exchange);
+
+			outputList.forEach(System.out::println);
+
+			String topic = getTopicFromList(map);
 
 			if (topic != null) {
 				final Map<String, Object> first = outputList.remove(0);
@@ -91,11 +93,9 @@ public class KafkaService {
 
 				outputList.add(0, first);
 
-				outputList.forEach(System.out::println);
-
 				publish(topic, outputList);
 			} else {
-				outputList.forEach(System.out::println);
+				logger.info("Finish Last Step: {}", map.get(mapKey.getSteps().toString()));
 			}
 		} catch (IOException e) {
 			logger.info(e.toString());
@@ -108,11 +108,11 @@ public class KafkaService {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DETAIL_DATA_LIST, map.toString());
 
 		try {
-			final String topic = getTopicFromList(map);
-
 			final String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
 
 			List<String> list = fileParseService.getSymbols(subExchange);
+
+			final String topic = getTopicFromList(map);
 
 			list.stream().forEach(x -> {
 				Map<String, Object> outputMap;
@@ -125,17 +125,20 @@ public class KafkaService {
 						outputList.add(0, map);
 						outputList.add(outputMap);
 
-						logger.info(outputList.toString());
+						outputList.forEach(System.out::println);
 
 						publish(topic, outputList);
 					} else {
 						logger.info(outputMap.toString());
+						logger.info("Finish Last Step: {}", map.get(mapKey.getSteps().toString()));
 					}
 				} catch (IOException e) {
 					logger.info(e.toString());
 				}
 			});
-		} catch (IOException e) {
+		} catch (
+
+		IOException e) {
 			logger.info(e.toString());
 		}
 	}
@@ -146,12 +149,12 @@ public class KafkaService {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DETAIL_DATA, map.toString());
 
 		try {
-			String topic = getTopicFromList(map);
-
 			String symbol = map.getOrDefault(mapKey.getSymbol(), "-").toString();
 			String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
 
 			Map<String, Object> outputMap = fileParseService.parseDetailFile(subExchange, symbol);
+
+			String topic = getTopicFromList(map);
 
 			if (topic != null) {
 				List<Map<String, Object>> outputList = new ArrayList<>();
@@ -160,7 +163,8 @@ public class KafkaService {
 
 				publish(topic, outputList);
 			} else {
-				System.out.println(outputMap.toString());
+				logger.info(outputMap.toString());
+				logger.info("Finish Last Step: {}", map.get(mapKey.getSteps().toString()));
 			}
 		} catch (IOException e) {
 			logger.info(e.toString());
