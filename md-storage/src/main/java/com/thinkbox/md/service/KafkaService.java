@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.model.Instrument;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,8 +21,10 @@ public class KafkaService {
 	private final Logger logger = LoggerFactory.getLogger(KafkaService.class);
 
 	@Autowired
-	private KafkaTemplate<String, Map<String, Object>> kafkaTemplate;
+	private KafkaTemplate<String, List<Map<String, Object>>> kafkaTemplateList;
 
+	@Autowired
+	private KafkaTemplate<String, Map<String, Object>> kafkaTemplateMap;
 	@Autowired
 	private StoreService storeService;
 	
@@ -44,9 +47,15 @@ public class KafkaService {
 
 	public void publish(String topic, Map<String, Object> map) {
 		logger.info(String.format("Sent topic: -> {}", map.toString()));
-		kafkaTemplate.send(topic, map);
+		kafkaTemplateMap.send(topic, map);
 	}
 	
+	@Async(ASYNC_EXECUTOR)
+	public void publish(String topic, List<Map<String, Object>> list) {
+		logger.info("Sent topic: {} -> {}", topic, list.toString());
+
+		kafkaTemplateList.send(topic, list);
+	}
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_EXCHANGE_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveExchangeList(List<Map<String, Object>> list) {
@@ -66,7 +75,22 @@ public class KafkaService {
 	public void saveDetail(List<Map<String, Object>> list) {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_SAVE_DETAIL_DATA, list.toString());
 		
-//		storeService.saveInstrument(map);
+		Map<String, Object> secondMap = list.get(1);
+		
+		storeService.saveInstrument(secondMap);
+		
+		Map<String, Object> firstMap = list.get(0);
+		String topic = getTopicFromList(firstMap);
+
+		if (topic != null) {
+			List<Map<String, Object>> outputList = new ArrayList<>();
+			outputList.add(firstMap);
+			outputList.add(secondMap);
+
+			publish(topic, outputList);
+		} else {
+			logger.info("Finish Last Step: {}", firstMap.get(mapKey.getSteps().toString()));
+		}
 	}
 
 	@Async(ASYNC_EXECUTOR)
@@ -79,5 +103,24 @@ public class KafkaService {
 			List<Map<String, Object>> instruments = storeService.getInstruments(subExchange);
 			instruments.forEach(System.out::println);
 		}
+	}
+	
+	private String getTopicFromList(Map<String, Object> map) {
+		Object objNext = map.get(mapKey.getNext());
+		int next = Integer.valueOf(objNext.toString());
+
+		Object objStep = map.get(mapKey.getSteps());
+
+		@SuppressWarnings("unchecked")
+		List<String> stepList = (List<String>) objStep;
+
+		String topic = null;
+
+		next++;
+		if (stepList.size() > next) {
+			topic = stepList.get(next);
+			map.put(mapKey.getNext(), next);
+		}
+		return topic;
 	}
 }
