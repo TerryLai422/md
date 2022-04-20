@@ -25,29 +25,40 @@ rest-parameter:
     retrieve.info.data:
       - steps
       - next
-      - symbol
+      - ticker
     retrieve.historical.data:
       - steps
       - next
-      - symbol
+      - ticker
       - date
     parse.historical.data:
       - steps
       - next
-      - symbol
+      - ticker
     parse.exchange.data:
       - steps
       - next
       - subExchange
+      - yahooType
     parse.info.data:
       - steps
       - next
-      - symbol
+      - ticker
     parse.detail.data.list:
       - steps
       - next
       - subExchange
+    parse.detail.data:
+      - steps
+      - next
+      - subExchange
+      - ticker
     dbget.exchange.data:
       - steps
       - next
       - subExchange
+    parse.yahoo.data:
+      - steps
+      - next
+      - subExchange
+      - yahooType      

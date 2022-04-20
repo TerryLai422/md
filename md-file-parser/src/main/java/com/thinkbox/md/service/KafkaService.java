@@ -149,10 +149,10 @@ public class KafkaService {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DETAIL_DATA, map.toString());
 
 		try {
-			String symbol = map.getOrDefault(mapKey.getSymbol(), "-").toString();
+			String ticker = map.getOrDefault(mapKey.getTicker(), "-").toString();
 			String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
 
-			Map<String, Object> outputMap = fileParseService.parseDetailFile(subExchange, symbol);
+			Map<String, Object> outputMap = fileParseService.parseDetailFile(subExchange, ticker);
 
 			String topic = getTopicFromList(map);
 
@@ -177,10 +177,10 @@ public class KafkaService {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_HISTORICAL_DATA, map.toString());
 
 		try {
-			String symbol = map.getOrDefault(mapKey.getSymbol(), "-").toString();
+			String ticker = map.getOrDefault(mapKey.getTicker(), "-").toString();
 //			<List>String next = (List<String>) map.get("next");
-			List<Map<String, Object>> list = fileParseService.parseHistoricalFile(symbol);
-//			list.forEach(System.out::println);
+			List<Map<String, Object>> list = fileParseService.parseHistoricalFile(ticker);
+			list.forEach(System.out::println);
 //			publish(next, list);
 		} catch (IOException e) {
 			logger.info(e.toString());
@@ -193,9 +193,9 @@ public class KafkaService {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_INFO_DATA, map.toString());
 
 		try {
-			String symbol = map.getOrDefault(mapKey.getSymbol(), "-").toString();
+			String ticker = map.getOrDefault(mapKey.getTicker(), "-").toString();
 			Map<String, Object> outMap;
-			outMap = fileParseService.parseInfoFile(symbol);
+			outMap = fileParseService.parseInfoFile(ticker);
 //			list.forEach(System.out::println);
 			publish(TOPIC_PROCESS_INFO_DATA, outMap);
 		} catch (IOException e) {
