@@ -36,17 +36,9 @@ public class KafkaService {
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
-	private final String TOPIC_PARSE_EXCHANGE_DATA = "parse.exchange.data";
-
-	private final String TOPIC_PARSE_HISTORICAL_DATA = "parse.historical.data";
-
 	private final String TOPIC_PROCESS_EXCHANGE_DATA_LIST = "process.exchange.data.list";
 
 	private final String TOPIC_PROCESS_HISTORICAL_DATA_LIST = "process.historical.data.list";
-
-	private final String TOPIC_SAVE_EXCHANGE_DATA_LIST = "save.exchange.data.list";
-
-	private final String TOPIC_SAVE_HISTORICAL_DATA_LIST = "save.historical.data.list";
 
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 

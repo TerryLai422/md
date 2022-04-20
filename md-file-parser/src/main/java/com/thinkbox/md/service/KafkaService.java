@@ -45,16 +45,6 @@ public class KafkaService {
 
 	private final String TOPIC_PARSE_HISTORICAL_DATA = "parse.historical.data";
 
-	private final String TOPIC_PROCESS_INFO_DATA = "process.info.data";
-
-	private final String TOPIC_PROCESS_EXCHANGE_DATA_LIST = "process.exchange.data.list";
-
-	private final String TOPIC_PROCESS_HISTORICAL_DATA_LIST = "process.historical.data.list";
-
-	private final String TOPIC_SAVE_EXCHANGE_DATA_LIST = "save.exchange.data.list";
-
-	private final String TOPIC_SAVE_HISTORICAL_DATA_LIST = "save.historical.data.list";
-
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
 	@Async(ASYNC_EXECUTOR)
@@ -197,7 +187,7 @@ public class KafkaService {
 			Map<String, Object> outMap;
 			outMap = fileParseService.parseInfoFile(ticker);
 //			list.forEach(System.out::println);
-			publish(TOPIC_PROCESS_INFO_DATA, outMap);
+//			publish(TOPIC_PROCESS_INFO_DATA, outMap);
 		} catch (IOException e) {
 			logger.info(e.toString());
 		}
