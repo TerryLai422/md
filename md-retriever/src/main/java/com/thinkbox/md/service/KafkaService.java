@@ -38,7 +38,7 @@ public class KafkaService {
 
 	private final String TOPIC_RETRIEVE_DETAIL_DATA = "retrieve.detail.data";
 
-	private final String TOPIC_RETRIEVE_DETAIL_DATA_LIST = "retrieve.detail.data.list";
+	private final String TOPIC_RETRIEVE_YAHOO_DATA_LIST = "retrieve.yahoo.data.list";
 	
 	private final String TOPIC_RETRIEVE_HISTORICAL_DATA = "retrieve.historical.data";
 
@@ -115,17 +115,17 @@ public class KafkaService {
 			logger.info("Finish Last Step: {}", firstMap.get(mapKey.getSteps().toString()));
 		}
 	}
-	
+
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_RETRIEVE_DETAIL_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
-	public void retrieveDetailList(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_DETAIL_DATA_LIST, list.toString());
+	@KafkaListener(topics = TOPIC_RETRIEVE_YAHOO_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	public void retrieveHistoricalList(List<Map<String, Object>> list) {
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_YAHOO_DATA_LIST, list.toString());
 
 		Map<String, Object> firstMap = list.get(0);
 		
 		String topic = getTopicFromList(firstMap);
 
-		List<Map<String, Object>> outputList = retrieveService.retrieveDetailList(list);
+		List<Map<String, Object>> outputList = retrieveService.retrieveYahooList(list);
 		outputList.forEach(System.out::println);
 
 		if (topic != null) {
