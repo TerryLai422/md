@@ -22,15 +22,6 @@ tpd:
   
 rest-parameter:
   topic:
-    retrieve.info.data:
-      - steps
-      - next
-      - ticker
-    retrieve.historical.data:
-      - steps
-      - next
-      - ticker
-      - date
     parse.historical.data:
       - steps
       - next
@@ -61,4 +52,17 @@ rest-parameter:
       - steps
       - next
       - subExchange
-      - yahooType      
+      - yahooType     
+    retrieve.yahoo.data:
+      - steps
+      - next
+      - ticker
+      - date      
+      - yahooType 
+    retrieve.yahoo.data.list:
+      - steps
+      - next
+      - wait
+      - subExchange
+      - date      
+      - yahooType       

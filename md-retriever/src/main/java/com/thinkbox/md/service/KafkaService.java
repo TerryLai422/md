@@ -32,18 +32,10 @@ public class KafkaService {
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
-	private final String TOPIC_RETRIEVE_INFO_DATA = "retrieve.info.data";
-		
-	private final String TOPIC_RETRIEVE_INFO_DATA_LIST = "retrieve.info.data.list";
-
-	private final String TOPIC_RETRIEVE_DETAIL_DATA = "retrieve.detail.data";
-
+	private final String TOPIC_RETRIEVE_YAHOO_DATA = "retrieve.yahoo.data";
+	
 	private final String TOPIC_RETRIEVE_YAHOO_DATA_LIST = "retrieve.yahoo.data.list";
 	
-	private final String TOPIC_RETRIEVE_HISTORICAL_DATA = "retrieve.historical.data";
-
-	private final String TOPIC_RETRIEVE_HISTORICAL_DATA_LIST = "retrieve.historical.data.list";
-
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
 	private final String CONTAINER_FACTORY_LIST = "listListener";
@@ -63,62 +55,16 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_RETRIEVE_INFO_DATA, containerFactory = CONTAINER_FACTORY_MAP)
-	public void retreiveInfo(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_INFO_DATA, map);
+	@KafkaListener(topics = TOPIC_RETRIEVE_YAHOO_DATA, containerFactory = CONTAINER_FACTORY_MAP)
+	public void retreiveYahoo(Map<String, Object> map) {
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_YAHOO_DATA, map);
 		
-		retrieveService.retrieveInfo(map);
-	}
-
-	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_RETRIEVE_DETAIL_DATA, containerFactory = CONTAINER_FACTORY_MAP)
-	public void retreiveDetail(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_INFO_DATA, map);
-		
-		retrieveService.retrieveDetail(map);
-	}
-
-	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_RETRIEVE_HISTORICAL_DATA, containerFactory = CONTAINER_FACTORY_MAP)
-	public void retreiveHistorical(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_HISTORICAL_DATA, map);
-		
-		retrieveService.retrieveHistorical(map);
+		retrieveService.retrieveYahoo(map);
 	}
 	
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_RETRIEVE_INFO_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
-	public void retrieveInfoList(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_INFO_DATA_LIST, list.toString());
-
-		List<Map<String, Object>> outputList = retrieveService.retrieveInfoList(list);
-		outputList.forEach(System.out::println);
-
-		Map<String, Object> firstMap = list.get(0);
-		String topic = getTopicFromList(firstMap);
-
-		if (topic != null) {
-			
-			final Map<String, Object> first = outputList.remove(0);
-			firstMap.forEach((x, y) -> {
-				first.put(x, y);
-			});
-
-			outputList.add(0, first);
-
-			outputList.forEach(System.out::println);
-
-			publish(topic, outputList);
-
-		} else {
-			outputList.forEach(System.out::println);
-			logger.info("Finish Last Step: {}", firstMap.get(mapKey.getSteps().toString()));
-		}
-	}
-
-	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_RETRIEVE_YAHOO_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
-	public void retrieveHistoricalList(List<Map<String, Object>> list) {
+	public void retrieveYahooList(List<Map<String, Object>> list) {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_YAHOO_DATA_LIST, list.toString());
 
 		Map<String, Object> firstMap = list.get(0);

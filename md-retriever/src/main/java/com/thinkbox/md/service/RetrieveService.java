@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -32,48 +33,30 @@ public class RetrieveService {
 	@Autowired
 	private MapKeyParameter mapKey;
 
-	public void retrieveInfo(Map<String, Object> map) {
+	private YahooRequest getYahooRequest(Map<String, Object> map) {
+		YahooRequest yahooRequest = null;
+
 		String ticker = map.getOrDefault(mapKey.getTicker(), "-").toString();
+		String yahooType = map.getOrDefault(mapKey.getYahooType(), "-").toString();
 
-		if (!ticker.equals("-")) {
-			YahooInfoRequest yahooInfoRequest = new YahooInfoRequest(ticker);
-			try {
-				yahooInfoRequest.get();
-				logger.info("Finished retrieve info data - map: {}", map);
+		if (yahooType.equals("-")) {
+			logger.info("Request missing yahooType");
+			return yahooRequest;
 
-			} catch (IOException e) {
-				logger.info(e.toString());
-			}
-		} else {
-			logger.info("Request missing ticker");
 		}
-	}
-
-	public void retrieveDetail(Map<String, Object> map) {
-		String ticker = map.getOrDefault(mapKey.getTicker(), "-").toString();
-
-		if (!ticker.equals("-")) {
-			YahooDetailRequest yahooDetailRequest = new YahooDetailRequest(ticker);
-			try {
-				yahooDetailRequest.get();
-				logger.info("Finished retrieve info data - map: {}", map);
-
-			} catch (IOException e) {
-				logger.info(e.toString());
-			}
-		} else {
+		if (ticker.equals("-")) {
 			logger.info("Request missing ticker");
+			return yahooRequest;
 		}
-	}
 
-	private YahooHistoricalRequest getYahooHistoricalRequest(Map<String, Object> map) {
-		YahooHistoricalRequest yahooHistoricalRequest = null;
+		if (yahooType.equals("info")) {
+			yahooRequest = new YahooInfoRequest(ticker);
+		} else if (yahooType.equals("detail")) {
+			yahooRequest = new YahooDetailRequest(ticker);
+		} else if (yahooType.equals("historical")) {
+			String date = map.getOrDefault(mapKey.getDate(), "-").toString();
+			String interval = map.getOrDefault("interval", "-").toString();
 
-		String ticker = map.getOrDefault(mapKey.getTicker(), "-").toString();
-		String date = map.getOrDefault(mapKey.getDate(), "-").toString();
-		String interval = map.getOrDefault("interval", "-").toString();
-System.out.println("Date:" + date);
-		if (!ticker.equals("-")) {
 			Calendar startDate = null;
 			if (!date.equals("-")) {
 				Date sDate;
@@ -86,62 +69,73 @@ System.out.println("Date:" + date);
 				}
 			}
 			if (startDate != null) {
-				yahooHistoricalRequest = new YahooHistoricalRequest(ticker, interval, startDate);
+				yahooRequest = new YahooHistoricalRequest(ticker, interval, startDate);
 			} else {
-				yahooHistoricalRequest = new YahooHistoricalRequest(ticker, interval);
+				yahooRequest = new YahooHistoricalRequest(ticker, interval);
 			}
-		} else {
-			logger.info("Request missing ticker");
 		}
 
-		return yahooHistoricalRequest;
+		return yahooRequest;
 	}
+	
+	public void retrieveYahoo(Map<String, Object> map) {
 
-	public void retrieveHistorical(Map<String, Object> map) {
+		YahooRequest yahooRequest = getYahooRequest(map);
 
-		YahooHistoricalRequest yahooHistoricalRequest = getYahooHistoricalRequest(map);
-
-		if (yahooHistoricalRequest != null) {
+		if (yahooRequest != null) {
 			try {
-				yahooHistoricalRequest.get();
+				yahooRequest.get();
 				logger.info("Finished retrieve historical data - map: {}", map);
 			} catch (IOException e) {
 				logger.info(e.toString());
 			}
 		} else {
-			logger.info("Cannot create YahooHistoricalRquest: {}", map.toString());
+			logger.info("Cannot create YahooRquest: {}", map.toString());
 		}
 	}
 
-	public List<Map<String, Object>> retrieveInfoList(List<Map<String, Object>> list) {
-		Map<String, Object> firstMap = list.get(0);
+	public List<Map<String, Object>> retrieveYahooList(List<Map<String, Object>> list) {
+		List<Map<String, Object>> outputList = Arrays.asList();
 
+		final Map<String, Object> firstMap = list.get(0);
 		final int wait = Integer.valueOf(firstMap.get(mapKey.getWait()).toString());
-		final String from = firstMap.getOrDefault("from", "-").toString();
+		final String from = firstMap.getOrDefault(mapKey.getFrom(), "-").toString();
+		final String yahooType = firstMap.getOrDefault(mapKey.getYahooType(), "-").toString();
+		final String key = (yahooType.equals("historical")) ? "retrieveHistorical"
+				: (yahooType.equals("detail")) ? "retrieveDetail" : (yahooType.equals("info")) ? "retrieveInfo" : "-";
 
-		Stream<Map<String, Object>> intermedicateList = null;
-		if (from.equals("-")) {
-			intermedicateList = list.stream().skip(1).sorted(
-					(i, j) -> i.get(mapKey.getTicker()).toString().compareTo(j.get(mapKey.getTicker()).toString()));
+		if (key.equals("-")) {
+			logger.info("Skip retrieve Yahoo data (missing/incorrect yahooType parameter");
 		} else {
-			intermedicateList = list.stream().skip(1)
-					.filter(x -> x.get(mapKey.getTicker()).toString().compareTo(from) > 1).sorted((i, j) -> i
-							.get(mapKey.getTicker()).toString().compareTo(j.get(mapKey.getTicker()).toString()));
-		}
+			Stream<Map<String, Object>> intermedicateList = null;
+			if (from.equals("-")) {
+				intermedicateList = list.stream().skip(1).sorted(
+						(i, j) -> i.get(mapKey.getTicker()).toString().compareTo(j.get(mapKey.getTicker()).toString()))
+						.limit(4);
+			} else {
+				intermedicateList = list.stream().skip(1)
+						.filter(x -> x.get(mapKey.getTicker()).toString().compareTo(from) > 1).sorted((i, j) -> i
+								.get(mapKey.getTicker()).toString().compareTo(j.get(mapKey.getTicker()).toString()))
+						.limit(4);
+			}
 
-		intermedicateList.forEach(map -> {
-			logger.info("Start retrieve info data - map: {}", map);
+			outputList = intermedicateList.map(map -> {
+				logger.info("Start retrieve Yahoo data - map: {}", map);
 
-			String ticker = map.get(mapKey.getTicker()).toString();
-			if (!ticker.equals("-")) {
-				YahooInfoRequest yahooInfoRequest = new YahooInfoRequest(ticker);
+				String ticker = map.get(mapKey.getTicker()).toString();
+				Map<String, Object> hMap = new TreeMap<>();
+				firstMap.forEach((x, y) -> {
+					hMap.put(x, y);
+				});
+				hMap.put(mapKey.getTicker(), ticker);
+				YahooRequest yahooRequest = getYahooRequest(hMap);
 				try {
-					yahooInfoRequest.get();
+					yahooRequest.get();
 					logger.info("Finished retrieve info data - map: {}", map);
-					map.put("RetrieveInfo", true);
+					map.put(key, true);
 				} catch (IOException e) {
 					logger.info(e.toString());
-					map.put("RetrieveInfo", false);
+					map.put(key, false);
 				}
 
 				try {
@@ -150,75 +144,11 @@ System.out.println("Date:" + date);
 				} catch (InterruptedException e) {
 					logger.info(e.toString());
 				}
-			} else {
-				logger.info("Skip retrieve info data - map: {}", map);
-			}
+				return map;
+			}).toList();
 
-		});
-
-		List<Map<String, Object>> outputList = list;
-
-		return outputList;
-	}
-
-	public List<Map<String, Object>> retrieveYahooList(List<Map<String, Object>> list) {
-		final Map<String, Object> firstMap = list.get(0);
-		System.out.println("First: " + firstMap);
-		final int wait = Integer.valueOf(firstMap.get(mapKey.getWait()).toString());
-		final String from = firstMap.getOrDefault(mapKey.getFrom(), "-").toString();
-		final String yahooType = firstMap.getOrDefault(mapKey.getYahooType(), "-").toString();
-
-		if (yahooType.equals("-")) {
-			logger.info("Skip retrieve Yahoo data (missing yahooType parameter");
-		} else {
-			Stream<Map<String, Object>> intermedicateList = null;
-			if (from.equals("-")) {
-				intermedicateList = list.stream().skip(1).sorted(
-						(i, j) -> i.get(mapKey.getTicker()).toString().compareTo(j.get(mapKey.getTicker()).toString()));
-			} else {
-				intermedicateList = list.stream().skip(1)
-						.filter(x -> x.get(mapKey.getTicker()).toString().compareTo(from) > 1).sorted((i, j) -> i
-								.get(mapKey.getTicker()).toString().compareTo(j.get(mapKey.getTicker()).toString()));
-			}
-
-			intermedicateList.forEach(map -> {
-				logger.info("Start retrieve Yahoo data - map: {}", map);
-
-				String ticker = map.get(mapKey.getTicker()).toString();
-				if (!ticker.equals("-")) {
-					YahooRequest yahooRequest = null;
-					if (yahooType.equals("historical")) {
-						Map<String, Object> hMap = new TreeMap<>();
-						firstMap.forEach((x, y) -> {
-							hMap.put(x, y);
-						});
-						hMap.put(mapKey.getTicker(), ticker);
-						yahooRequest = getYahooHistoricalRequest(hMap);
-					} else {
-						yahooRequest = new YahooDetailRequest(ticker);
-					}
-					try {
-						yahooRequest.get();
-						logger.info("Finished retrieve info data - map: {}", map);
-					} catch (IOException e) {
-						logger.info(e.toString());
-					}
-
-					try {
-						System.out.println("Sleep :" + wait);
-						Thread.sleep(wait);
-					} catch (InterruptedException e) {
-						logger.info(e.toString());
-					}
-				} else {
-					logger.info("Skip retrieve info data - map: {}", map);
-				}
-
-			});
-
-			return list;
 		}
-		return new ArrayList<Map<String, Object>>();
+		return outputList;
 	}
 
 }
