@@ -53,7 +53,7 @@ public class DataMapper {
 		Instrument instrument = new Instrument();
 
 		instrument.setId(
-				map.getOrDefault(mapKey.getExchange(), DEFAULT_STRING_VALUE) + "@" + map.get(mapKey.getSymbol()));
+				map.getOrDefault(mapKey.getSubExchange(), DEFAULT_STRING_VALUE) + "@" + map.get(mapKey.getTicker()));
 		instrument.setSymbol((String) map.getOrDefault(mapKey.getSymbol(), DEFAULT_STRING_VALUE));
 		instrument.setTicker((String) map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE));
 		instrument.setName((String) map.getOrDefault(mapKey.getName(), DEFAULT_STRING_VALUE));
