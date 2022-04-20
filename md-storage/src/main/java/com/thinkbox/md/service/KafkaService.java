@@ -27,20 +27,20 @@ public class KafkaService {
 	private KafkaTemplate<String, Map<String, Object>> kafkaTemplateMap;
 	@Autowired
 	private StoreService storeService;
-	
+
 	@Autowired
 	private MapKeyParameter mapKey;
-	
+
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
 	private final String TOPIC_SAVE_EXCHANGE_DATA_LIST = "save.exchange.data.list";
-	
+
 	private final String TOPIC_SAVE_HISTORICAL_DATA_LIST = "save.historical.data.list";
 
 	private final String TOPIC_SAVE_DETAIL_DATA = "save.detail.data";
-	
+
 	private final String TOPIC_DBGET_EXCHANGE_DATA = "dbget.exchange.data";
-	
+
 	private final String CONTAINER_FACTORY_LIST = "listListener";
 
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
@@ -49,13 +49,14 @@ public class KafkaService {
 		logger.info(String.format("Sent topic: -> {}", map.toString()));
 		kafkaTemplateMap.send(topic, map);
 	}
-	
+
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, List<Map<String, Object>> list) {
 		logger.info("Sent topic: {} -> {}", topic, list.toString());
 
 		kafkaTemplateList.send(topic, list);
 	}
+
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_EXCHANGE_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveExchangeList(List<Map<String, Object>> list) {
@@ -69,16 +70,16 @@ public class KafkaService {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_SAVE_HISTORICAL_DATA_LIST, list.toString());
 		storeService.saveHistoricalList(list);
 	}
-	
+
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_DETAIL_DATA, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveDetail(List<Map<String, Object>> list) {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_SAVE_DETAIL_DATA, list.toString());
-		
+
 		Map<String, Object> secondMap = list.get(1);
-		
+
 		storeService.saveInstrument(secondMap);
-		
+
 		Map<String, Object> firstMap = list.get(0);
 		String topic = getTopicFromList(firstMap);
 
@@ -97,14 +98,24 @@ public class KafkaService {
 	@KafkaListener(topics = TOPIC_DBGET_EXCHANGE_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void getInstruments(Map<String, Object> map) {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_DBGET_EXCHANGE_DATA, map.toString());
+
+		List<Map<String, Object>> outputList = null;
 		String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
-		
 		if (!subExchange.equals("-")) {
-			List<Map<String, Object>> instruments = storeService.getInstruments(subExchange);
-			instruments.forEach(System.out::println);
+			outputList = storeService.getInstruments(subExchange);
+		}
+
+		String topic = getTopicFromList(map);
+		if (topic != null) {
+			if (outputList != null) {
+				outputList.add(0, map);
+				publish(topic, outputList);
+			}
+		} else {
+			logger.info("Finish Last Step: {}", map.get(mapKey.getSteps().toString()));
 		}
 	}
-	
+
 	private String getTopicFromList(Map<String, Object> map) {
 		Object objNext = map.get(mapKey.getNext());
 		int next = Integer.valueOf(objNext.toString());
