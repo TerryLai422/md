@@ -1,5 +1,6 @@
 package com.thinkbox.md.request;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
@@ -53,4 +54,5 @@ public abstract class YahooRequest {
 		return sb.toString();
 	}
 
+	abstract public void get() throws IOException;
 }
