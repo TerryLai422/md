@@ -86,6 +86,7 @@ map-key-parameter:
   sharesOutstanding: sharesOutstanding
   marketCap: marketCap
   dataType: dataType
+  dataSource: dataSource  
   from: from
     
 map-value-parameter:
