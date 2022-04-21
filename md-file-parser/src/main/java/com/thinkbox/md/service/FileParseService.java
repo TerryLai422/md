@@ -61,8 +61,10 @@ public class FileParseService {
 
 	private final static Character TAB_SEPERATOR = '\t';
 
-	private final static String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
+	private final static String OUTPUT_DATE_FORMAT = "%1$tY%1$tm%1$td";
 
+	private final static String DEFAULT_TIME_VALUE = "000000";
+	
 	@Value("${app.data.directory:-}")
 	private String dataDirectory;
 
@@ -149,9 +151,9 @@ public class FileParseService {
 		return null;
 	}
 
-	private String getDateFormat(final String dataType) {
+	private String getDateFormat(final String dataSource) {
 		String format;
-		if (dataType.equals("yahooHistorical")) {
+		if (dataSource.equals("yahoo")) {
 			format = "yyyy-MM-dd";
 		} else {
 			format = "yyyyMMdd";
@@ -160,10 +162,9 @@ public class FileParseService {
 		return format;
 	}
 
-	
-	private List<Integer> getColumnsPosition(final String dataType) {
+	private List<Integer> getColumnsPosition(final String dataSource) {
 		List<Integer> columns = null;
-		if (dataType.equals("yahooHistorical")) {
+		if (dataSource.equals("yahoo")) {
 			columns = Arrays.asList(0, 1, 2, 3, 4, 5, 6);
 		} else {
 			columns = Arrays.asList(2, 4, 5, 6, 7, 7, 8);
@@ -184,12 +185,30 @@ public class FileParseService {
 		return fileName;
 	}
 
-	public List<Map<String, Object>> parseHistoricalFile(final String dataType, final String symbol,
+	private int getTypePosition(final String dataSource) {
+
+		if (dataSource.equals("stooq")) {
+			return 1;
+		}
+		return -1;
+	}
+
+	private int getTimePosition(final String dataSource) {
+
+		if (dataSource.equals("stooq")) {
+			return 3;
+		}
+		return -1;
+	}
+
+	public List<Map<String, Object>> parseHistoricalFile(final String dataSource, final String symbol,
 			final String ticker) throws IOException {
 
-		final List<Integer> columns = getColumnsPosition(dataType);
-		final String dateFormat = getDateFormat(dataType);
-		String fileName = getFileName(dataType, symbol, ticker);
+		final List<Integer> columns = getColumnsPosition(dataSource);
+		final String dateFormat = getDateFormat(dataSource);
+		final int typePosition = getTypePosition(dataSource);
+		final int timePosition = getTimePosition(dataSource);
+		String fileName = getFileName(dataSource, symbol, ticker);
 		logger.info(fileName);
 
 		CSVFileReader csvFileReader = new CSVFileReader();
@@ -217,11 +236,19 @@ public class FileParseService {
 
 				map = new TreeMap<String, Object>();
 
-				map.put(mapKey.getType(), new String(mapValue.getDaily()));
-
-				map.put(mapKey.getTicker(), new String(ticker));
-				map.put(mapKey.getSymbol(), new String(symbol));
-				map.put(mapKey.getDate(), new String(String.format("%1$tY%1$tm%1$td", calendar)));
+				if (typePosition == -1) {
+					map.put(mapKey.getType(), new String(mapValue.getDaily()));
+				} else {
+					map.put(mapKey.getType(), new String(x[typePosition]));
+				}
+				map.put(mapKey.getTicker(), new String(ticker).toUpperCase());
+				map.put(mapKey.getSymbol(), new String(symbol).toUpperCase());
+				map.put(mapKey.getDate(), new String(String.format(OUTPUT_DATE_FORMAT, calendar)));
+				if (timePosition == -1) {
+					map.put(mapKey.getTime(), DEFAULT_TIME_VALUE);
+				} else {
+					map.put(mapKey.getTime(), new String(x[timePosition]));
+				}				
 				map.put(mapKey.getYear(), year);
 				map.put(mapKey.getMonth(), calendar.get(Calendar.MONTH) + 1);
 				map.put(mapKey.getDay(), calendar.get(Calendar.DATE));
@@ -253,8 +280,8 @@ public class FileParseService {
 		Map<String, Object> index = new TreeMap<String, Object>();
 
 		index.put(mapKey.getType(), new String(mapValue.getDaily()));
-		index.put(mapKey.getTicker(), new String(ticker));
-		index.put(mapKey.getSymbol(), new String(symbol));
+		index.put(mapKey.getTicker(), new String(ticker).toUpperCase());
+		index.put(mapKey.getSymbol(), new String(symbol).toUpperCase());
 		index.put(mapKey.getFromDate(), first.get(mapKey.getDate()));
 		index.put(mapKey.getFromYear(), first.get(mapKey.getYear()));
 		index.put(mapKey.getFromMonth(), first.get(mapKey.getMonth()));

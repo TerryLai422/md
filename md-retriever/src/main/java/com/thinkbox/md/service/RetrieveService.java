@@ -49,11 +49,11 @@ public class RetrieveService {
 			return yahooRequest;
 		}
 
-		if (dataType.equals("yahooInfo")) {
+		if (dataType.equals("info")) {
 			yahooRequest = new YahooInfoRequest(ticker);
-		} else if (dataType.equals("yahooDetail")) {
+		} else if (dataType.equals("detail")) {
 			yahooRequest = new YahooDetailRequest(ticker);
-		} else if (dataType.equals("yahooHistorical")) {
+		} else if (dataType.equals("historical")) {
 			String date = map.getOrDefault(mapKey.getDate(), "-").toString();
 			String interval = map.getOrDefault("interval", "-").toString();
 
@@ -101,8 +101,8 @@ public class RetrieveService {
 		final int wait = Integer.valueOf(firstMap.get(mapKey.getWait()).toString());
 		final String from = firstMap.getOrDefault(mapKey.getFrom(), "-").toString();
 		final String dataType = firstMap.getOrDefault(mapKey.getDataType(), "-").toString();
-		final String key = (dataType.equals("yahooHistorical")) ? "retrieveHistorical"
-				: (dataType.equals("yahooDetail")) ? "retrieveDetail" : (dataType.equals("yahooInfo")) ? "retrieveInfo" : "-";
+		final String key = (dataType.equals("historical")) ? "retrieveHistorical"
+				: (dataType.equals("detail")) ? "retrieveDetail" : (dataType.equals("info")) ? "retrieveInfo" : "-";
 
 		if (key.equals("-")) {
 			logger.info("Skip retrieve Yahoo data (missing/incorrect yahooType parameter");
