@@ -68,7 +68,18 @@ public class KafkaService {
 	@KafkaListener(topics = TOPIC_SAVE_HISTORICAL_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveHistoricalList(List<Map<String, Object>> list) {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_SAVE_HISTORICAL_DATA_LIST, list.toString());
+		
+		Map<String, Object> firstMap = list.get(0);
+		String topic = getTopicFromList(firstMap);
+
 		storeService.saveHistoricalList(list);
+		
+		if (topic != null) {
+			publish(topic, list);
+		} else {
+			logger.info("Finish Last Step: {}", firstMap.get(mapKey.getSteps().toString()));
+		}
+		
 	}
 
 	@Async(ASYNC_EXECUTOR)

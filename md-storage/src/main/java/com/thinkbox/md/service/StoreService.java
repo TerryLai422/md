@@ -28,7 +28,7 @@ public class StoreService {
 	
 	public void saveHistoricalList(List<Map<String, Object>> list) {
 		
-		List<Historical> convertedList = list.stream().map(mapper::convertMapToHistorical).collect(Collectors.toList());
+		List<Historical> convertedList = list.stream().skip(1).map(mapper::convertMapToHistorical).collect(Collectors.toList());
 		
 		historicalRepository.saveAll(convertedList);
 	
