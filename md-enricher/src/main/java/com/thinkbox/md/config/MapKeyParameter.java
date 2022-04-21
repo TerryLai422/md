@@ -46,6 +46,8 @@ public class MapKeyParameter {
 
 	private String adjClose;
 
+	private String prevClose;
+	
 	private String volume;
 
 	private String year;

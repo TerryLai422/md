@@ -30,7 +30,7 @@ rest-parameter:
       - steps
       - next
       - subExchange
-      - yahooType
+      - dataType
     parse.info.data:
       - steps
       - next
@@ -52,17 +52,17 @@ rest-parameter:
       - steps
       - next
       - subExchange
-      - yahooType     
+      - dataType     
     retrieve.yahoo.data:
       - steps
       - next
       - ticker
       - date      
-      - yahooType 
+      - dataType 
     retrieve.yahoo.data.list:
       - steps
       - next
       - wait
       - subExchange
       - date      
-      - yahooType       
+      - dataType       

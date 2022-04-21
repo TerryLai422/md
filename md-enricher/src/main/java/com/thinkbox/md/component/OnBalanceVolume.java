@@ -10,9 +10,9 @@ public class OnBalanceVolume extends Indicator {
 
 	private Queue<Long> queue = new LinkedList<>();
 
-	private Double last = 0d;
+	private double last = 0d;
 
-	private Long sum = 0L;
+	private long sum = 0L;
 
 	private OnBalanceVolume() {
 		super();
@@ -22,7 +22,7 @@ public class OnBalanceVolume extends Indicator {
 		super(mapKey, period);
 	}
 
-	public void add(Map<String, Object> map) {
+	public void process(Map<String, Object> map) {
 
 		Double close = (Double) map.get(mapKey.getClose());
 

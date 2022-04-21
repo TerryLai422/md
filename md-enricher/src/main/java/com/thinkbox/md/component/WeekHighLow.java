@@ -14,9 +14,9 @@ public class WeekHighLow extends Indicator {
 
 	private int limit;
 
-	private Double historicalHigh;
+	private double historicalHigh = 0;
 	
-	private Double historicalLow;
+	private double historicalLow = 0;
 	
 	private String historicalHighDate;
 	
@@ -36,7 +36,7 @@ public class WeekHighLow extends Indicator {
 		}
 	}
 
-	public void add(Map<String, Object> map) {
+	public void process(Map<String, Object> map) {
 
 		Integer year = (Integer) map.get(mapKey.getYear());
 		Integer dayOfYear = (Integer) map.get(mapKey.getDayOfYear());
@@ -50,11 +50,11 @@ public class WeekHighLow extends Indicator {
 				dayQueue.poll();
 			}
 		}
-		if (historicalHigh == null || close > historicalHigh) {
+		if (historicalHigh == 0 || close > historicalHigh) {
 			historicalHigh = close;
 			historicalHighDate = date;
 		}
-		if (historicalLow == null || close < historicalLow) {
+		if (historicalLow == 0 || close < historicalLow) {
 			historicalLow = close;
 			historicalLowDate = date;			
 		}

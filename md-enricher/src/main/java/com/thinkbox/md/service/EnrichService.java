@@ -12,7 +12,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.thinkbox.md.component.AverageTrueRange;
+import com.thinkbox.md.component.Indicator;
 import com.thinkbox.md.component.OnBalanceVolume;
+import com.thinkbox.md.component.PreviousClose;
 import com.thinkbox.md.component.SimpleMovingAverage;
 import com.thinkbox.md.component.WeekHighLow;
 import com.thinkbox.md.component.VolumeAverage;
@@ -42,25 +45,38 @@ public class EnrichService {
 		return list;
 	}
 
+	private List<Indicator> getIndicators() {
+		List<SimpleMovingAverage> smaList = getSMAList();
+		PreviousClose previousClose = new PreviousClose(mapKey, 0);
+		WeekHighLow weekHighLow = new WeekHighLow(mapKey, 52);
+		VolumeAverage volumeAverage = new VolumeAverage(mapKey, 50);
+		OnBalanceVolume onBalanceVolume = new OnBalanceVolume(mapKey, 0);
+		AverageTrueRange averageTrueRange = new AverageTrueRange(mapKey, 14);
+		
+		List<Indicator> indicators = Arrays.asList();
+		indicators.add(previousClose);
+		indicators.add(weekHighLow);
+		indicators.add(volumeAverage);
+		indicators.add(onBalanceVolume);
+		indicators.add(averageTrueRange);
+
+		for (Indicator indicator: smaList) {
+			indicators.add(indicator);			
+		}
+		return indicators;
+	}
+
 	public List<Map<String, Object>> enrichHistorical(List<Map<String, Object>> list) {
 
-		final List<SimpleMovingAverage> smaList = getSMAList();
-		final WeekHighLow weekHighLow = new WeekHighLow(mapKey, 52);
-		final VolumeAverage volumeAverage = new VolumeAverage(mapKey, 50);
-		final OnBalanceVolume onBalanceVolume = new OnBalanceVolume(mapKey, 0);
-
+		final List<Indicator> indicators = getIndicators();
+		
 		return list.stream().skip(1)
 				.sorted((i, j) -> i.get(mapKey.getDate()).toString().compareTo(j.get(mapKey.getDate()).toString()))
 				.map(x -> {
 
-					// SMA
-					for (SimpleMovingAverage sma : smaList) {
-						sma.add(x);
+					for (Indicator indicator: indicators) {
+						indicator.process(x);
 					}
-					weekHighLow.add(x);
-					volumeAverage.add(x);
-					onBalanceVolume.add(x);
-
 					return x;
 				}).collect(Collectors.toList());
 	}

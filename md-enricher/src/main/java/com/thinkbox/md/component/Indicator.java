@@ -19,5 +19,5 @@ public abstract class Indicator {
 		this.period = period;
 	}
 
-	abstract public void add(Map<String, Object> map);
+	abstract public void process(Map<String, Object> map);
 }

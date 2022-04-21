@@ -20,7 +20,7 @@ public class SimpleMovingAverage extends Indicator {
 		super(mapKey, period);
 	}
 
-	public void add(Map<String, Object> map) {
+	public void process(Map<String, Object> map) {
 		Double close = (Double) map.get(mapKey.getClose());
 		
 		queue.add(close);
@@ -43,6 +43,6 @@ public class SimpleMovingAverage extends Indicator {
 	}
 	
 	private String getKey() {
-		return "sma-" + period;
+		return "SMA-" + period;
 	}
 }

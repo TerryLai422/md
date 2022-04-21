@@ -137,7 +137,7 @@ public class MapKeyParameter {
 	
 	private String marketCap;
 	
-	private String yahooType;
+	private String dataType;
 	
 	private String from;
 }

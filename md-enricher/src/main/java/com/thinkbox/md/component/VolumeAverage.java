@@ -10,7 +10,7 @@ public class VolumeAverage extends Indicator {
 
 	private Queue<Long> queue = new LinkedList<>();
 
-	private Long sum = 0L;
+	private long sum = 0L;
 
 	private VolumeAverage() {
 		super();
@@ -20,7 +20,7 @@ public class VolumeAverage extends Indicator {
 		super(mapKey, period);
 	}
 
-	public void add(Map<String, Object> map) {
+	public void process(Map<String, Object> map) {
 
 		long volume = 0L;
 		
@@ -43,11 +43,11 @@ public class VolumeAverage extends Indicator {
 
 	}
 
-	private Double getAverage() {
+	private double getAverage() {
 		if (queue.size() < period)
 			return 0d;
 
-		return sum.doubleValue() / period;
+		return sum / period;
 	}
 
 	private String getKey() {
