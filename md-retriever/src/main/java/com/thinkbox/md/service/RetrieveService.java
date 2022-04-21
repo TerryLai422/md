@@ -77,7 +77,7 @@ public class RetrieveService {
 
 		return yahooRequest;
 	}
-	
+
 	public void retrieveYahoo(Map<String, Object> map) {
 
 		YahooRequest yahooRequest = getYahooRequest(map);
@@ -110,13 +110,11 @@ public class RetrieveService {
 			Stream<Map<String, Object>> intermedicateList = null;
 			if (from.equals("-")) {
 				intermedicateList = list.stream().skip(1).sorted(
-						(i, j) -> i.get(mapKey.getTicker()).toString().compareTo(j.get(mapKey.getTicker()).toString()))
-						.limit(4);
+						(i, j) -> i.get(mapKey.getTicker()).toString().compareTo(j.get(mapKey.getTicker()).toString()));
 			} else {
 				intermedicateList = list.stream().skip(1)
 						.filter(x -> x.get(mapKey.getTicker()).toString().compareTo(from) > 1).sorted((i, j) -> i
-								.get(mapKey.getTicker()).toString().compareTo(j.get(mapKey.getTicker()).toString()))
-						.limit(4);
+								.get(mapKey.getTicker()).toString().compareTo(j.get(mapKey.getTicker()).toString()));
 			}
 
 			outputList = intermedicateList.map(map -> {
