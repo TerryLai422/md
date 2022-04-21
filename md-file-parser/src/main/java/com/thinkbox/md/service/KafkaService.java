@@ -173,6 +173,7 @@ public class KafkaService {
 //			<List>String next = (List<String>) map.get("next");
 			List<Map<String, Object>> list = fileParseService.parseHistoricalFile(dataType, symbol, ticker);
 			list.forEach(System.out::println);
+			logger.info("Number of records: " + list.size());
 //			publish(next, list);
 		} catch (IOException e) {
 			logger.info(e.toString());
