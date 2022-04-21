@@ -37,9 +37,9 @@ public class RetrieveService {
 		YahooRequest yahooRequest = null;
 
 		String ticker = map.getOrDefault(mapKey.getTicker(), "-").toString();
-		String yahooType = map.getOrDefault(mapKey.getYahooType(), "-").toString();
+		String dataType = map.getOrDefault(mapKey.getDataType(), "-").toString();
 
-		if (yahooType.equals("-")) {
+		if (dataType.equals("-")) {
 			logger.info("Request missing yahooType");
 			return yahooRequest;
 
@@ -49,11 +49,11 @@ public class RetrieveService {
 			return yahooRequest;
 		}
 
-		if (yahooType.equals("info")) {
+		if (dataType.equals("yahooInfo")) {
 			yahooRequest = new YahooInfoRequest(ticker);
-		} else if (yahooType.equals("detail")) {
+		} else if (dataType.equals("yahooDetail")) {
 			yahooRequest = new YahooDetailRequest(ticker);
-		} else if (yahooType.equals("historical")) {
+		} else if (dataType.equals("yahooHistorical")) {
 			String date = map.getOrDefault(mapKey.getDate(), "-").toString();
 			String interval = map.getOrDefault("interval", "-").toString();
 
@@ -100,9 +100,9 @@ public class RetrieveService {
 		final Map<String, Object> firstMap = list.get(0);
 		final int wait = Integer.valueOf(firstMap.get(mapKey.getWait()).toString());
 		final String from = firstMap.getOrDefault(mapKey.getFrom(), "-").toString();
-		final String yahooType = firstMap.getOrDefault(mapKey.getYahooType(), "-").toString();
-		final String key = (yahooType.equals("historical")) ? "retrieveHistorical"
-				: (yahooType.equals("detail")) ? "retrieveDetail" : (yahooType.equals("info")) ? "retrieveInfo" : "-";
+		final String dataType = firstMap.getOrDefault(mapKey.getDataType(), "-").toString();
+		final String key = (dataType.equals("yahooHistorical")) ? "retrieveHistorical"
+				: (dataType.equals("yahooDetail")) ? "retrieveDetail" : (dataType.equals("yahooInfo")) ? "retrieveInfo" : "-";
 
 		if (key.equals("-")) {
 			logger.info("Skip retrieve Yahoo data (missing/incorrect yahooType parameter");
