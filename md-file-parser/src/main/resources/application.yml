@@ -88,6 +88,7 @@ map-key-parameter:
   dataType: dataType
   dataSource: dataSource
   from: from
+  misc: misc
   
 map-value-parameter:
   daily: D

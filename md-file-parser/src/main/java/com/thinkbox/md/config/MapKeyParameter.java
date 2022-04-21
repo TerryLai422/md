@@ -146,4 +146,6 @@ public class MapKeyParameter {
 	private String dataSource;
 	
 	private String from;
+	
+	private String misc;
 }
