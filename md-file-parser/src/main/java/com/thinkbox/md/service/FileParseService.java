@@ -100,8 +100,8 @@ public class FileParseService {
 
 		final String suffix = (subExchange.equals("TSX")) ? ".TO" : (subExchange.equals("TSXV")) ? ".V" : "";
 
-		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExchange + File.separator
-				+ symbol + DETAIL_FILE_SUFFIX + FILE_EXTENSION;
+		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExchange
+				+ File.separator + symbol + DETAIL_FILE_SUFFIX + FILE_EXTENSION;
 
 		logger.info(fileName);
 
@@ -119,7 +119,7 @@ public class FileParseService {
 		});
 		map.put(mapKey.getSymbol(), symbol.replaceAll(suffix, ""));
 		map.put(mapKey.getSubExchange(), subExchange);
-		
+
 		return map;
 	}
 
@@ -149,11 +149,47 @@ public class FileParseService {
 		return null;
 	}
 
-	public List<Map<String, Object>> parseHistoricalFile(final String symbol) throws IOException {
+	private String getDateFormat(final String dataType) {
+		String format;
+		if (dataType.equals("yahooHistorical")) {
+			format = "yyyy-MM-dd";
+		} else {
+			format = "yyyyMMdd";
+		}
 
-		String fileName = dataDirectory + File.separator + HISTORICAL_DIRECTORY + File.separator + symbol
-				+ HISTORICAL_DAILY_FILE_SUFFIX + FILE_EXTENSION;
+		return format;
+	}
 
+	
+	private List<Integer> getColumnsPosition(final String dataType) {
+		List<Integer> columns = null;
+		if (dataType.equals("yahooHistorical")) {
+			columns = Arrays.asList(0, 1, 2, 3, 4, 5, 6);
+		} else {
+			columns = Arrays.asList(2, 4, 5, 6, 7, 7, 8);
+		}
+
+		return columns;
+	}
+
+	private String getFileName(final String dataType, final String symbol, final String ticker) {
+		String fileName = null;
+		if (dataType.equals("yahooHistorical")) {
+			fileName = dataDirectory + File.separator + HISTORICAL_DIRECTORY + File.separator + ticker
+					+ HISTORICAL_DAILY_FILE_SUFFIX + FILE_EXTENSION;
+		} else {
+			fileName = dataDirectory + File.separator + HISTORICAL_DIRECTORY + File.separator + symbol + ".us"
+					+ FILE_EXTENSION;
+		}
+		return fileName;
+	}
+
+	public List<Map<String, Object>> parseHistoricalFile(final String dataType, final String symbol,
+			final String ticker) throws IOException {
+
+		final List<Integer> columns = getColumnsPosition(dataType);
+		final String dateFormat = getDateFormat(dataType);
+		String fileName = getFileName(dataType, symbol, ticker);
 		logger.info(fileName);
 
 		CSVFileReader csvFileReader = new CSVFileReader();
@@ -165,9 +201,9 @@ public class FileParseService {
 
 			try {
 				Calendar calendar = null;
-				String date = x[0];
+				String date = x[columns.get(0)];
 				Date sDate;
-				sDate = new SimpleDateFormat(DEFAULT_DATE_FORMAT).parse(date);
+				sDate = new SimpleDateFormat(dateFormat).parse(date);
 				calendar = Calendar.getInstance();
 				calendar.setTime(sDate);
 				calendar.set(Calendar.MILLISECOND, 0);
@@ -182,8 +218,10 @@ public class FileParseService {
 				map = new TreeMap<String, Object>();
 
 				map.put(mapKey.getType(), new String(mapValue.getDaily()));
-				map.put(mapKey.getSymbol(), new String(symbol));
-				map.put(mapKey.getDate(), new String(x[0]));
+				map.put(mapKey.getTicker(), new String(ticker));
+				//TODO String.format("%1$tY %1$tm %1$te", calendar)
+				
+				map.put(mapKey.getDate(), new String(String.format("%1$tY%1$tm%1$td", calendar)));
 				map.put(mapKey.getYear(), year);
 				map.put(mapKey.getMonth(), calendar.get(Calendar.MONTH) + 1);
 				map.put(mapKey.getDay(), calendar.get(Calendar.DATE));
@@ -196,12 +234,12 @@ public class FileParseService {
 				} else {
 					map.put(mapKey.getYearForWeek(), year);
 				}
-				map.put(mapKey.getOpen(), Double.parseDouble(x[1]));
-				map.put(mapKey.getHigh(), Double.parseDouble(x[2]));
-				map.put(mapKey.getLow(), Double.parseDouble(x[3]));
-				map.put(mapKey.getClose(), Double.parseDouble(x[4]));
-				map.put(mapKey.getAdjClose(), Double.parseDouble(x[5]));
-				map.put(mapKey.getVolume(), Long.parseLong(x[6]));
+				map.put(mapKey.getOpen(), Double.parseDouble(x[columns.get(1)]));
+				map.put(mapKey.getHigh(), Double.parseDouble(x[columns.get(2)]));
+				map.put(mapKey.getLow(), Double.parseDouble(x[columns.get(3)]));
+				map.put(mapKey.getClose(), Double.parseDouble(x[columns.get(4)]));
+				map.put(mapKey.getAdjClose(), Double.parseDouble(x[columns.get(5)]));
+				map.put(mapKey.getVolume(), Long.parseLong(x[columns.get(6)]));
 
 			} catch (ParseException e) {
 				logger.info(e.toString());
@@ -215,7 +253,7 @@ public class FileParseService {
 		Map<String, Object> index = new TreeMap<String, Object>();
 
 		index.put(mapKey.getType(), new String(mapValue.getDaily()));
-		index.put(mapKey.getSymbol(), new String(symbol));
+		index.put(mapKey.getTicker(), new String(ticker));
 		index.put(mapKey.getFromDate(), first.get(mapKey.getDate()));
 		index.put(mapKey.getFromYear(), first.get(mapKey.getYear()));
 		index.put(mapKey.getFromMonth(), first.get(mapKey.getMonth()));

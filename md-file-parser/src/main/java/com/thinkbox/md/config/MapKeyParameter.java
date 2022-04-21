@@ -136,4 +136,8 @@ public class MapKeyParameter {
 	private String sharesOutstanding;
 	
 	private String marketCap;
+	
+	private String dataType;
+	
+	private String from;
 }

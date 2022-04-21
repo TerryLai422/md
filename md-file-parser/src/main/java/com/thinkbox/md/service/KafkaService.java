@@ -168,8 +168,10 @@ public class KafkaService {
 
 		try {
 			String ticker = map.getOrDefault(mapKey.getTicker(), "-").toString();
+			String symbol = map.getOrDefault(mapKey.getSymbol(), "-").toString();
+			String dataType = map.getOrDefault(mapKey.getDataType(), "-").toString();
 //			<List>String next = (List<String>) map.get("next");
-			List<Map<String, Object>> list = fileParseService.parseHistoricalFile(ticker);
+			List<Map<String, Object>> list = fileParseService.parseHistoricalFile(dataType, symbol, ticker);
 			list.forEach(System.out::println);
 //			publish(next, list);
 		} catch (IOException e) {
