@@ -42,7 +42,7 @@ public class DataMapper {
 		historical.setLow((Double) map.get(mapKey.getLow()));
 		historical.setClose((Double) map.get(mapKey.getClose()));
 		historical.setAdjClose((Double) map.get(mapKey.getAdjClose()));
-		historical.setVolume((Long) map.get(mapKey.getVolume()));
+		historical.setVolume(Long.valueOf(map.getOrDefault(mapKey.getVolume(), DEFAULT_LONG_VALUE).toString()));
 		historical.setOthers(map);
 
 		return historical;
