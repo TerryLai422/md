@@ -26,6 +26,10 @@ rest-parameter:
       - steps
       - next
       - ticker
+    parse.historical.data.list:
+      - steps
+      - next      
+      - misc
     parse.exchange.data:
       - steps
       - next
