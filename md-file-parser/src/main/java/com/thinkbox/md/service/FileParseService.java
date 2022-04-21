@@ -218,9 +218,9 @@ public class FileParseService {
 				map = new TreeMap<String, Object>();
 
 				map.put(mapKey.getType(), new String(mapValue.getDaily()));
+
 				map.put(mapKey.getTicker(), new String(ticker));
-				//TODO String.format("%1$tY %1$tm %1$te", calendar)
-				
+				map.put(mapKey.getSymbol(), new String(symbol));
 				map.put(mapKey.getDate(), new String(String.format("%1$tY%1$tm%1$td", calendar)));
 				map.put(mapKey.getYear(), year);
 				map.put(mapKey.getMonth(), calendar.get(Calendar.MONTH) + 1);
@@ -254,6 +254,7 @@ public class FileParseService {
 
 		index.put(mapKey.getType(), new String(mapValue.getDaily()));
 		index.put(mapKey.getTicker(), new String(ticker));
+		index.put(mapKey.getSymbol(), new String(symbol));
 		index.put(mapKey.getFromDate(), first.get(mapKey.getDate()));
 		index.put(mapKey.getFromYear(), first.get(mapKey.getYear()));
 		index.put(mapKey.getFromMonth(), first.get(mapKey.getMonth()));

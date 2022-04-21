@@ -20,6 +20,7 @@ public class PreviousClose extends Indicator {
 
 		Double close = (Double) map.get(mapKey.getClose());
 
+		map.put(mapKey.getPercentChange(), (close - last)/ last);
 		map.put(getKey(), last);
 		
 		last = close;

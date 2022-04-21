@@ -50,6 +50,8 @@ public class MapKeyParameter {
 	
 	private String volume;
 
+	private String percentChange;
+	
 	private String year;
 
 	private String month;
@@ -138,4 +140,8 @@ public class MapKeyParameter {
 	private String sharesOutstanding;
 	
 	private String marketCap;
+	
+	private String dataType;
+	
+	private String from;
 }

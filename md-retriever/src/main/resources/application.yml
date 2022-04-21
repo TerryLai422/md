@@ -38,7 +38,9 @@ map-key-parameter:
   low: low    
   close: close
   adjClose: adjClose
+  prevClose: prevClose
   volume: volume
+  percentChange: percentChange  
   year: year
   month: month
   day: day

@@ -46,8 +46,12 @@ public class MapKeyParameter {
 
 	private String adjClose;
 
+	private String prevClose;
+	
 	private String volume;
 
+	private String percentChange;
+	
 	private String year;
 
 	private String month;
