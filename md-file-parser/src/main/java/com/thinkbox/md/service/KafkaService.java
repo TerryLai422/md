@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -108,50 +109,13 @@ public class KafkaService {
 			List<Map<String, Object>> list = fileParseService.getSymbolsfromHistoricalDirectory(misc);
 			list.forEach(System.out::println);
 
-			final String topic = getTopicFromList(map);
+			list.stream().parallel().forEach(x -> {
 
-			list.stream().forEach(x -> {
+				map.forEach((i, j) -> {
+					x.put(i, j);
+				});
 
-				List<Map<String, Object>> outputList;
-				try {
-					outputList = fileParseService.parseHistoricalFile(misc, x.get(mapKey.getDataSource()).toString(),
-							x.get(mapKey.getSymbol()).toString(), x.get(mapKey.getTicker()).toString());
-
-					if (topic != null) {
-//						outputList.forEach(System.out::println);
-						logger.info("Number of records:" + outputList.size());
-						if (outputList.size() >= 2) {
-							final Map<String, Object> firstMap = outputList.remove(0);
-							map.forEach((i, j) -> {
-								firstMap.put(i, j);
-							});
-
-							int size = outputList.size();
-
-							if (size <= BATCH_SAVE_LIMIT) {
-//							System.out.println("less than limit");
-								outputList.add(0, firstMap);
-								publish(topic, outputList);
-							} else {
-//							System.out.println("greater than limit");
-								List<Map<String, Object>> subList = null;
-								for (int i = 0; i < size; i += BATCH_SAVE_LIMIT) {
-									subList = outputList.stream().skip(i).limit(BATCH_SAVE_LIMIT).map(y -> y)
-											.collect(Collectors.toList());
-//								logger.info("Number of records (sublist):" + subList.size());
-									subList.add(0, firstMap);
-
-									publish(topic, subList);
-								}
-							}
-						}
-					} else {
-						logger.info(outputList.toString());
-						logger.info("Finish Last Step: {}", map.get(mapKey.getSteps().toString()));
-					}
-				} catch (IOException e) {
-					logger.info(e.toString());
-				}
+				parseHistericalData(x);
 			});
 
 		} catch (IOException e) {
@@ -233,17 +197,54 @@ public class KafkaService {
 	public void parseHisterical(Map<String, Object> map) {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_HISTORICAL_DATA, map.toString());
 
+		parseHistericalData(map);
+	}
+
+	private void parseHistericalData(Map<String, Object> map) {
 		try {
 			String ticker = map.getOrDefault(mapKey.getTicker(), "-").toString();
 			String symbol = map.getOrDefault(mapKey.getSymbol(), "-").toString();
 			String dataType = map.getOrDefault(mapKey.getDataType(), "-").toString();
 			String misc = map.getOrDefault(mapKey.getMisc(), "-").toString();
 
+			final String topic = getTopicFromList(map);
+
 			// <List>String next = (List<String>) map.get("next");
-			List<Map<String, Object>> list = fileParseService.parseHistoricalFile(misc, dataType, symbol, ticker);
-			list.forEach(System.out::println);
-			logger.info("Number of records: " + list.size());
-//			publish(next, list);
+			List<Map<String, Object>> outputList = fileParseService.parseHistoricalFile(misc, dataType, symbol, ticker);
+
+			if (topic != null) {
+//				outputList.forEach(System.out::println);
+				logger.info("Number of records:" + outputList.size());
+				if (outputList.size() >= 2) {
+					final Map<String, Object> firstMap = outputList.remove(0);
+					map.forEach((i, j) -> {
+						firstMap.put(i, j);
+					});
+
+					int size = outputList.size();
+
+					if (size <= BATCH_SAVE_LIMIT) {
+//					System.out.println("less than limit");
+						outputList.add(0, firstMap);
+						publish(topic, outputList);
+					} else {
+//					System.out.println("greater than limit");
+						List<Map<String, Object>> subList = null;
+						for (int i = 0; i < size; i += BATCH_SAVE_LIMIT) {
+							subList = outputList.stream().skip(i).limit(BATCH_SAVE_LIMIT).map(y -> y)
+									.collect(Collectors.toList());
+//						logger.info("Number of records (sublist):" + subList.size());
+							subList.add(0, firstMap);
+
+							publish(topic, subList);
+						}
+					}
+				}
+			} else {
+				logger.info(outputList.toString());
+				logger.info("Finish Last Step: {}", map.get(mapKey.getSteps().toString()));
+			}
+
 		} catch (IOException e) {
 			logger.info(e.toString());
 		}
