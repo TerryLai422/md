@@ -6,8 +6,6 @@
 
 Components
 - Kafka
-- Keycloak
-- MySQL
 - MongoDB
 - Lombok
 - Docker
