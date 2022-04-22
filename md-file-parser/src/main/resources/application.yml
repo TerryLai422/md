@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: md-enricher
+    name: md-file-parser
   cloud:
     config:
       enabled: false    
