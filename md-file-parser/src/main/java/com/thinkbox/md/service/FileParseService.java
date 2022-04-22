@@ -99,7 +99,7 @@ public class FileParseService {
 				.sorted((i, j) -> i.getName().compareTo(j.getName())).map(x -> {
 					Map<String, Object> map = new TreeMap<>();
 					String name = x.getName();
-					System.out.println(name);
+//					System.out.println(name);
 					if (name.contains("historical")) {
 						map.put(mapKey.getDataSource(), "yahoo");
 						String symbol = name.substring(0, name.length() - 17);
