@@ -19,7 +19,7 @@ public class AsyncConfig {
 		executor.setCorePoolSize(30);
 		executor.setMaxPoolSize(30);
 		executor.setQueueCapacity(100);
-		executor.setThreadNamePrefix("Enricher-T0-");
+		executor.setThreadNamePrefix("Enricher-");
 		executor.initialize();
 		return executor;
 	}

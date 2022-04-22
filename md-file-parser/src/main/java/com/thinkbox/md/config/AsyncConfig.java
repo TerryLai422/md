@@ -19,7 +19,7 @@ public class AsyncConfig {
 		executor.setCorePoolSize(30);
 		executor.setMaxPoolSize(30);
 		executor.setQueueCapacity(100);
-		executor.setThreadNamePrefix("FileParser-T0-");
+		executor.setThreadNamePrefix("FileParser-");
 		executor.initialize();
 		return executor;
 	}
