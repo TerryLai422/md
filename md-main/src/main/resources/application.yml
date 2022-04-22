@@ -22,11 +22,11 @@ tpd:
   
 rest-parameter:
   topic:
-    parse.historical.data:
+    parse.historical.single:
       - steps
       - next
       - ticker
-    parse.historical.data.list:
+    parse.historical.list:
       - steps
       - next      
       - misc
@@ -35,15 +35,15 @@ rest-parameter:
       - next
       - subExchange
       - dataType
-    parse.info.data:
+    parse.info.single:
       - steps
       - next
       - ticker
-    parse.detail.data.list:
+    parse.detail.list:
       - steps
       - next
       - subExchange
-    parse.detail.data:
+    parse.detail.single:
       - steps
       - next
       - subExchange

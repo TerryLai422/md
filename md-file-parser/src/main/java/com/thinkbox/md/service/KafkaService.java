@@ -37,17 +37,17 @@ public class KafkaService {
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
-	private final String TOPIC_PARSE_HISTORICAL_DATA_LIST = "parse.historical.data.list";
+	private final String TOPIC_PARSE_HISTORICAL_LIST = "parse.historical.list";
 
-	private final String TOPIC_PARSE_DETAIL_DATA_LIST = "parse.detail.data.list";
+	private final String TOPIC_PARSE_DETAIL_LIST = "parse.detail.list";
 
-	private final String TOPIC_PARSE_DETAIL_DATA = "parse.detail.data";
+	private final String TOPIC_PARSE_DETAIL_SINGLE = "parse.detail.single";
 
-	private final String TOPIC_PARSE_INFO_DATA = "parse.info.data";
+	private final String TOPIC_PARSE_INFO_SINGLE = "parse.info.single";
 
-	private final String TOPIC_PARSE_EXCHANGE_DATA = "parse.exchange.data";
+	private final String TOPIC_PARSE_EXCHANGE_DATA = "parse.exchange.single";
 
-	private final String TOPIC_PARSE_HISTORICAL_DATA = "parse.historical.data";
+	private final String TOPIC_PARSE_HISTORICAL_SINGLE = "parse.historical.single";
 
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
@@ -99,9 +99,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_DATA_LIST, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseHistoricalList(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_HISTORICAL_DATA_LIST, map.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_HISTORICAL_LIST, map.toString());
 
 		try {
 			final String misc = map.getOrDefault(mapKey.getMisc(), "-").toString();
@@ -124,9 +124,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PARSE_DETAIL_DATA_LIST, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = TOPIC_PARSE_DETAIL_LIST, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDetailList(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DETAIL_DATA_LIST, map.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DETAIL_LIST, map.toString());
 
 		try {
 			final String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
@@ -165,9 +165,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PARSE_DETAIL_DATA, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = TOPIC_PARSE_DETAIL_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDetail(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DETAIL_DATA, map.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DETAIL_SINGLE, map.toString());
 
 		try {
 			String ticker = map.getOrDefault(mapKey.getTicker(), "-").toString();
@@ -193,9 +193,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_DATA, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseHisterical(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_HISTORICAL_DATA, map.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_HISTORICAL_SINGLE, map.toString());
 
 		parseHistericalData(map);
 	}
@@ -251,9 +251,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PARSE_INFO_DATA, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = TOPIC_PARSE_INFO_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseInfo(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_INFO_DATA, map.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_INFO_SINGLE, map.toString());
 
 		try {
 			String ticker = map.getOrDefault(mapKey.getTicker(), "-").toString();
