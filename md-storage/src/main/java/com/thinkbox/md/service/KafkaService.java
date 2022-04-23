@@ -77,7 +77,7 @@ public class KafkaService {
 		if (topic != null) {
 			publish(topic, list);
 		} else {
-			logger.info("Finish Last Step: {} {}", firstMap.get(mapKey.getSymbol()),firstMap.get(mapKey.getSteps().toString()));
+			logger.info("Finish Last Step: {} {}", firstMap.toString());
 		}
 		
 	}
@@ -101,7 +101,7 @@ public class KafkaService {
 
 			publish(topic, outputList);
 		} else {
-			logger.info("Finish Last Step: {}", firstMap.get(mapKey.getSteps().toString()));
+			logger.info("Finish Last Step: {}", firstMap.toString());
 		}
 	}
 
@@ -123,7 +123,7 @@ public class KafkaService {
 				publish(topic, outputList);
 			}
 		} else {
-			logger.info("Finish Last Step: {}", map.get(mapKey.getSteps().toString()));
+			logger.info("Finish Last Step: {}", map.toString());
 		}
 	}
 

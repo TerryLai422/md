@@ -94,7 +94,7 @@ public class KafkaService {
 
 				publish(topic, outputList);
 			} else {
-				logger.info("Finish Last Step: {}", map.get(mapKey.getSteps().toString()));
+				logger.info("Finish Last Step: {}", map.toString());
 			}
 		} catch (IOException e) {
 			logger.info(e.toString());
@@ -129,7 +129,7 @@ public class KafkaService {
 						publish(topic, outputList);
 					} else {
 						logger.info(outputMap.toString());
-						logger.info("Finish Last Step: {}", map.get(mapKey.getSteps().toString()));
+						logger.info("Finish Last Step: {}", map.toString());
 					}
 				} catch (IOException e) {
 					logger.info(e.toString());
@@ -163,7 +163,7 @@ public class KafkaService {
 				publish(topic, outputList);
 			} else {
 				logger.info(outputMap.toString());
-				logger.info("Finish Last Step: {}", map.get(mapKey.getSteps().toString()));
+				logger.info("Finish Last Step: {}", map.toString());
 			}
 		} catch (IOException e) {
 			logger.info(e.toString());
@@ -242,7 +242,7 @@ public class KafkaService {
 				}
 			} else {
 				logger.info(outputList.toString());
-				logger.info("Finish Last Step: {}", map.get(mapKey.getSteps().toString()));
+				logger.info("Finish Last Step: {}", map.toString());
 			}
 
 		} catch (IOException e) {
@@ -321,7 +321,7 @@ public class KafkaService {
 				}
 			} else {
 				logger.info(outputList.toString());
-				logger.info("Finish Last Step: {}", map.get(mapKey.getSteps().toString()));
+				logger.info("Finish Last Step: {}", map.toString());
 			}
 
 		} catch (IOException e) {

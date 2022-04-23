@@ -73,7 +73,7 @@ public class KafkaService {
 			publish(topic, outputList);
 		} else {
 			outputList.forEach(System.out::println);
-			logger.info("Finish Last Step: {}", firstMap.get(mapKey.getSteps().toString()));
+			logger.info("Finish Last Step: {}", firstMap.toString());
 		}
 	}
 
