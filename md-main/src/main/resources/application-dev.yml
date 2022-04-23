@@ -4,9 +4,6 @@ server:
 spring:
   application:
     name: md-main
-  cloud:
-    config:
-      enabled: false
       
 rest-parameter:
   topic:

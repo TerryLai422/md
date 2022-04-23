@@ -4,9 +4,6 @@ server:
 spring:
   application:
     name: md-file-parser
-  cloud:
-    config:
-      enabled: false
   kafka:
     consumer:
       bootstrap-servers: kafka:29092

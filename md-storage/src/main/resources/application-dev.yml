@@ -4,9 +4,6 @@ server:
 spring:
   application:
     name: md-storage
-  cloud:
-    config:
-      enabled: false
   data:
     mongodb:
       authentication-database: admin

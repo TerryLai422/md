@@ -4,6 +4,3 @@ server:
 spring:
   application:
     name: md-file-parser
-  cloud:
-    config:
-      enabled: false

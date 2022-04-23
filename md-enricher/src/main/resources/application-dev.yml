@@ -4,6 +4,3 @@ server:
 spring:
   application:
     name: md-enricher
-  cloud:
-    config:
-      enabled: false
