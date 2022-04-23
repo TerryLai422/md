@@ -82,7 +82,6 @@ map-key-parameter:
   directory: directory
   fileName: fileName
   from: from
-  misc: misc
   
 map-value-parameter:
   daily: D
