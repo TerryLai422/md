@@ -1,0 +1,9 @@
+server:
+  port: 8183
+  
+spring:
+  application:
+    name: md-retriever
+  cloud:
+    config:
+      enabled: false

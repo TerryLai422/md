@@ -1,0 +1,9 @@
+server:
+  port: 8184
+
+spring:
+  application:
+    name: md-enricher
+  cloud:
+    config:
+      enabled: false

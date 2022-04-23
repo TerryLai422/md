@@ -1,12 +1,4 @@
-server:
-  port: 8185
-
 spring:
-  application:
-    name: md-file-parser
-  cloud:
-    config:
-      enabled: false    
   kafka:
     consumer:
       bootstrap-servers: localhost:9092
@@ -18,7 +10,7 @@ spring:
       bootstrap-servers: localhost:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
+      
 tpd:
   topic-name: advice-topic
   messages-per-request: 10    
@@ -151,4 +143,3 @@ json-node:
       - price
       - marketCap
       - raw
-    

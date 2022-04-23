@@ -1,0 +1,9 @@
+server:
+  port: 8187
+
+spring:
+  application:
+    name: md-main
+  cloud:
+    config:
+      enabled: false

@@ -1,12 +1,4 @@
-server:
-  port: 8184
-
 spring:
-  application:
-    name: md-enricher
-  cloud:
-    config:
-      enabled: false    
   kafka:
     consumer:
       bootstrap-servers: localhost:9092
@@ -18,7 +10,7 @@ spring:
       bootstrap-servers: localhost:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
+      
 tpd:
   topic-name: advice-topic
   messages-per-request: 10    
@@ -86,9 +78,10 @@ map-key-parameter:
   sharesOutstanding: sharesOutstanding
   marketCap: marketCap
   dataType: dataType
-  dataSource: dataSource  
+  dataSource: dataSource
   from: from
-    
+  misc: misc
+  
 map-value-parameter:
   daily: D
   weekly: W
@@ -100,3 +93,104 @@ indicator:
     - 50
     - 150
     - 200
+
+json-node:
+  property:
+    forwardPE:
+      - defaultKeyStatistics
+      - forwardPE
+      - raw
+    sharesOutstanding:
+      - defaultKeyStatistics
+      - sharesOutstanding
+      - raw
+    beta:
+      - defaultKeyStatistics
+      - beta
+      - raw
+    priceToBook:
+      - defaultKeyStatistics
+      - priceToBook
+      - raw
+    industry:
+      - summaryProfile
+      - industry
+    sector:
+      - summaryProfile
+      - sector
+    country:
+      - summaryProfile
+      - country
+    exchange:
+      - price
+      - exchange
+    exchangeName:
+      - price 
+      - exchangeName
+    type:
+      - price
+      - quoteType
+    ticker:
+      - price
+      - symbol
+    name:
+      - price
+      - longName
+    currency:
+      - price
+      - currency
+    marketCap:
+      - price
+      - marketCap
+      - raw
+      
+rest-parameter:
+  topic:
+    parse.historical.single:
+      - steps
+      - next
+      - ticker
+    parse.historical.list:
+      - steps
+      - next      
+      - misc
+    parse.exchange.data:
+      - steps
+      - next
+      - subExchange
+      - dataType
+    parse.info.single:
+      - steps
+      - next
+      - ticker
+    parse.detail.list:
+      - steps
+      - next
+      - subExchange
+    parse.detail.single:
+      - steps
+      - next
+      - subExchange
+      - ticker
+    dbget.exchange.data:
+      - steps
+      - next
+      - subExchange
+    parse.yahoo.data:
+      - steps
+      - next
+      - subExchange
+      - dataType     
+    retrieve.yahoo.data:
+      - steps
+      - next
+      - ticker
+      - date      
+      - dataType 
+    retrieve.yahoo.data.list:
+      - steps
+      - next
+      - wait
+      - subExchange
+      - date      
+      - dataType
