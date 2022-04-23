@@ -79,6 +79,8 @@ map-key-parameter:
   marketCap: marketCap
   dataType: dataType
   dataSource: dataSource
+  directory: directory
+  fileName: fileName
   from: from
   misc: misc
   
@@ -143,54 +145,3 @@ json-node:
       - price
       - marketCap
       - raw
-      
-rest-parameter:
-  topic:
-    parse.historical.single:
-      - steps
-      - next
-      - ticker
-    parse.historical.list:
-      - steps
-      - next      
-      - misc
-    parse.exchange.data:
-      - steps
-      - next
-      - subExchange
-      - dataType
-    parse.info.single:
-      - steps
-      - next
-      - ticker
-    parse.detail.list:
-      - steps
-      - next
-      - subExchange
-    parse.detail.single:
-      - steps
-      - next
-      - subExchange
-      - ticker
-    dbget.exchange.data:
-      - steps
-      - next
-      - subExchange
-    parse.yahoo.data:
-      - steps
-      - next
-      - subExchange
-      - dataType     
-    retrieve.yahoo.data:
-      - steps
-      - next
-      - ticker
-      - date      
-      - dataType 
-    retrieve.yahoo.data.list:
-      - steps
-      - next
-      - wait
-      - subExchange
-      - date      
-      - dataType

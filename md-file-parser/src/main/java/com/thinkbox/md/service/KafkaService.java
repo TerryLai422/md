@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
@@ -36,6 +35,10 @@ public class KafkaService {
 	private FileParseService fileParseService;
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
+
+	private final String TOPIC_PARSE_DAILY_LIST = "parse.daily.list";
+
+	private final String TOPIC_PARSE_DAILY_SINGLE = "parse.daily.single";
 
 	private final String TOPIC_PARSE_HISTORICAL_LIST = "parse.historical.list";
 
@@ -93,31 +96,6 @@ public class KafkaService {
 			} else {
 				logger.info("Finish Last Step: {}", map.get(mapKey.getSteps().toString()));
 			}
-		} catch (IOException e) {
-			logger.info(e.toString());
-		}
-	}
-
-	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_MAP)
-	public void parseHistoricalList(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_HISTORICAL_LIST, map.toString());
-
-		try {
-			final String misc = map.getOrDefault(mapKey.getMisc(), "-").toString();
-
-			List<Map<String, Object>> list = fileParseService.getSymbolsfromHistoricalDirectory(misc);
-			list.forEach(System.out::println);
-
-			list.stream().parallel().forEach(x -> {
-
-				map.forEach((i, j) -> {
-					x.put(i, j);
-				});
-
-				parseHistericalData(x);
-			});
-
 		} catch (IOException e) {
 			logger.info(e.toString());
 		}
@@ -193,6 +171,31 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_MAP)
+	public void parseHistoricalList(Map<String, Object> map) {
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_HISTORICAL_LIST, map.toString());
+
+		try {
+			final String directory = map.getOrDefault(mapKey.getDirectory(), "-").toString();
+
+			List<Map<String, Object>> list = fileParseService.getSymbolsfromHistoricalDirectory(directory);
+			list.forEach(System.out::println);
+
+			list.stream().parallel().forEach(x -> {
+
+				map.forEach((i, j) -> {
+					x.put(i, j);
+				});
+
+				parseHistericalData(x);
+			});
+
+		} catch (IOException e) {
+			logger.info(e.toString());
+		}
+	}
+
+	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseHisterical(Map<String, Object> map) {
 		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_HISTORICAL_SINGLE, map.toString());
@@ -204,16 +207,16 @@ public class KafkaService {
 		try {
 			String ticker = map.getOrDefault(mapKey.getTicker(), "-").toString();
 			String symbol = map.getOrDefault(mapKey.getSymbol(), "-").toString();
-			String dataType = map.getOrDefault(mapKey.getDataType(), "-").toString();
-			String misc = map.getOrDefault(mapKey.getMisc(), "-").toString();
+			String dataSource = map.getOrDefault(mapKey.getDataSource(), "-").toString();
+			String directory = map.getOrDefault(mapKey.getDirectory(), "-").toString();
 
 			final String topic = getTopicFromList(map);
 
 			// <List>String next = (List<String>) map.get("next");
-			List<Map<String, Object>> outputList = fileParseService.parseHistoricalFile(misc, dataType, symbol, ticker);
+			List<Map<String, Object>> outputList = fileParseService.parseHistoricalFile(directory, dataSource, symbol,
+					ticker);
 
 			if (topic != null) {
-//				outputList.forEach(System.out::println);
 				logger.info("Number of records:" + outputList.size());
 				if (outputList.size() >= 2) {
 					final Map<String, Object> firstMap = outputList.remove(0);
@@ -224,18 +227,94 @@ public class KafkaService {
 					int size = outputList.size();
 
 					if (size <= BATCH_SAVE_LIMIT) {
-//					System.out.println("less than limit");
 						outputList.add(0, firstMap);
 						publish(topic, outputList);
 					} else {
-//					System.out.println("greater than limit");
 						List<Map<String, Object>> subList = null;
 						for (int i = 0; i < size; i += BATCH_SAVE_LIMIT) {
 							subList = outputList.stream().skip(i).limit(BATCH_SAVE_LIMIT).map(y -> y)
 									.collect(Collectors.toList());
-//						logger.info("Number of records (sublist):" + subList.size());
+							firstMap.put(mapKey.getTotal(), subList.size());
 							subList.add(0, firstMap);
+							publish(topic, subList);
+						}
+					}
+				}
+			} else {
+				logger.info(outputList.toString());
+				logger.info("Finish Last Step: {}", map.get(mapKey.getSteps().toString()));
+			}
 
+		} catch (IOException e) {
+			logger.info(e.toString());
+		}
+	}
+
+	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_PARSE_DAILY_LIST, containerFactory = CONTAINER_FACTORY_MAP)
+	public void parseDailyList(Map<String, Object> map) {
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DAILY_LIST, map.toString());
+
+		try {
+			final String directory = map.getOrDefault(mapKey.getDirectory(), "-").toString();
+
+			List<String> files = fileParseService.getSymbolsfromDailyDirectory(directory);
+			files.forEach(System.out::println);
+
+			files.stream().parallel().forEach(x -> {
+				final Map<String, Object> fileMap = new TreeMap<>();
+				map.forEach((i, j) -> {
+					fileMap.put(i, j);
+				});
+				fileMap.put(mapKey.getFileName(), x);
+				parseDailyData(fileMap);
+			});
+
+		} catch (IOException e) {
+			logger.info(e.toString());
+		}
+
+	}
+
+	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_PARSE_DAILY_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
+	public void parseDaily(Map<String, Object> map) {
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DAILY_SINGLE, map.toString());
+
+		parseDailyData(map);
+
+	}
+
+	private void parseDailyData(Map<String, Object> map) {
+		try {
+			String dataSource = map.getOrDefault(mapKey.getDataSource(), "-").toString();
+			String directory = map.getOrDefault(mapKey.getDirectory(), "-").toString();
+			String fileName = map.getOrDefault(mapKey.getFileName(), "-").toString();
+
+			final String topic = getTopicFromList(map);
+
+			List<Map<String, Object>> outputList = fileParseService.parseDailyFile(directory, fileName, dataSource);
+
+			if (topic != null) {
+				logger.info("Number of records:" + outputList.size());
+				if (outputList.size() >= 2) {
+					final Map<String, Object> firstMap = outputList.remove(0);
+					map.forEach((i, j) -> {
+						firstMap.put(i, j);
+					});
+
+					int size = outputList.size();
+
+					if (size <= BATCH_SAVE_LIMIT) {
+						outputList.add(0, firstMap);
+						publish(topic, outputList);
+					} else {
+						List<Map<String, Object>> subList = null;
+						for (int i = 0; i < size; i += BATCH_SAVE_LIMIT) {
+							subList = outputList.stream().skip(i).limit(BATCH_SAVE_LIMIT).map(y -> y)
+									.collect(Collectors.toList());
+							firstMap.put(mapKey.getTotal(), subList.size());
+							subList.add(0, firstMap);
 							publish(topic, subList);
 						}
 					}

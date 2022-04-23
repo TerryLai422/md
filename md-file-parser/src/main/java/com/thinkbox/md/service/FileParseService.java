@@ -43,6 +43,8 @@ public class FileParseService {
 
 	private final static String DETAIL_DIRECTORY = "detail";
 
+	private final static String DAILY_DIRECTORY = "daily";
+
 	private final static String HISTORICAL_DIRECTORY = "historical";
 
 	private final static String EXCHANGE_DIRECTORY = "exchange";
@@ -99,7 +101,6 @@ public class FileParseService {
 				.sorted((i, j) -> i.getName().compareTo(j.getName())).map(x -> {
 					Map<String, Object> map = new TreeMap<>();
 					String name = x.getName();
-//					System.out.println(name);
 					if (name.contains("historical")) {
 						map.put(mapKey.getDataSource(), "yahoo");
 						String symbol = name.substring(0, name.length() - 17);
@@ -116,6 +117,24 @@ public class FileParseService {
 
 	}
 
+	public List<String> getSymbolsfromDailyDirectory(final String subDirectory) throws IOException {
+
+		String directory = dataDirectory + File.separator + DAILY_DIRECTORY;
+
+		if (!subDirectory.equals("-")) {
+			directory += File.separator + subDirectory;
+		}
+
+		logger.info(directory);
+		File directoryPath = new File(directory);
+
+		return Stream.of(directoryPath.listFiles()).filter(x -> !x.isDirectory() && !x.isHidden())
+				.sorted((i, j) -> i.getName().compareTo(j.getName())).map(x -> {
+					return x.getName();
+				}).collect(Collectors.toList());
+		
+	}
+	
 	public List<String> getSymbolsfromDetailDirectory(final String subExchange) throws IOException {
 
 		String directory = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExchange;
@@ -123,7 +142,7 @@ public class FileParseService {
 		logger.info(directory);
 		File directoryPath = new File(directory);
 
-		return Stream.of(directoryPath.listFiles()).filter(x -> !x.isDirectory())
+		return Stream.of(directoryPath.listFiles()).filter(x -> !x.isDirectory() && !x.isHidden())
 				.sorted((i, j) -> i.getName().compareTo(j.getName())).map(x -> {
 					String name = x.getName();
 					return name.substring(0, name.length() - 11);
@@ -206,19 +225,24 @@ public class FileParseService {
 		return columns;
 	}
 
-	private String getHistoricalFileName(final String subDirectory, final String dataSource, final String symbol,
-			final String ticker) {
-		String fileName = dataDirectory + File.separator + HISTORICAL_DIRECTORY;
+	private String getFullFileName(final String directory, final String subDirectory, final String fileName,
+			final String dataSource, final String symbol, final String ticker) {
+		
+		String fullFileName = dataDirectory + File.separator + directory;
 
 		if (!subDirectory.equals("-")) {
-			fileName += File.separator + subDirectory;
+			fullFileName += File.separator + subDirectory;
 		}
-		if (dataSource.equals("yahoo")) {
-			fileName += File.separator + ticker + HISTORICAL_DAILY_FILE_SUFFIX + FILE_EXTENSION;
+		if (!fileName.equals("-")) {
+			fullFileName += File.separator + fileName;
 		} else {
-			fileName += File.separator + symbol + ".us" + FILE_EXTENSION;
+			if (dataSource.equals("yahoo")) {
+				fullFileName += File.separator + ticker + HISTORICAL_DAILY_FILE_SUFFIX + FILE_EXTENSION;
+			} else {
+				fullFileName += File.separator + symbol + ".us" + FILE_EXTENSION;
+			}
 		}
-		return fileName;
+		return fullFileName;
 	}
 
 	private int getTypePosition(final String dataSource) {
@@ -240,16 +264,79 @@ public class FileParseService {
 	public List<Map<String, Object>> parseHistoricalFile(final String subDirectory, final String dataSource,
 			final String symbol, final String ticker) throws IOException {
 
+		final String fileName = "-";
+		List<Map<String, Object>> outputList = parseQuoteFile(HISTORICAL_DIRECTORY, subDirectory, fileName, dataSource,
+				symbol, ticker);
+
+		if (outputList.size() >= 2) {
+			Map<String, Object> first = outputList.get(0);
+			Map<String, Object> last = outputList.get(outputList.size() - 1);
+
+			Map<String, Object> index = new TreeMap<String, Object>();
+
+			index.put(mapKey.getType(), new String(mapValue.getDaily()));
+			index.put(mapKey.getTicker(), new String(ticker).toUpperCase());
+			index.put(mapKey.getSymbol(), new String(symbol).toUpperCase());
+			index.put(mapKey.getFromDate(), first.get(mapKey.getDate()));
+			index.put(mapKey.getFromYear(), first.get(mapKey.getYear()));
+			index.put(mapKey.getFromMonth(), first.get(mapKey.getMonth()));
+			index.put(mapKey.getFromDay(), first.get(mapKey.getDay()));
+			index.put(mapKey.getFromWeekOfYear(), first.get(mapKey.getWeekOfYear()));
+			index.put(mapKey.getFromDayOfWeek(), first.get(mapKey.getDayOfWeek()));
+
+			index.put(mapKey.getToDate(), last.get(mapKey.getDate()));
+			index.put(mapKey.getToYear(), last.get(mapKey.getYear()));
+			index.put(mapKey.getToMonth(), last.get(mapKey.getMonth()));
+			index.put(mapKey.getToDay(), last.get(mapKey.getDay()));
+			index.put(mapKey.getToWeekOfYear(), last.get(mapKey.getWeekOfYear()));
+			index.put(mapKey.getToDayOfWeek(), last.get(mapKey.getDayOfWeek()));
+
+			index.put(mapKey.getTotal(), Long.valueOf(outputList.size()));
+
+			outputList.add(0, index);
+		}
+		return outputList;
+	}
+
+	public List<Map<String, Object>> parseDailyFile(final String subDirectory, final String fileName,
+			final String dataSource) throws IOException {
+
+		final String symbol = "-";
+		final String ticker = "-";
+
+		List<Map<String, Object>> outputList = parseQuoteFile(DAILY_DIRECTORY, subDirectory, fileName, dataSource,
+				symbol, ticker);
+
+		if (outputList.size() >= 0) {
+			Map<String, Object> first = outputList.get(0);
+
+			Map<String, Object> index = new TreeMap<String, Object>();
+
+			index.put(mapKey.getTicker(), new String(ticker).toUpperCase());
+			index.put(mapKey.getSymbol(), new String(symbol).toUpperCase());
+			index.put(mapKey.getType(), first.get(mapKey.getType()));
+			index.put(mapKey.getDate(), first.get(mapKey.getDate()));
+			index.put(mapKey.getTotal(), Long.valueOf(outputList.size()));
+
+			outputList.add(0, index);
+		}
+		return outputList;
+	}
+
+	private List<Map<String, Object>> parseQuoteFile(final String directory, final String subDirectory,
+			final String fileName, final String dataSource, final String symbol, final String ticker)
+			throws IOException {
+
 		final List<Integer> columns = getColumnsPosition(dataSource);
 		final String dateFormat = getDateFormat(dataSource);
 		final int typePosition = getTypePosition(dataSource);
 		final int timePosition = getTimePosition(dataSource);
-		String fileName = getHistoricalFileName(subDirectory, dataSource, symbol, ticker);
-		logger.info(fileName);
+		final String fullFileName = getFullFileName(directory, subDirectory, fileName, dataSource, symbol, ticker);
+		logger.info(fullFileName);
 
 		CSVFileReader csvFileReader = new CSVFileReader();
 
-		List<String[]> list = csvFileReader.read(fileName, COMMA_SEPERATOR, null);
+		List<String[]> list = csvFileReader.read(fullFileName, COMMA_SEPERATOR, null);
 
 		List<Map<String, Object>> outputList = list.stream().map(x -> {
 			Map<String, Object> map = null;
@@ -277,8 +364,17 @@ public class FileParseService {
 				} else {
 					map.put(mapKey.getType(), new String(x[typePosition]));
 				}
-				map.put(mapKey.getTicker(), new String(ticker).toUpperCase());
-				map.put(mapKey.getSymbol(), new String(symbol).toUpperCase());
+				if (symbol.equals("-")) {
+					String tempSymbol = x[0];
+					if (tempSymbol != null && tempSymbol.contains(".US")) {
+						tempSymbol = tempSymbol.substring(0, tempSymbol.length() - 3);
+					}
+					map.put(mapKey.getTicker(), tempSymbol);
+					map.put(mapKey.getSymbol(), tempSymbol);
+				} else {
+					map.put(mapKey.getTicker(), new String(ticker).toUpperCase());
+					map.put(mapKey.getSymbol(), new String(symbol).toUpperCase());
+				}
 				map.put(mapKey.getDate(), new String(String.format(OUTPUT_DATE_FORMAT, calendar)));
 				if (timePosition == -1) {
 					map.put(mapKey.getTime(), DEFAULT_TIME_VALUE);
@@ -310,33 +406,6 @@ public class FileParseService {
 			return map;
 		}).filter(x -> x != null).collect(Collectors.toList());
 
-		if (outputList.size() >= 2) {
-			Map<String, Object> first = outputList.get(0);
-			Map<String, Object> last = outputList.get(outputList.size() - 1);
-
-			Map<String, Object> index = new TreeMap<String, Object>();
-
-			index.put(mapKey.getType(), new String(mapValue.getDaily()));
-			index.put(mapKey.getTicker(), new String(ticker).toUpperCase());
-			index.put(mapKey.getSymbol(), new String(symbol).toUpperCase());
-			index.put(mapKey.getFromDate(), first.get(mapKey.getDate()));
-			index.put(mapKey.getFromYear(), first.get(mapKey.getYear()));
-			index.put(mapKey.getFromMonth(), first.get(mapKey.getMonth()));
-			index.put(mapKey.getFromDay(), first.get(mapKey.getDay()));
-			index.put(mapKey.getFromWeekOfYear(), first.get(mapKey.getWeekOfYear()));
-			index.put(mapKey.getFromDayOfWeek(), first.get(mapKey.getDayOfWeek()));
-
-			index.put(mapKey.getToDate(), last.get(mapKey.getDate()));
-			index.put(mapKey.getToYear(), last.get(mapKey.getYear()));
-			index.put(mapKey.getToMonth(), last.get(mapKey.getMonth()));
-			index.put(mapKey.getToDay(), last.get(mapKey.getDay()));
-			index.put(mapKey.getToWeekOfYear(), last.get(mapKey.getWeekOfYear()));
-			index.put(mapKey.getToDayOfWeek(), last.get(mapKey.getDayOfWeek()));
-
-			index.put(mapKey.getTotal(), Long.valueOf(outputList.size()));
-
-			outputList.add(0, index);
-		}
 		return outputList;
 	}
 

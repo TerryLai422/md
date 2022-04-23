@@ -7,3 +7,65 @@ spring:
   cloud:
     config:
       enabled: false
+      
+rest-parameter:
+  topic:
+    parse.daily.single:
+      - steps
+      - next
+      - directory
+      - fileName
+    parse.daily.list:
+      - steps
+      - next
+      - directory
+    parse.historical.single:
+      - steps
+      - next
+      - dataSource
+      - ticker
+    parse.historical.list:
+      - steps
+      - next    
+      - dataSource  
+      - directory
+    parse.exchange.data:
+      - steps
+      - next
+      - subExchange
+      - dataType
+    parse.info.single:
+      - steps
+      - next
+      - ticker
+    parse.detail.list:
+      - steps
+      - next
+      - subExchange
+    parse.detail.single:
+      - steps
+      - next
+      - subExchange
+      - ticker
+    dbget.exchange.data:
+      - steps
+      - next
+      - subExchange
+    parse.yahoo.data:
+      - steps
+      - next
+      - subExchange
+      - dataType     
+    retrieve.yahoo.data:
+      - steps
+      - next
+      - ticker
+      - date      
+      - dataType 
+    retrieve.yahoo.data.list:
+      - steps
+      - next
+      - wait
+      - subExchange
+      - date      
+      - dataType      

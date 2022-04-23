@@ -147,5 +147,7 @@ public class MapKeyParameter {
 	
 	private String from;
 	
-	private String misc;
+	private String fileName;
+	
+	private String directory;
 }
