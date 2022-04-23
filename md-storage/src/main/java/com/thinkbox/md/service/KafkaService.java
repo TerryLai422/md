@@ -33,11 +33,11 @@ public class KafkaService {
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
-	private final String TOPIC_SAVE_EXCHANGE_DATA_LIST = "save.exchange.data.list";
+	private final String TOPIC_SAVE_EXCHANGE_LIST = "save.exchange.list";
 
-	private final String TOPIC_SAVE_HISTORICAL_DATA_LIST = "save.historical.data.list";
+	private final String TOPIC_SAVE_HISTORICAL_LIST = "save.historical.list";
 
-	private final String TOPIC_SAVE_DETAIL_DATA = "save.detail.data";
+	private final String TOPIC_SAVE_DETAIL_SINGLE = "save.detail.single";
 
 	private final String TOPIC_DBGET_EXCHANGE_DATA = "dbget.exchange.data";
 
@@ -58,16 +58,16 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_SAVE_EXCHANGE_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = TOPIC_SAVE_EXCHANGE_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveExchangeList(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_SAVE_EXCHANGE_DATA_LIST, list.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_SAVE_EXCHANGE_LIST, list.toString());
 		storeService.saveInstrumentList(list);
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_SAVE_HISTORICAL_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = TOPIC_SAVE_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveHistoricalList(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_SAVE_HISTORICAL_DATA_LIST, list.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_SAVE_HISTORICAL_LIST, list.toString());
 		
 		Map<String, Object> firstMap = list.get(0);
 		String topic = getTopicFromList(firstMap);
@@ -83,9 +83,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_SAVE_DETAIL_DATA, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = TOPIC_SAVE_DETAIL_SINGLE, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveDetail(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_SAVE_DETAIL_DATA, list.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_SAVE_DETAIL_SINGLE, list.toString());
 
 		Map<String, Object> secondMap = list.get(1);
 
@@ -123,6 +123,34 @@ public class KafkaService {
 				publish(topic, outputList);
 			}
 		} else {
+			if (outputList != null) {
+				outputList.forEach(System.out::println);
+			}
+			logger.info("Finish Last Step: {}", map.toString());
+		}
+	}
+
+	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_DBGET_EXCHANGE_DATA, containerFactory = CONTAINER_FACTORY_MAP)
+	public void getHistorical(Map<String, Object> map) {
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_DBGET_EXCHANGE_DATA, map.toString());
+
+		List<Map<String, Object>> outputList = null;
+		String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
+		if (!subExchange.equals("-")) {
+			outputList = storeService.getInstruments(subExchange);
+		}
+
+		String topic = getTopicFromList(map);
+		if (topic != null) {
+			if (outputList != null) {
+				outputList.add(0, map);
+				publish(topic, outputList);
+			}
+		} else {
+			if (outputList != null) {
+				outputList.forEach(System.out::println);
+			}
 			logger.info("Finish Last Step: {}", map.toString());
 		}
 	}

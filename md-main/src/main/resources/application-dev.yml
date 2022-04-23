@@ -53,7 +53,7 @@ rest-parameter:
       - next
       - subExchange
       - dataType     
-    retrieve.yahoo.data:
+    retrieve.yahoo.single:
       - steps
       - next
       - ticker

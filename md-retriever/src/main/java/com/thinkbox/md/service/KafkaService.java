@@ -32,7 +32,7 @@ public class KafkaService {
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
-	private final String TOPIC_RETRIEVE_YAHOO_DATA = "retrieve.yahoo.data";
+	private final String TOPIC_RETRIEVE_YAHOO_SINGLE = "retrieve.yahoo.single";
 	
 	private final String TOPIC_RETRIEVE_YAHOO_DATA_LIST = "retrieve.yahoo.data.list";
 	
