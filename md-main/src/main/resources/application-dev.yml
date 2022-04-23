@@ -59,7 +59,7 @@ rest-parameter:
       - ticker
       - date      
       - dataType 
-    retrieve.yahoo.data.list:
+    retrieve.yahoo.list:
       - steps
       - next
       - wait

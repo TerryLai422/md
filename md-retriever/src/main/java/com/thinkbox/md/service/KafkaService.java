@@ -34,7 +34,7 @@ public class KafkaService {
 
 	private final String TOPIC_RETRIEVE_YAHOO_SINGLE = "retrieve.yahoo.single";
 	
-	private final String TOPIC_RETRIEVE_YAHOO_DATA_LIST = "retrieve.yahoo.data.list";
+	private final String TOPIC_RETRIEVE_YAHOO_LIST = "retrieve.yahoo.list";
 	
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
@@ -55,17 +55,17 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_RETRIEVE_YAHOO_DATA, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = TOPIC_RETRIEVE_YAHOO_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void retreiveYahoo(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_YAHOO_DATA, map);
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_YAHOO_SINGLE, map);
 		
 		retrieveService.retrieveYahoo(map);
 	}
 	
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_RETRIEVE_YAHOO_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = TOPIC_RETRIEVE_YAHOO_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void retrieveYahooList(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_YAHOO_DATA_LIST, list.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_YAHOO_LIST, list.toString());
 
 		Map<String, Object> firstMap = list.get(0);
 		
