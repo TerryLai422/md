@@ -54,7 +54,7 @@ public class KafkaService {
 
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
-	private final int BATCH_SAVE_LIMIT = 2000;
+	private final int BATCH_LIMIT = 2000;
 
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, List<Map<String, Object>> list) {
@@ -226,13 +226,13 @@ public class KafkaService {
 
 					int size = outputList.size();
 
-					if (size <= BATCH_SAVE_LIMIT) {
+					if (size <= BATCH_LIMIT) {
 						outputList.add(0, firstMap);
 						publish(topic, outputList);
 					} else {
 						List<Map<String, Object>> subList = null;
-						for (int i = 0; i < size; i += BATCH_SAVE_LIMIT) {
-							subList = outputList.stream().skip(i).limit(BATCH_SAVE_LIMIT).map(y -> y)
+						for (int i = 0; i < size; i += BATCH_LIMIT) {
+							subList = outputList.stream().skip(i).limit(BATCH_LIMIT).map(y -> y)
 									.collect(Collectors.toList());
 							firstMap.put(mapKey.getTotal(), subList.size());
 							subList.add(0, firstMap);
@@ -305,13 +305,13 @@ public class KafkaService {
 
 					int size = outputList.size();
 
-					if (size <= BATCH_SAVE_LIMIT) {
+					if (size <= BATCH_LIMIT) {
 						outputList.add(0, firstMap);
 						publish(topic, outputList);
 					} else {
 						List<Map<String, Object>> subList = null;
-						for (int i = 0; i < size; i += BATCH_SAVE_LIMIT) {
-							subList = outputList.stream().skip(i).limit(BATCH_SAVE_LIMIT).map(y -> y)
+						for (int i = 0; i < size; i += BATCH_LIMIT) {
+							subList = outputList.stream().skip(i).limit(BATCH_LIMIT).map(y -> y)
 									.collect(Collectors.toList());
 							firstMap.put(mapKey.getTotal(), subList.size());
 							subList.add(0, firstMap);

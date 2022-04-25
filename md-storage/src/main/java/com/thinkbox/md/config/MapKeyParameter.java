@@ -150,4 +150,6 @@ public class MapKeyParameter {
 	private String fileName;
 	
 	private String directory;
+	
+	private String historicalTotal;
 }

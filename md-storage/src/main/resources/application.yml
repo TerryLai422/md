@@ -85,6 +85,7 @@ map-key-parameter:
   directory: directory
   fileName: fileName
   from: from
+  historicalTotal: historicalTotal
   
 map-value-parameter:
   daily: D

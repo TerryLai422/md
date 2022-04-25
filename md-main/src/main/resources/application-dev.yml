@@ -48,6 +48,9 @@ rest-parameter:
       - steps
       - next
       - subExchange
+    dbupdate.historical.all:
+      - steps
+      - next
     parse.yahoo.data:
       - steps
       - next
@@ -65,4 +68,9 @@ rest-parameter:
       - wait
       - subExchange
       - date      
-      - dataType      
+      - dataType
+    dbget.total.from.instrument:
+      - steps
+      - next
+      - subExchange
+    

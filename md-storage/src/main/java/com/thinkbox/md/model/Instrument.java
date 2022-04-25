@@ -52,6 +52,8 @@ public class Instrument {
 	
 	private Long marketCap;
 	
+	private Long historicalTotal;
+	
 	private Map<String, Object> others;
 
 }

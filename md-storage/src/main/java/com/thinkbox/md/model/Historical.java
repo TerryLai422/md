@@ -24,6 +24,8 @@ public class Historical {
 	
 	private String symbol;
 	
+	private String ticker;
+	
 	private String date;
 	
 	private String time;

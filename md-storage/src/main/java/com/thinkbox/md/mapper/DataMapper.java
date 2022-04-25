@@ -29,6 +29,7 @@ public class DataMapper {
 				+ "-" + map.get(mapKey.getTime()));
 		historical.setType((String) map.get(mapKey.getType()));
 		historical.setSymbol((String) map.get(mapKey.getSymbol()));
+		historical.setTicker((String) map.getOrDefault(mapKey.getTicker(), map.get(mapKey.getSymbol())));
 		historical.setDate((String) map.get(mapKey.getDate()));
 		historical.setTime((String) map.get(mapKey.getTime()));
 		historical.setYear((Integer) map.get(mapKey.getYear()));
@@ -71,6 +72,8 @@ public class DataMapper {
 				Long.valueOf(map.getOrDefault(mapKey.getSharesOutstanding(), DEFAULT_LONG_VALUE).toString()));
 		instrument.setMarketCap(
 				Long.valueOf(map.getOrDefault(mapKey.getSharesOutstanding(), DEFAULT_LONG_VALUE).toString()));
+		instrument.setHistoricalTotal(
+				Long.valueOf(map.getOrDefault(mapKey.getHistoricalTotal(), DEFAULT_LONG_VALUE).toString()));
 		instrument.setOthers(map);
 
 		return instrument;
