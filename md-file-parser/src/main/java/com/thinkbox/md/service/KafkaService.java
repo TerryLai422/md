@@ -159,7 +159,7 @@ public class KafkaService {
 				List<Map<String, Object>> outputList = new ArrayList<>();
 
 				outputList.add(0, map);
-
+				outputList.add(1, outputMap);
 				publish(topic, outputList);
 			} else {
 				logger.info(outputMap.toString());
