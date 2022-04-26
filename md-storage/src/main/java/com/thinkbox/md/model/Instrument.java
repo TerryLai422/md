@@ -54,6 +54,10 @@ public class Instrument {
 	
 	private Long historicalTotal;
 	
+	private String historicalFirstDate;
+	
+	private String historicalLastDate;
+	
 	private Map<String, Object> others;
 
 }
