@@ -176,7 +176,7 @@ public class KafkaService {
 				
 				outputList.forEach(x -> {
 //					System.out.println(x.toString());
-					System.out.println("Symbol: " + x.getOrDefault(mapKey.getSymbol(), "-").toString() + " - "
+					System.out.println("Ticker: " + x.getOrDefault(mapKey.getTicker(), "-").toString() + " - "
 							+ x.getOrDefault(mapKey.getHistoricalTotal(), "-").toString());
 				});
 				System.out.println("Total: " + outputList.size());
@@ -228,7 +228,7 @@ public class KafkaService {
 				
 				outputList.forEach(x -> {
 //					System.out.println(x.toString());
-					System.out.println("Symbol: " + x.getOrDefault(mapKey.getSymbol(), "-").toString() + " - "
+					System.out.println("Ticker: " + x.getOrDefault(mapKey.getTicker(), "-").toString() + " - "
 							+ x.getOrDefault(mapKey.getHistoricalTotal(), "-").toString());
 				});
 				System.out.println("Total: " + outputList.size());
@@ -287,7 +287,7 @@ public class KafkaService {
 //			outputList.forEach(x -> {
 //				System.out.println(x.get(mapKey.getSymbol()));
 //			});
-			System.out.println("Hello:" + outputList.size());
+			System.out.println("Total:" + outputList.size());
 			if (topic != null) {
 
 				Map<String, Object> newMap = map.entrySet().stream()
@@ -314,10 +314,11 @@ public class KafkaService {
 
 		list.stream().parallel().skip(1).forEach(x -> {
 
-			String symbol = x.get(mapKey.getSymbol()).toString();
-			System.out.println("symbol: " + symbol);
+			String ticker = x.get(mapKey.getTicker()).toString();
+			System.out.println("ticker: " + ticker);
 
-			Long total = storeService.getHistoricalsTotal(symbol);
+			Long total = storeService.getHistoricalsTotal(ticker);
+ 			System.out.println("ticker: " + ticker + "-" + total);
 
 			x.put(mapKey.getHistoricalTotal(), total);
 		});
