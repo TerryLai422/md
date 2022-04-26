@@ -48,7 +48,7 @@ public class KafkaService {
 
 	private final String TOPIC_PARSE_INFO_SINGLE = "parse.info.single";
 
-	private final String TOPIC_PARSE_EXCHANGE_DATA = "parse.exchange.single";
+	private final String TOPIC_PARSE_EXCHANGE_DATA = "parse.exchange.data";
 
 	private final String TOPIC_PARSE_HISTORICAL_SINGLE = "parse.historical.single";
 
