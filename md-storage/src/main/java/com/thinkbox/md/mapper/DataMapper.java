@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.model.Historical;
 import com.thinkbox.md.model.Instrument;
+import com.thinkbox.md.model.InstrumentCA;
 
 @Component
 public class DataMapper {
@@ -51,8 +52,14 @@ public class DataMapper {
 
 	public Instrument convertMapToInstrument(Map<String, Object> map) {
 
-		Instrument instrument = new Instrument();
-
+		Instrument instrument = null;
+		
+		String subExchange  = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
+		if (subExchange.equals("TSX") || subExchange.equals("TSXV")) {
+			instrument = new InstrumentCA();
+		} else {
+			instrument = new Instrument();
+		}
 		instrument.setId(
 				map.getOrDefault(mapKey.getSubExchange(), DEFAULT_STRING_VALUE) + "@" + map.get(mapKey.getTicker()));
 		instrument.setSymbol((String) map.getOrDefault(mapKey.getSymbol(), DEFAULT_STRING_VALUE));

@@ -85,26 +85,26 @@ public class StoreService {
 		
 	}
 
-	public List<Map<String, Object>> getHistoricals(final String symbol) {
+	public List<Map<String, Object>> getHistoricals(final String ticker) {
 		
-		List<Historical> historicals = historicalRepository.findBySymbol(symbol);
+		List<Historical> historicals = historicalRepository.findByTicker(ticker);
 		
 		return historicals.stream().map(x -> x.getOthers()).collect(Collectors.toList());
 		
 	}
 	
-	public List<Map<String, Object>> getHistoricals(final String symbol, long limit) {
+	public List<Map<String, Object>> getHistoricals(final String ticker, long limit) {
 		List<Historical> historicals = Arrays.asList();
 		
-		if (historicalRepository.countBySymbol(symbol) <= limit) {
-			historicals = historicalRepository.findBySymbol(symbol);
+		if (historicalRepository.countByTicker(ticker) <= limit) {
+			historicals = historicalRepository.findByTicker(ticker);
 		}
 		return historicals.stream().map(x -> x.getOthers()).collect(Collectors.toList());
 	}
 
-	public Long getHistoricalsTotal(final String symbol) {
+	public Long getHistoricalsTotal(final String ticker) {
 
-		return historicalRepository.countBySymbol(symbol);
+		return historicalRepository.countByTicker(ticker);
 		
 	}
 }
