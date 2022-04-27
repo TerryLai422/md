@@ -22,6 +22,8 @@ public class MapKeyParameter {
 	
 	private String type;
 
+	private String interval;
+	
 	private String exchange;
 	
 	private String subExchange;

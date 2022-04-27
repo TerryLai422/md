@@ -247,7 +247,7 @@ public class FileParseService {
 		return fullFileName;
 	}
 
-	private int getTypePosition(final String dataSource) {
+	private int getIntervalPosition(final String dataSource) {
 
 		if (dataSource.equals("stooq")) {
 			return 1;
@@ -276,7 +276,7 @@ public class FileParseService {
 
 			Map<String, Object> index = new TreeMap<String, Object>();
 
-			index.put(mapKey.getType(), new String(mapValue.getDaily()));
+			index.put(mapKey.getInterval(), new String(mapValue.getDaily()));
 			index.put(mapKey.getTicker(), new String(ticker).toUpperCase());
 			index.put(mapKey.getSymbol(), new String(symbol).toUpperCase());
 			index.put(mapKey.getFromDate(), first.get(mapKey.getDate()));
@@ -331,7 +331,7 @@ public class FileParseService {
 
 		final List<Integer> columns = getColumnsPosition(dataSource);
 		final String dateFormat = getDateFormat(dataSource);
-		final int typePosition = getTypePosition(dataSource);
+		final int intervalPosition = getIntervalPosition(dataSource);
 		final int timePosition = getTimePosition(dataSource);
 		final String fullFileName = getFullFileName(directory, subDirectory, fileName, dataSource, symbol, ticker);
 		logger.info(fullFileName);
@@ -361,10 +361,10 @@ public class FileParseService {
 
 				map = new TreeMap<String, Object>();
 
-				if (typePosition == -1) {
-					map.put(mapKey.getType(), new String(mapValue.getDaily()));
+				if (intervalPosition == -1) {
+					map.put(mapKey.getInterval(), new String(mapValue.getDaily()));
 				} else {
-					map.put(mapKey.getType(), new String(x[typePosition]));
+					map.put(mapKey.getInterval(), new String(x[intervalPosition]));
 				}
 				if (symbol.equals("-")) {
 					String tempSymbol = x[0];

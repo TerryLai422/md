@@ -30,7 +30,7 @@ public class DataMapper {
 
 		historical.setId(map.get(mapKey.getType()) + "-" + map.get(mapKey.getSymbol()) + "@" + map.get(mapKey.getDate())
 				+ "-" + map.get(mapKey.getTime()));
-		historical.setType((String) map.get(mapKey.getType()));
+		historical.setInterval((String) map.get(mapKey.getInterval()));
 		historical.setSymbol((String) map.get(mapKey.getSymbol()));
 		historical.setTicker((String) map.getOrDefault(mapKey.getTicker(), map.get(mapKey.getSymbol())));
 		historical.setDate((String) map.get(mapKey.getDate()));

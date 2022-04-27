@@ -24,6 +24,7 @@ map-key-parameter:
   next: next
   total: total
   type: type
+  interval: interval
   exchange: exchange
   subExchange: subExchange
   name: name

@@ -20,7 +20,7 @@ public class Historical {
 	@Id
 	private String id;
 	
-	private String type;
+	private String interval;
 	
 	private String symbol;
 	
