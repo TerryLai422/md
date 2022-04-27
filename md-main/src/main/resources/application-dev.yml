@@ -73,4 +73,8 @@ rest-parameter:
       - steps
       - next
       - subExchange
+    dbget.summary.single:
+      - steps
+      - next      
+      - ticker
     
