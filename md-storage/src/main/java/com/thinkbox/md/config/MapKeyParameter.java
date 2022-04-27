@@ -27,6 +27,8 @@ public class MapKeyParameter {
 	private String subExchange;
 
 	private String name;
+	
+	private String market;
 		
 	private String ticker;
 	

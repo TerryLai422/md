@@ -20,6 +20,8 @@ public class Instrument {
 	@Id
 	private String id;
 	
+	private String market;
+	
 	private String symbol;
 	
 	private String ticker;

@@ -27,6 +27,7 @@ map-key-parameter:
   exchange: exchange
   subExchange: subExchange
   name: name
+  market: market
   ticker: ticker
   symbol: symbol
   date: date
