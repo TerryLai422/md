@@ -98,11 +98,7 @@ public class MapKeyParameter {
 
 	private String toYearForWeek;
 	
-	// suffix
-	private String suffixValue;
-
-	private String suffixSize;
-	
+	// suffix	
 	private String suffixHigh;
 	
 	private String suffixLow;
