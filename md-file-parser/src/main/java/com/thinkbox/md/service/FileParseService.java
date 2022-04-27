@@ -132,9 +132,9 @@ public class FileParseService {
 				.sorted((i, j) -> i.getName().compareTo(j.getName())).map(x -> {
 					return x.getName();
 				}).collect(Collectors.toList());
-		
+
 	}
-	
+
 	public List<String> getSymbolsfromDetailDirectory(final String subExchange) throws IOException {
 
 		String directory = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExchange;
@@ -153,6 +153,7 @@ public class FileParseService {
 	public Map<String, Object> parseDetailFile(final String subExchange, final String symbol) throws IOException {
 
 		final String suffix = (subExchange.equals("TSX")) ? ".TO" : (subExchange.equals("TSXV")) ? ".V" : "";
+		final String market = (subExchange.equals("TSX") || subExchange.equals("TSXV")) ? "CA" : "US";
 
 		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExchange
 				+ File.separator + symbol + DETAIL_FILE_SUFFIX + FILE_EXTENSION;
@@ -173,6 +174,7 @@ public class FileParseService {
 		});
 		map.put(mapKey.getSymbol(), symbol.replaceAll(suffix, ""));
 		map.put(mapKey.getSubExchange(), subExchange);
+		map.put(mapKey.getMarket(), market);
 
 		return map;
 	}
@@ -227,7 +229,7 @@ public class FileParseService {
 
 	private String getFullFileName(final String directory, final String subDirectory, final String fileName,
 			final String dataSource, final String symbol, final String ticker) {
-		
+
 		String fullFileName = dataDirectory + File.separator + directory;
 
 		if (!subDirectory.equals("-")) {
@@ -366,7 +368,7 @@ public class FileParseService {
 				}
 				if (symbol.equals("-")) {
 					String tempSymbol = x[0];
-					if (tempSymbol != null && tempSymbol.contains(".US")) {
+					if (tempSymbol != null && tempSymbol.endsWith(".US")) {
 						tempSymbol = tempSymbol.substring(0, tempSymbol.length() - 3);
 					}
 					map.put(mapKey.getTicker(), tempSymbol);
@@ -400,6 +402,13 @@ public class FileParseService {
 				map.put(mapKey.getAdjClose(), Double.parseDouble(x[columns.get(5)]));
 				map.put(mapKey.getVolume(), Long.parseLong(x[columns.get(6)]));
 
+				String temp = map.get(mapKey.getTicker()).toString();
+				if (temp.endsWith(".TO") || temp.endsWith(".V")) {
+					map.put(mapKey.getMarket(), "CA");
+
+				} else {
+					map.put(mapKey.getMarket(), "US");
+				}
 			} catch (ParseException e) {
 				logger.info(e.toString());
 			}
