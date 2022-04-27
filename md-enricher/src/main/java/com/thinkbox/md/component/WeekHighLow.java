@@ -90,6 +90,6 @@ public class WeekHighLow extends Indicator {
 	}
 
 	private String getPrefix() {
-		return "week" + period + "-";
+		return "week" + period;
 	}
 }

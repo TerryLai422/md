@@ -51,6 +51,6 @@ public class AverageTrueRange extends Indicator {
 	}
 	
 	private String getKey() {
-		return "ATR-" + period;
+		return "atr" + period;
 	}
 }

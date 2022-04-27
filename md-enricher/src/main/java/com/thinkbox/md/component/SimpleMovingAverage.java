@@ -43,6 +43,6 @@ public class SimpleMovingAverage extends Indicator {
 	}
 	
 	private String getKey() {
-		return "SMA-" + period;
+		return "sma" + period;
 	}
 }

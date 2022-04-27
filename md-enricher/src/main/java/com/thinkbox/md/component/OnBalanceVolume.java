@@ -49,6 +49,6 @@ public class OnBalanceVolume extends Indicator {
 	}
 
 	private String getKey() {
-		return "OBV";
+		return "obv";
 	}
 }

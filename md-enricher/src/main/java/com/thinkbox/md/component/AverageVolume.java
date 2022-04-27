@@ -51,6 +51,6 @@ public class AverageVolume extends Indicator {
 	}
 
 	private String getKey() {
-		return "AvgVol" + period;
+		return "avgVol" + period;
 	}
 }
