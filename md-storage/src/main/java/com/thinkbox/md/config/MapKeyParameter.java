@@ -152,4 +152,8 @@ public class MapKeyParameter {
 	private String directory;
 	
 	private String historicalTotal;
+	
+	private String historicalFirstDate;
+	
+	private String historicalLastDate;
 }
