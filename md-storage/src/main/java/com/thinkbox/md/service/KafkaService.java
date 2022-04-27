@@ -52,8 +52,6 @@ public class KafkaService {
 
 	private final String TOPIC_DBGET_HISTORICAL_LIST = "dbget.historical.list";
 
-	private final String TOPIC_DBUPDATE_HISTORICAL_TOTAL = "dbupdate.historical.total";
-
 	private final String TOPIC_DBUPDATE_HISTORICAL_ALL = "dbupdate.historical.all";
 
 	private final String CONTAINER_FACTORY_LIST = "listListener";
@@ -172,24 +170,7 @@ public class KafkaService {
 		String topic = getTopicFromList(map);
 		if (topic != null) {
 			if (outputList != null) {
-
 				publish(topic, map, outputList);
-//				int size = outputList.size();
-//
-//				if (size <= BATCH_LIMIT) {
-//					map.put(mapKey.getTotal(), size);
-//					outputList.add(0, map);
-//					publish(topic, outputList);
-//				} else {
-//					List<Map<String, Object>> subList = null;
-//					for (int i = 0; i < size; i += BATCH_LIMIT) {
-//						subList = outputList.stream().skip(i).limit(BATCH_LIMIT).map(y -> y)
-//								.collect(Collectors.toList());
-//						map.put(mapKey.getTotal(), subList.size());
-//						subList.add(0, map);
-//						publish(topic, subList);
-//					}
-//				}
 			}
 		} else {
 			if (outputList != null) {
@@ -220,25 +201,7 @@ public class KafkaService {
 		String topic = getTopicFromList(map);
 		if (topic != null) {
 			if (outputList != null) {
-
 				publish(topic, map, outputList);
-
-//				int size = outputList.size();
-//
-//				if (size <= BATCH_LIMIT + 1) {
-//					map.put(mapKey.getTotal(), size);
-//					outputList.add(0, map);
-//					publish(topic, outputList);
-//				} else {
-//					List<Map<String, Object>> subList = null;
-//					for (int i = 0; i < size; i += BATCH_LIMIT) {
-//						subList = outputList.stream().skip(i).limit(BATCH_LIMIT).map(y -> y)
-//								.collect(Collectors.toList());
-//						map.put(mapKey.getTotal(), subList.size());
-//						subList.add(0, map);
-//						publish(topic, subList);
-//					}
-//				}
 			}
 		} else {
 			if (outputList != null) {
@@ -279,10 +242,7 @@ public class KafkaService {
 				int size = outputList.size();
 				if (size > 0) {
 					newMap.put(mapKey.getTotal(), size);
-					outputList.add(0, newMap);
-					outputList.forEach(System.out::println);
-
-					// publish(topic, outputList);
+					 publish(topic, newMap, outputList);
 				}
 			} else {
 				logger.info("Finish Last Step: {}", firstMap.toString());
@@ -301,10 +261,6 @@ public class KafkaService {
 		list.stream().parallel().skip(1).forEach(x -> {
 
 			String ticker = x.get(mapKey.getTicker()).toString();
-//			System.out.println("ticker: " + ticker);
-
-//			Map<String, Object> newMap = firstMap.entrySet().stream()
-//					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 			Map<String, Object> summaryMap = storeService.getHistoricalSummary(ticker);
 
@@ -360,9 +316,7 @@ public class KafkaService {
 		Integer loop = Integer.valueOf(map.get("loop").toString());
 		IntStream.range(0, loop).parallel().forEach(k -> {
 			List<Map<String, Object>> outputList = storeService.getHistoricals(k);
-//			outputList.forEach(x -> {
-//				System.out.println(x.get(mapKey.getSymbol()));
-//			});
+
 			System.out.println("Total:" + outputList.size());
 			if (topic != null) {
 
@@ -377,36 +331,6 @@ public class KafkaService {
 			}
 
 		});
-
-	}
-
-	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_DBUPDATE_HISTORICAL_TOTAL, containerFactory = CONTAINER_FACTORY_LIST)
-	public void updateHistoricalTotal(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_DBUPDATE_HISTORICAL_TOTAL, list.toString());
-
-		Map<String, Object> firstMap = list.get(0);
-		final String topic = getTopicFromList(firstMap);
-
-		list.stream().parallel().forEach(x -> {
-
-			String ticker = x.get(mapKey.getTicker()).toString();
-//			System.out.println("ticker: " + ticker);
-
-			Long total = storeService.getHistoricalsTotal(ticker);
-			System.out.println("ticker: " + ticker + "-" + total);
-
-			x.put(mapKey.getHistoricalTotal(), total);
-		});
-
-		list.forEach(System.out::println);
-		if (topic != null) {
-//			publish(topic, list);
-			publish(topic, list.remove(0), list);
-
-		} else {
-			logger.info("Finish Last Step: {}", firstMap.toString());
-		}
 
 	}
 
