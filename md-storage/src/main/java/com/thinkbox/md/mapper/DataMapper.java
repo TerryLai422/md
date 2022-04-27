@@ -1,12 +1,14 @@
 package com.thinkbox.md.mapper;
 
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.model.Historical;
+import com.thinkbox.md.model.HistoricalSummary;
 import com.thinkbox.md.model.Instrument;
 import com.thinkbox.md.model.InstrumentCA;
 
@@ -81,8 +83,23 @@ public class DataMapper {
 				Long.valueOf(map.getOrDefault(mapKey.getSharesOutstanding(), DEFAULT_LONG_VALUE).toString()));
 		instrument.setHistoricalTotal(
 				Long.valueOf(map.getOrDefault(mapKey.getHistoricalTotal(), DEFAULT_LONG_VALUE).toString()));
+		instrument.setHistoricalFirstDate((String) map.getOrDefault(mapKey.getHistoricalFirstDate(), DEFAULT_STRING_VALUE));
+		instrument.setHistoricalLastDate((String) map.getOrDefault(mapKey.getHistoricalLastDate(), DEFAULT_STRING_VALUE));
 		instrument.setOthers(map);
-
+		
 		return instrument;
+	}
+
+	public Map<String, Object> convertHistoricalSummaryToMap(HistoricalSummary summary) {
+
+		Map<String, Object> map = new TreeMap<>();;
+		
+		if (summary != null) {
+			map.put(mapKey.getTicker(), summary.getTicker());
+			map.put(mapKey.getHistoricalTotal(), summary.getTotal());
+			map.put(mapKey.getHistoricalFirstDate(), summary.getFirstDate());
+			map.put(mapKey.getHistoricalLastDate(), summary.getLastDate());
+		}
+		return map;
 	}
 }
