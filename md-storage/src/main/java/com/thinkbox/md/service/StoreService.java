@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.thinkbox.md.mapper.DataMapper;
 import com.thinkbox.md.model.Historical;
+import com.thinkbox.md.model.HistoricalSummary;
 import com.thinkbox.md.model.Instrument;
 import com.thinkbox.md.repository.HistoricalRepository;
 import com.thinkbox.md.repository.InstrumentRepository;
@@ -60,9 +61,19 @@ public class StoreService {
 		
 	}
 
+	public Map<String, Object> getInstrument(final String ticker) {
+		
+		List<Instrument> instruments = instrumentRepository.findByTicker(ticker);
+		if (instruments != null && instruments.size() > 0) {
+			return instruments.get(0).getOthers();
+		}
+		return null;
+	}
+	
 	public List<Map<String, Object>> getInstruments(final String subExchange) {
 		
 		List<Instrument> instruments = instrumentRepository.findBySubExchange(subExchange);
+		
 		return instruments.stream().map(x -> x.getOthers()).collect(Collectors.toList());
 		
 	}
@@ -94,14 +105,27 @@ public class StoreService {
 	}
 	
 	public List<Map<String, Object>> getHistoricals(final String ticker, long limit) {
+		
 		List<Historical> historicals = Arrays.asList();
 		
 		if (historicalRepository.countByTicker(ticker) <= limit) {
 			historicals = historicalRepository.findByTicker(ticker);
 		}
+		
 		return historicals.stream().map(x -> x.getOthers()).collect(Collectors.toList());
 	}
 
+	public Map<String, Object> getHistoricalSummary(final String ticker) {
+		
+		HistoricalSummary summary = null;
+		if (historicalRepository.countByTicker(ticker) > 0) {
+			List<HistoricalSummary> list = historicalRepository.getSummary(ticker);
+			summary = list.get(0);
+		}
+		
+		return mapper.convertHistoricalSummaryToMap(summary);
+	}
+	
 	public Long getHistoricalsTotal(final String ticker) {
 
 		return historicalRepository.countByTicker(ticker);

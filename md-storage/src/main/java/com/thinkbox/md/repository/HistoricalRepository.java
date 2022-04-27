@@ -20,14 +20,10 @@ public interface HistoricalRepository extends MongoRepository<Historical, String
 
 	List<Historical> findByTicker(String ticker);
 
-	List<Historical> findBySymbol(String symbol);
-
 	long countByTicker(String ticker);
 
-	long countBySymbol(String symbol);
-
 	@Aggregation(pipeline = { "{$match: {ticker:?0}}",
-			"{$group: { _id : $ticker, total: {$sum: 1}, firstDate: { $max: $date}, lastDate: {$min: $date} }}" })
+			"{$group: { _id : $ticker, total: {$sum: 1}, firstDate: { $min: $date}, lastDate: {$max: $date} }}" })
 	List<HistoricalSummary> getSummary(String ticker);
 
 }

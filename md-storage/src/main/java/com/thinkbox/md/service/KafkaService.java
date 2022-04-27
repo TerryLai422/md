@@ -40,11 +40,15 @@ public class KafkaService {
 
 	private final String TOPIC_SAVE_INSTRUMENT_LIST = "save.instrument.list";
 
-	private final String TOPIC_SAVE_DETAIL_SINGLE = "save.detail.single";
+	private final String TOPIC_SAVE_INSTRUMENT_SINGLE = "save.instrument.single";
 
 	private final String TOPIC_DBGET_EXCHANGE_DATA = "dbget.exchange.data";
 
 	private final String TOPIC_DBGET_TOTAL_FROM_INSTRUMENT = "dbget.total.from.instrument";
+
+	private final String TOPIC_DBGET_SUMMARY_SINGLE = "dbget.summary.single";
+
+	private final String TOPIC_DBGET_SUMMARY_LIST = "dbget.summary.list";
 
 	private final String TOPIC_DBGET_HISTORICAL_LIST = "dbget.historical.list";
 
@@ -70,6 +74,25 @@ public class KafkaService {
 		kafkaTemplateList.send(topic, list);
 	}
 
+	private void publish(String topic, Map<String, Object> map, List<Map<String, Object>> list) {
+		int size = list.size();
+
+		if (size <= BATCH_LIMIT) {
+			map.put(mapKey.getTotal(), size);
+			list.add(0, map);
+			publish(topic, list);
+		} else {
+			List<Map<String, Object>> subList = null;
+			for (int i = 0; i < size; i += BATCH_LIMIT) {
+				subList = list.stream().skip(i).limit(BATCH_LIMIT).map(y -> y)
+						.collect(Collectors.toList());
+				map.put(mapKey.getTotal(), subList.size());
+				subList.add(0, map);
+				publish(topic, subList);
+			}
+		}
+	}
+	
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_EXCHANGE_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveExchangeList(List<Map<String, Object>> list) {
@@ -87,7 +110,7 @@ public class KafkaService {
 		Map<String, Object> firstMap = list.get(0);
 		String topic = getTopicFromList(firstMap);
 		if (topic != null) {
-			publish(topic, list);
+			publish(topic, list.remove(0), list);
 		} else {
 			logger.info("Finish Last Step: {} {}", firstMap.toString());
 		}
@@ -104,7 +127,7 @@ public class KafkaService {
 		Map<String, Object> firstMap = list.get(0);
 		String topic = getTopicFromList(firstMap);
 		if (topic != null) {
-			publish(topic, list);
+			publish(topic, list.remove(0), list);
 		} else {
 			logger.info("Finish Last Step: {} {}", firstMap.toString());
 		}
@@ -112,9 +135,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_SAVE_DETAIL_SINGLE, containerFactory = CONTAINER_FACTORY_LIST)
-	public void saveDetail(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_SAVE_DETAIL_SINGLE, list.toString());
+	@KafkaListener(topics = TOPIC_SAVE_INSTRUMENT_SINGLE, containerFactory = CONTAINER_FACTORY_LIST)
+	public void saveInstrument(List<Map<String, Object>> list) {
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_SAVE_INSTRUMENT_SINGLE, list.toString());
 
 		Map<String, Object> secondMap = list.get(1);
 
@@ -146,46 +169,42 @@ public class KafkaService {
 			outputList = storeService.getHistoricalTotalFromInstrument(subExchange, limit);
 		}
 
-//		outputList.forEach(x -> {
-//			System.out.println(x.toString());
-//		});
-
 		String topic = getTopicFromList(map);
 		if (topic != null) {
 			if (outputList != null) {
 
-				int size = outputList.size();
-
-				if (size <= BATCH_LIMIT) {
-					map.put(mapKey.getTotal(), size);
-					outputList.add(0, map);
-					publish(topic, outputList);
-				} else {
-					List<Map<String, Object>> subList = null;
-					for (int i = 0; i < size; i += BATCH_LIMIT) {
-						subList = outputList.stream().skip(i).limit(BATCH_LIMIT).map(y -> y)
-								.collect(Collectors.toList());
-						map.put(mapKey.getTotal(), subList.size());
-						subList.add(0, map);
-						publish(topic, subList);
-					}
-				}
+				publish(topic, map, outputList);
+//				int size = outputList.size();
+//
+//				if (size <= BATCH_LIMIT) {
+//					map.put(mapKey.getTotal(), size);
+//					outputList.add(0, map);
+//					publish(topic, outputList);
+//				} else {
+//					List<Map<String, Object>> subList = null;
+//					for (int i = 0; i < size; i += BATCH_LIMIT) {
+//						subList = outputList.stream().skip(i).limit(BATCH_LIMIT).map(y -> y)
+//								.collect(Collectors.toList());
+//						map.put(mapKey.getTotal(), subList.size());
+//						subList.add(0, map);
+//						publish(topic, subList);
+//					}
+//				}
 			}
 		} else {
 			if (outputList != null) {
-				
+
 				outputList.forEach(x -> {
-//					System.out.println(x.toString());
 					System.out.println("Ticker: " + x.getOrDefault(mapKey.getTicker(), "-").toString() + " - "
 							+ x.getOrDefault(mapKey.getHistoricalTotal(), "-").toString());
 				});
 				System.out.println("Total: " + outputList.size());
-				
+
 			}
 			logger.info("Finish Last Step: {}", map.toString());
 		}
 	}
-	
+
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_EXCHANGE_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void getInstruments(Map<String, Object> map) {
@@ -198,41 +217,38 @@ public class KafkaService {
 			outputList = storeService.getInstruments(subExchange);
 		}
 
-//		outputList.forEach(x -> {
-//			System.out.println(x.toString());
-//		});
-
 		String topic = getTopicFromList(map);
 		if (topic != null) {
 			if (outputList != null) {
 
-				int size = outputList.size();
+				publish(topic, map, outputList);
 
-				if (size <= BATCH_LIMIT) {
-					map.put(mapKey.getTotal(), size);
-					outputList.add(0, map);
-					publish(topic, outputList);
-				} else {
-					List<Map<String, Object>> subList = null;
-					for (int i = 0; i < size; i += BATCH_LIMIT) {
-						subList = outputList.stream().skip(i).limit(BATCH_LIMIT).map(y -> y)
-								.collect(Collectors.toList());
-						map.put(mapKey.getTotal(), subList.size());
-						subList.add(0, map);
-						publish(topic, subList);
-					}
-				}
+//				int size = outputList.size();
+//
+//				if (size <= BATCH_LIMIT + 1) {
+//					map.put(mapKey.getTotal(), size);
+//					outputList.add(0, map);
+//					publish(topic, outputList);
+//				} else {
+//					List<Map<String, Object>> subList = null;
+//					for (int i = 0; i < size; i += BATCH_LIMIT) {
+//						subList = outputList.stream().skip(i).limit(BATCH_LIMIT).map(y -> y)
+//								.collect(Collectors.toList());
+//						map.put(mapKey.getTotal(), subList.size());
+//						subList.add(0, map);
+//						publish(topic, subList);
+//					}
+//				}
 			}
 		} else {
 			if (outputList != null) {
-				
+
 				outputList.forEach(x -> {
-//					System.out.println(x.toString());
 					System.out.println("Ticker: " + x.getOrDefault(mapKey.getTicker(), "-").toString() + " - "
 							+ x.getOrDefault(mapKey.getHistoricalTotal(), "-").toString());
 				});
 				System.out.println("Total: " + outputList.size());
-				
+
 			}
 			logger.info("Finish Last Step: {}", map.toString());
 		}
@@ -249,7 +265,7 @@ public class KafkaService {
 		list.stream().parallel().skip(1).forEach(x -> {
 
 			String ticker = x.get(mapKey.getTicker()).toString();
-			System.out.println("ticker: " + ticker);
+//			System.out.println("ticker: " + ticker);
 
 			Map<String, Object> newMap = firstMap.entrySet().stream()
 					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -272,6 +288,66 @@ public class KafkaService {
 				logger.info("Finish Last Step: {}", firstMap.toString());
 			}
 		});
+	}
+
+	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_DBGET_SUMMARY_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	public void getHistoricalSummaryList(List<Map<String, Object>> list) {
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_DBGET_SUMMARY_LIST, list.toString());
+
+		final Map<String, Object> firstMap = list.get(0);
+		final String topic = getTopicFromList(firstMap);
+
+		list.stream().parallel().skip(1).forEach(x -> {
+
+			String ticker = x.get(mapKey.getTicker()).toString();
+//			System.out.println("ticker: " + ticker);
+
+//			Map<String, Object> newMap = firstMap.entrySet().stream()
+//					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+			Map<String, Object> summaryMap = storeService.getHistoricalSummary(ticker);
+
+			summaryMap.forEach((i, j) -> {
+				x.put(i, j);
+			});			
+		});
+		list.forEach(System.out::println);
+		
+		if (topic != null) {
+			publish(topic, list.remove(0), list);
+		} else {
+			logger.info("Finish Last Step: {}", firstMap.toString());
+		}
+	}
+
+	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_DBGET_SUMMARY_SINGLE, containerFactory = CONTAINER_FACTORY_LIST)
+	public void getHistoricalSummary(Map<String, Object> map) {
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_DBGET_SUMMARY_SINGLE, map.toString());
+
+		final String topic = getTopicFromList(map);
+
+		final String ticker = map.get(mapKey.getTicker()).toString();
+
+		Map<String, Object> instrumentMap = storeService.getInstrument(ticker);
+		
+		Map<String, Object> summaryMap = storeService.getHistoricalSummary(ticker);
+
+		summaryMap.forEach((i, j) -> {
+			instrumentMap.put(i, j);
+		});
+
+		if (topic != null) {
+			List<Map<String, Object>> outputList = new ArrayList<>();
+			outputList.add(0, map);
+			outputList.add(1, instrumentMap);
+			
+			publish(topic, outputList);
+		} else {
+			System.out.println(instrumentMap.toString());
+			logger.info("Finish Last Step: {}", map.toString());
+		}
 	}
 
 	@Async(ASYNC_EXECUTOR)
@@ -312,20 +388,22 @@ public class KafkaService {
 		Map<String, Object> firstMap = list.get(0);
 		final String topic = getTopicFromList(firstMap);
 
-		list.stream().parallel().skip(1).forEach(x -> {
+		list.stream().parallel().forEach(x -> {
 
 			String ticker = x.get(mapKey.getTicker()).toString();
-			System.out.println("ticker: " + ticker);
+//			System.out.println("ticker: " + ticker);
 
 			Long total = storeService.getHistoricalsTotal(ticker);
- 			System.out.println("ticker: " + ticker + "-" + total);
+			System.out.println("ticker: " + ticker + "-" + total);
 
 			x.put(mapKey.getHistoricalTotal(), total);
 		});
 
 		list.forEach(System.out::println);
 		if (topic != null) {
-			publish(topic, list);
+//			publish(topic, list);
+			publish(topic, list.remove(0), list);
+
 		} else {
 			logger.info("Finish Last Step: {}", firstMap.toString());
 		}
