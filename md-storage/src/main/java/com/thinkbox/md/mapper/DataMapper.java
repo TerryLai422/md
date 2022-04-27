@@ -85,6 +85,8 @@ public class DataMapper {
 				Long.valueOf(map.getOrDefault(mapKey.getHistoricalTotal(), DEFAULT_LONG_VALUE).toString()));
 		instrument.setHistoricalFirstDate((String) map.getOrDefault(mapKey.getHistoricalFirstDate(), DEFAULT_STRING_VALUE));
 		instrument.setHistoricalLastDate((String) map.getOrDefault(mapKey.getHistoricalLastDate(), DEFAULT_STRING_VALUE));
+		instrument.setHistoricalHigh(Double.valueOf(map.getOrDefault(mapKey.getHistoricalHigh(), DEFAULT_DOUBLE_VALUE).toString()));
+		instrument.setHistoricalLow(Double.valueOf(map.getOrDefault(mapKey.getHistoricalLow(), DEFAULT_DOUBLE_VALUE).toString()));
 		instrument.setOthers(map);
 		
 		return instrument;
@@ -99,6 +101,8 @@ public class DataMapper {
 			map.put(mapKey.getHistoricalTotal(), summary.getTotal());
 			map.put(mapKey.getHistoricalFirstDate(), summary.getFirstDate());
 			map.put(mapKey.getHistoricalLastDate(), summary.getLastDate());
+			map.put(mapKey.getHistoricalHigh(), summary.getHigh());
+			map.put(mapKey.getHistoricalLow(), summary.getLow());
 		}
 		return map;
 	}

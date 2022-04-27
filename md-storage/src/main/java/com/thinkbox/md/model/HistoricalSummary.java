@@ -21,4 +21,8 @@ public class HistoricalSummary {
 	private String firstDate;
 	
 	private String lastDate;
+	
+	private Double high;
+	
+	private Double low;
 }
