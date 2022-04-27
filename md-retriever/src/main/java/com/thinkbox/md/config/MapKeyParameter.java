@@ -98,11 +98,7 @@ public class MapKeyParameter {
 
 	private String toYearForWeek;
 	
-	// suffix
-	private String suffixValue;
-
-	private String suffixSize;
-	
+	// suffix	
 	private String suffixHigh;
 	
 	private String suffixLow;
@@ -150,4 +146,10 @@ public class MapKeyParameter {
 	private String fileName;
 	
 	private String directory;
+	
+	private String historicalTotal;
+	
+	private String historicalFirstDate;
+	
+	private String historicalLastDate;
 }

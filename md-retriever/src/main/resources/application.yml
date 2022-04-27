@@ -60,8 +60,6 @@ map-key-parameter:
   toWeekOfYear: toWeekOfYear
   toDayOfWeek: toDayOfWeek
   toYearForWeek: toYearForWeek 
-  suffixValue: value
-  suffixSize: size
   suffixHigh: high
   suffixLow: low
   historicalHigh: historicalHigh
@@ -85,6 +83,9 @@ map-key-parameter:
   directory: directory
   fileName: fileName
   from: from
+  historicalTotal: historicalTotal
+  historicalFirstDate: historicalFirstDate
+  historicalLastDate: historicalLastDate
   
 map-value-parameter:
   daily: D
