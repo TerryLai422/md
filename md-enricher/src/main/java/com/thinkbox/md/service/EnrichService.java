@@ -18,7 +18,7 @@ import com.thinkbox.md.component.OnBalanceVolume;
 import com.thinkbox.md.component.PreviousClose;
 import com.thinkbox.md.component.SimpleMovingAverage;
 import com.thinkbox.md.component.WeekHighLow;
-import com.thinkbox.md.component.VolumeAverage;
+import com.thinkbox.md.component.AverageVolume;
 import com.thinkbox.md.config.IndicatorProperties;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.MapValueParameter;
@@ -49,7 +49,7 @@ public class EnrichService {
 		List<SimpleMovingAverage> smaList = getSMAList();
 		PreviousClose previousClose = new PreviousClose(mapKey, 0);
 		WeekHighLow weekHighLow = new WeekHighLow(mapKey, 52);
-		VolumeAverage volumeAverage = new VolumeAverage(mapKey, 50);
+		AverageVolume volumeAverage = new AverageVolume(mapKey, 50);
 		OnBalanceVolume onBalanceVolume = new OnBalanceVolume(mapKey, 0);
 		AverageTrueRange averageTrueRange = new AverageTrueRange(mapKey, 14);
 		

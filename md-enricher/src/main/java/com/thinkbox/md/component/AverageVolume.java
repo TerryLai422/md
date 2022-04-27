@@ -6,17 +6,17 @@ import java.util.Queue;
 
 import com.thinkbox.md.config.MapKeyParameter;
 
-public class VolumeAverage extends Indicator {
+public class AverageVolume extends Indicator {
 
 	private Queue<Long> queue = new LinkedList<>();
 
 	private long sum = 0L;
 
-	private VolumeAverage() {
+	private AverageVolume() {
 		super();
 	}
 	
-	public VolumeAverage(MapKeyParameter mapKey, int period) {
+	public AverageVolume(MapKeyParameter mapKey, int period) {
 		super(mapKey, period);
 	}
 
