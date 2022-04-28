@@ -23,7 +23,8 @@ public interface HistoricalRepository extends MongoRepository<Historical, String
 	long countByTicker(String ticker);
 
 	@Aggregation(pipeline = { "{$match: {ticker:?0}}",
-			"{$group: { _id : $ticker, total: {$sum: 1}, firstDate: { $min: $date}, lastDate: {$max: $date}, high: {$max: $close }, low: {$min: $close }}}" })
+	"{$project: {_id:$ticker, closeDate: {$concat:[{$toString: $close}, '-', $date]}, date:$date }}", 
+	"{$group: {_id :$_id, total:{$sum: 1}, firstDate:{$min: $date}, lastDate:{$max: $date}, high:{$max: $closeDate}, low:{$min: $closeDate}}}" })	
 	List<HistoricalSummary> getSummary(String ticker);
 
 }

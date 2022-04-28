@@ -58,7 +58,7 @@ public class KafkaService {
 
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
-	private final int BATCH_LIMIT = 2000;
+	private final int BATCH_LIMIT = 1500;
 
 	public void publish(String topic, Map<String, Object> map) {
 		logger.info(String.format("Sent topic: -> {}", map.toString()));
@@ -82,15 +82,14 @@ public class KafkaService {
 		} else {
 			List<Map<String, Object>> subList = null;
 			for (int i = 0; i < size; i += BATCH_LIMIT) {
-				subList = list.stream().skip(i).limit(BATCH_LIMIT).map(y -> y)
-						.collect(Collectors.toList());
+				subList = list.stream().skip(i).limit(BATCH_LIMIT).map(y -> y).collect(Collectors.toList());
 				map.put(mapKey.getTotal(), subList.size());
 				subList.add(0, map);
 				publish(topic, subList);
 			}
 		}
 	}
-	
+
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_EXCHANGE_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveExchangeList(List<Map<String, Object>> list) {
@@ -242,7 +241,7 @@ public class KafkaService {
 				int size = outputList.size();
 				if (size > 0) {
 					newMap.put(mapKey.getTotal(), size);
-					 publish(topic, newMap, outputList);
+					publish(topic, newMap, outputList);
 				}
 			} else {
 				logger.info("Finish Last Step: {}", firstMap.toString());
@@ -258,18 +257,37 @@ public class KafkaService {
 		final Map<String, Object> firstMap = list.get(0);
 		final String topic = getTopicFromList(firstMap);
 
+//		final String ticker = "RCFA";
 		list.stream().parallel().skip(1).forEach(x -> {
 
 			String ticker = x.get(mapKey.getTicker()).toString();
 
 			Map<String, Object> summaryMap = storeService.getHistoricalSummary(ticker);
 
-			summaryMap.forEach((i, j) -> {
-				x.put(i, j);
-			});			
+			x.put(mapKey.getHistoricalTotal(), summaryMap.getOrDefault(mapKey.getHistoricalTotal(), 0));
+			x.put(mapKey.getHistoricalFirstDate(), summaryMap.getOrDefault(mapKey.getHistoricalFirstDate(), "-"));
+			x.put(mapKey.getHistoricalLastDate(), summaryMap.getOrDefault(mapKey.getHistoricalLastDate(), "-"));
+
+			String temp1 = summaryMap.getOrDefault(mapKey.getHistoricalHigh(), "?").toString();
+			String[] temps1 = temp1.split("-");
+			if (temps1.length == 2) {
+				x.put(mapKey.getHistoricalHigh(), Double.valueOf(temps1[0]));
+				x.put(mapKey.getHistoricalHighDate(), temps1[1]);				
+			}
+			String temp2 = summaryMap.getOrDefault(mapKey.getHistoricalLow(), "?").toString();
+			String[] temps2 = temp2.split("-");
+			if (temps2.length == 2) {
+				x.put(mapKey.getHistoricalLow(), Double.valueOf(temps2[0]));
+				x.put(mapKey.getHistoricalLowDate(), temps2[1]);				
+			}
+//			summaryMap.forEach((i, j) -> {
+//				x.put(i, j);
+//				System.out.println("Key:" + i);
+//				System.out.println("Value:" + j);
+//			});			
 		});
 		list.forEach(System.out::println);
-		
+
 		if (topic != null) {
 			publish(topic, list.remove(0), list);
 		} else {
@@ -287,7 +305,7 @@ public class KafkaService {
 		final String ticker = map.get(mapKey.getTicker()).toString();
 
 		Map<String, Object> instrumentMap = storeService.getInstrument(ticker);
-		
+
 		Map<String, Object> summaryMap = storeService.getHistoricalSummary(ticker);
 
 		summaryMap.forEach((i, j) -> {
@@ -298,7 +316,7 @@ public class KafkaService {
 			List<Map<String, Object>> outputList = new ArrayList<>();
 			outputList.add(0, map);
 			outputList.add(1, instrumentMap);
-			
+
 			publish(topic, outputList);
 		} else {
 			System.out.println(instrumentMap.toString());
