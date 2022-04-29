@@ -67,6 +67,30 @@ public class FileParseService {
 
 	private final static String DEFAULT_TIME_VALUE = "000000";
 
+	private final static String DATA_SOURCE_YAHOO = "yahoo";
+
+	private final static String DATA_SOURCE_STOOP = "stooq";
+
+	private final static String MARKET_CANADA = "CA";
+
+	private final static String MARKET_UNITED_STATE = "US";
+
+	private final static String TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE = ".TO";
+
+	private final static String TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE = ".V";
+
+	private final static String TORONTO_STOCK_EXCHANGE = "TSX";
+
+	private final static String TORONTO_STOCK_VENTURE_EXCHANGE = "TSXV";
+	
+	private final static String STRING_DASH = "-"; 
+		
+	private final static String STRING_EMPTY_SPACE = "";
+	
+	private final static Character CHARACTER_DASH = '-';
+	
+	private final static Character CHARACTER_DOT = '.';
+
 	@Value("${app.data.directory:-}")
 	private String dataDirectory;
 
@@ -81,7 +105,7 @@ public class FileParseService {
 
 	@PostConstruct
 	public void init() {
-		if (dataDirectory != null && dataDirectory.equals("-")) {
+		if (dataDirectory != null && dataDirectory.equals(STRING_DASH)) {
 			dataDirectory = System.getProperty(USER_HOME);
 		}
 	}
@@ -90,7 +114,7 @@ public class FileParseService {
 
 		String directory = dataDirectory + File.separator + HISTORICAL_DIRECTORY;
 
-		if (!subDirectory.equals("-")) {
+		if (!subDirectory.equals(STRING_DASH)) {
 			directory += File.separator + subDirectory;
 		}
 
@@ -102,12 +126,12 @@ public class FileParseService {
 					Map<String, Object> map = new TreeMap<>();
 					String name = x.getName();
 					if (name.contains("historical")) {
-						map.put(mapKey.getDataSource(), "yahoo");
+						map.put(mapKey.getDataSource(), DATA_SOURCE_YAHOO);
 						String symbol = name.substring(0, name.length() - 17);
 						map.put(mapKey.getSymbol(), symbol);
 						map.put(mapKey.getTicker(), symbol);
 					} else {
-						map.put(mapKey.getDataSource(), "stooq");
+						map.put(mapKey.getDataSource(), DATA_SOURCE_STOOP);
 						String symbol = name.substring(0, name.length() - 7);
 						map.put(mapKey.getSymbol(), symbol);
 						map.put(mapKey.getTicker(), symbol);
@@ -121,7 +145,7 @@ public class FileParseService {
 
 		String directory = dataDirectory + File.separator + DAILY_DIRECTORY;
 
-		if (!subDirectory.equals("-")) {
+		if (!subDirectory.equals(STRING_DASH)) {
 			directory += File.separator + subDirectory;
 		}
 
@@ -152,8 +176,11 @@ public class FileParseService {
 
 	public Map<String, Object> parseDetailFile(final String subExchange, final String symbol) throws IOException {
 
-		final String suffix = (subExchange.equals("TSX")) ? ".TO" : (subExchange.equals("TSXV")) ? ".V" : "";
-		final String market = (subExchange.equals("TSX") || subExchange.equals("TSXV")) ? "CA" : "US";
+		final String suffix = (subExchange.equals(TORONTO_STOCK_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE
+				: (subExchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE : STRING_EMPTY_SPACE;
+		final String market = (subExchange.equals(TORONTO_STOCK_EXCHANGE) || subExchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE))
+				? MARKET_CANADA
+				: MARKET_UNITED_STATE;
 
 		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExchange
 				+ File.separator + symbol + DETAIL_FILE_SUFFIX + FILE_EXTENSION;
@@ -207,7 +234,7 @@ public class FileParseService {
 
 	private String getDateFormat(final String dataSource) {
 		String format;
-		if (dataSource.equals("yahoo")) {
+		if (dataSource.equals(DATA_SOURCE_YAHOO)) {
 			format = "yyyy-MM-dd";
 		} else {
 			format = "yyyyMMdd";
@@ -218,7 +245,7 @@ public class FileParseService {
 
 	private List<Integer> getColumnsPosition(final String dataSource) {
 		List<Integer> columns = null;
-		if (dataSource.equals("yahoo")) {
+		if (dataSource.equals(DATA_SOURCE_YAHOO)) {
 			columns = Arrays.asList(0, 1, 2, 3, 4, 5, 6);
 		} else {
 			columns = Arrays.asList(2, 4, 5, 6, 7, 7, 8);
@@ -232,13 +259,13 @@ public class FileParseService {
 
 		String fullFileName = dataDirectory + File.separator + directory;
 
-		if (!subDirectory.equals("-")) {
+		if (!subDirectory.equals(STRING_DASH)) {
 			fullFileName += File.separator + subDirectory;
 		}
-		if (!fileName.equals("-")) {
+		if (!fileName.equals(STRING_DASH)) {
 			fullFileName += File.separator + fileName;
 		} else {
-			if (dataSource.equals("yahoo")) {
+			if (dataSource.equals(DATA_SOURCE_YAHOO)) {
 				fullFileName += File.separator + ticker + HISTORICAL_DAILY_FILE_SUFFIX + FILE_EXTENSION;
 			} else {
 				fullFileName += File.separator + symbol + ".us" + FILE_EXTENSION;
@@ -249,7 +276,7 @@ public class FileParseService {
 
 	private int getIntervalPosition(final String dataSource) {
 
-		if (dataSource.equals("stooq")) {
+		if (dataSource.equals(DATA_SOURCE_STOOP)) {
 			return 1;
 		}
 		return -1;
@@ -257,7 +284,7 @@ public class FileParseService {
 
 	private int getTimePosition(final String dataSource) {
 
-		if (dataSource.equals("stooq")) {
+		if (dataSource.equals(DATA_SOURCE_STOOP)) {
 			return 3;
 		}
 		return -1;
@@ -266,7 +293,7 @@ public class FileParseService {
 	public List<Map<String, Object>> parseHistoricalFile(final String subDirectory, final String dataSource,
 			final String symbol, final String ticker) throws IOException {
 
-		final String fileName = "-";
+		final String fileName = STRING_DASH;
 		List<Map<String, Object>> outputList = parseQuoteFile(HISTORICAL_DIRECTORY, subDirectory, fileName, dataSource,
 				symbol, ticker);
 
@@ -303,8 +330,8 @@ public class FileParseService {
 	public List<Map<String, Object>> parseDailyFile(final String subDirectory, final String fileName,
 			final String dataSource) throws IOException {
 
-		final String symbol = "-";
-		final String ticker = "-";
+		final String symbol = STRING_DASH;
+		final String ticker = STRING_DASH;
 
 		List<Map<String, Object>> outputList = parseQuoteFile(DAILY_DIRECTORY, subDirectory, fileName, dataSource,
 				symbol, ticker);
@@ -366,7 +393,7 @@ public class FileParseService {
 				} else {
 					map.put(mapKey.getInterval(), new String(x[intervalPosition]));
 				}
-				if (symbol.equals("-")) {
+				if (symbol.equals(STRING_DASH)) {
 					String tempSymbol = x[0];
 					if (tempSymbol != null && tempSymbol.endsWith(".US")) {
 						tempSymbol = tempSymbol.substring(0, tempSymbol.length() - 3);
@@ -403,11 +430,12 @@ public class FileParseService {
 				map.put(mapKey.getVolume(), Long.parseLong(x[columns.get(6)]));
 
 				String temp = map.get(mapKey.getTicker()).toString();
-				if (temp.endsWith(".TO") || temp.endsWith(".V")) {
-					map.put(mapKey.getMarket(), "CA");
+				if (temp.endsWith(TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE)
+						|| temp.endsWith(TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE)) {
+					map.put(mapKey.getMarket(), MARKET_CANADA);
 
 				} else {
-					map.put(mapKey.getMarket(), "US");
+					map.put(mapKey.getMarket(), MARKET_UNITED_STATE);
 				}
 			} catch (ParseException e) {
 				logger.info(e.toString());
@@ -425,9 +453,10 @@ public class FileParseService {
 
 		logger.info(fileName);
 
-		final String suffix = (exchange.equals("TSX")) ? ".TO" : (exchange.equals("TSXV")) ? ".V" : "";
+		final String suffix = (exchange.equals(TORONTO_STOCK_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE
+				: (exchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE : STRING_EMPTY_SPACE;
 
-		final boolean neededSuffix = (exchange.equals("TSX") || exchange.equals("TSXV")) ? true : false;
+		final boolean neededSuffix = (exchange.equals(TORONTO_STOCK_EXCHANGE) || exchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? true : false;
 
 		CSVFileReader csvFileReader = new CSVFileReader();
 
@@ -444,13 +473,13 @@ public class FileParseService {
 			map.put(mapKey.getExchange(), new String(exchange));
 
 			if (neededSuffix) {
-				long count = symbol.chars().filter(ch -> ch == '.').count();
+				long count = symbol.chars().filter(ch -> ch == CHARACTER_DASH).count();
 				if (count == 0) {
 					ticker = symbol + suffix;
 				} else if (count == 1) {
-					ticker = symbol.replace('.', '-') + suffix;
+					ticker = symbol.replace(CHARACTER_DASH, CHARACTER_DASH) + suffix;
 				} else {
-					ticker = "-";
+					ticker = STRING_DASH;
 				}
 			}
 
