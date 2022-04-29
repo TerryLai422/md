@@ -88,6 +88,7 @@ map-key-parameter:
   historicalTotal: historicalTotal
   historicalFirstDate: historicalFirstDate
   historicalLastDate: historicalLastDate
+  ind: ind
   
 map-value-parameter:
   daily: D
