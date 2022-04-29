@@ -64,6 +64,10 @@ public class Instrument {
 	
 	private Double historicalLow;
 	
+	private String historicalHighDate;
+	
+	private String historicalLowDate;
+	
 	private Map<String, Object> others;
 
 }
