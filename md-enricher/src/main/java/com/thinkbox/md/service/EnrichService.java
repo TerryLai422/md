@@ -52,16 +52,16 @@ public class EnrichService {
 		AverageVolume volumeAverage = new AverageVolume(mapKey, 50);
 		OnBalanceVolume onBalanceVolume = new OnBalanceVolume(mapKey, 0);
 		AverageTrueRange averageTrueRange = new AverageTrueRange(mapKey, 14);
-		
-		List<Indicator> indicators = Arrays.asList();
+
+		List<Indicator> indicators = new ArrayList<>();
 		indicators.add(previousClose);
 		indicators.add(weekHighLow);
 		indicators.add(volumeAverage);
 		indicators.add(onBalanceVolume);
 		indicators.add(averageTrueRange);
 
-		for (Indicator indicator: smaList) {
-			indicators.add(indicator);			
+		for (Indicator indicator : smaList) {
+			indicators.add(indicator);
 		}
 		return indicators;
 	}
@@ -69,12 +69,16 @@ public class EnrichService {
 	public List<Map<String, Object>> enrichHistorical(List<Map<String, Object>> list) {
 
 		final List<Indicator> indicators = getIndicators();
-		
+
 		return list.stream().skip(1)
 				.sorted((i, j) -> i.get(mapKey.getDate()).toString().compareTo(j.get(mapKey.getDate()).toString()))
 				.map(x -> {
 
-					for (Indicator indicator: indicators) {
+					if (!x.containsKey(mapKey.getInd())) {
+						x.put("ind", new TreeMap<>());
+					}
+
+					for (Indicator indicator : indicators) {
 						indicator.process(x);
 					}
 					return x;
@@ -88,10 +92,10 @@ public class EnrichService {
 		final String suffix = (exchange.equals("TSX")) ? ".TO" : (exchange.equals("TSXV")) ? ".V" : "";
 		final boolean neededSuffix = (exchange.equals("TSX") || exchange.equals("TSXV")) ? true : false;
 
-		List<Map<String, Object>> outputList = list.stream().skip(1).map(x -> {
+		List<Map<String, Object>> outputList = list.stream().skip(1).limit(1).map(x -> {
 			String symbol = (String) x.get(mapKey.getSymbol());
 			String ticker = symbol;
-			
+
 			if (neededSuffix) {
 				long count = symbol.chars().filter(ch -> ch == '.').count();
 				if (count == 0) {
@@ -104,16 +108,16 @@ public class EnrichService {
 			}
 
 			x.put(mapKey.getTicker(), ticker);
-			
+
 			return x;
 		}).collect(Collectors.toList());
-		
+
 		Map<String, Object> index = new TreeMap<String, Object>();
 
 		index.put(mapKey.getTotal(), Long.valueOf(outputList.size()));
 
 		outputList.add(0, index);
-		
+
 		return outputList;
 	}
 
