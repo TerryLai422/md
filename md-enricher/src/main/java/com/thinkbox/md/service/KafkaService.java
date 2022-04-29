@@ -36,9 +36,9 @@ public class KafkaService {
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
-	private final String TOPIC_PROCESS_EXCHANGE_DATA_LIST = "process.exchange.data.list";
+	private final String TOPIC_ENRICH_EXCHANGE_DATA_LIST = "enrich.exchange.list";
 
-	private final String TOPIC_PROCESS_HISTORICAL_DATA_LIST = "process.historical.data.list";
+	private final String TOPIC_ENRICH_HISTORICAL_DATA_LIST = "enrich.historical.list";
 
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
@@ -52,9 +52,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PROCESS_EXCHANGE_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = TOPIC_ENRICH_EXCHANGE_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void processExchangeData(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PROCESS_EXCHANGE_DATA_LIST, list.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_ENRICH_EXCHANGE_DATA_LIST, list.toString());
 
 		List<Map<String, Object>> outputList = enrichService.enrichExchange(list);
 
@@ -78,9 +78,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PROCESS_HISTORICAL_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = TOPIC_ENRICH_HISTORICAL_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void processHistericalData(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PROCESS_HISTORICAL_DATA_LIST, list.toString());
+		logger.info("Received topic: {} -> parameter: {}", TOPIC_ENRICH_HISTORICAL_DATA_LIST, list.toString());
 
 //		List<Map<String, Object>> weeklyList = enrichService.consolidate(mapValue.getWeekly(), list);
 //		weeklyList.forEach(System.out::println);
