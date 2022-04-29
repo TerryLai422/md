@@ -224,7 +224,7 @@ public class KafkaService {
 		final Map<String, Object> firstMap = list.get(0);
 		final String topic = getTopicFromList(firstMap);
 
-		list.stream().parallel().skip(1).forEach(x -> {
+		list.stream().parallel().skip(1).limit(1).forEach(x -> {
 
 			String ticker = x.get(mapKey.getTicker()).toString();
 //			System.out.println("ticker: " + ticker);
@@ -233,6 +233,7 @@ public class KafkaService {
 					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 			newMap.put(mapKey.getTicker(), ticker);
+			newMap.put("inst", x);
 
 			List<Map<String, Object>> outputList = storeService.getHistoricals(ticker, BATCH_LIMIT);
 			System.out.println("ticker: " + ticker + " - size: " + outputList.size());
@@ -267,6 +268,7 @@ public class KafkaService {
 			x.put(mapKey.getHistoricalTotal(), summaryMap.getOrDefault(mapKey.getHistoricalTotal(), 0));
 			x.put(mapKey.getHistoricalFirstDate(), summaryMap.getOrDefault(mapKey.getHistoricalFirstDate(), "-"));
 			x.put(mapKey.getHistoricalLastDate(), summaryMap.getOrDefault(mapKey.getHistoricalLastDate(), "-"));
+			x.put(mapKey.getLastPrice(), summaryMap.getOrDefault(mapKey.getLastPrice(), 0));
 
 			String temp1 = summaryMap.getOrDefault(mapKey.getHistoricalHigh(), "?").toString();
 			String[] temps1 = temp1.split("-");

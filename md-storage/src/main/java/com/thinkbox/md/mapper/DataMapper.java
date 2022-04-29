@@ -99,7 +99,7 @@ public class DataMapper {
 				Double.valueOf(map.getOrDefault(mapKey.getHistoricalLow(), DEFAULT_DOUBLE_VALUE).toString()));
 		instrument.setHistoricalHighDate((String) map.getOrDefault(mapKey.getHistoricalHighDate(), DEFAULT_STRING_VALUE));
 		instrument.setHistoricalLowDate((String) map.getOrDefault(mapKey.getHistoricalLowDate(), DEFAULT_STRING_VALUE));
-
+		instrument.setLastPrice(Double.valueOf(map.getOrDefault(mapKey.getLastPrice(), DEFAULT_DOUBLE_VALUE).toString()));
 		instrument.setOthers(map);
 
 		return instrument;
@@ -113,6 +113,7 @@ public class DataMapper {
 		if (summary != null) {
 			map.put(mapKey.getTicker(), summary.getTicker());
 			map.put(mapKey.getHistoricalTotal(), summary.getTotal());
+			map.put(mapKey.getLastPrice(), summary.getLastPrice());
 			map.put(mapKey.getHistoricalFirstDate(), summary.getFirstDate());
 			map.put(mapKey.getHistoricalLastDate(), summary.getLastDate());
 			map.put(mapKey.getHistoricalHigh(), summary.getHigh());

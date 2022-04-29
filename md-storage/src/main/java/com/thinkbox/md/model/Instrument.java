@@ -68,6 +68,8 @@ public class Instrument {
 	
 	private String historicalLowDate;
 	
+	private Double lastPrice;
+	
 	private Map<String, Object> others;
 
 }

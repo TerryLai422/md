@@ -25,4 +25,7 @@ public class HistoricalSummary {
 	private String high;
 	
 	private String low;
+	
+	private Double lastPrice;
+
 }

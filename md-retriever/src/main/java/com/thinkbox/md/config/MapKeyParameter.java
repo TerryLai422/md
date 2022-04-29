@@ -156,4 +156,6 @@ public class MapKeyParameter {
 	private String historicalFirstDate;
 	
 	private String historicalLastDate;
+	
+	private String lastPrice;
 }
