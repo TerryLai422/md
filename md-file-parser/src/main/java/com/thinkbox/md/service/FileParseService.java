@@ -82,14 +82,19 @@ public class FileParseService {
 	private final static String TORONTO_STOCK_EXCHANGE = "TSX";
 
 	private final static String TORONTO_STOCK_VENTURE_EXCHANGE = "TSXV";
+
+	private final static String STOOQ_TICKER_SUFFIX = ".US";
 	
-	private final static String STRING_DASH = "-"; 
-		
+	private final static String STOOQ_FILE_PATTERN = ".us";
+	
+	private final static String STRING_DASH = "-";
+
 	private final static String STRING_EMPTY_SPACE = "";
-	
+
 	private final static Character CHARACTER_DASH = '-';
-	
+
 	private final static Character CHARACTER_DOT = '.';
+	
 
 	@Value("${app.data.directory:-}")
 	private String dataDirectory;
@@ -177,10 +182,10 @@ public class FileParseService {
 	public Map<String, Object> parseDetailFile(final String subExchange, final String symbol) throws IOException {
 
 		final String suffix = (subExchange.equals(TORONTO_STOCK_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE
-				: (subExchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE : STRING_EMPTY_SPACE;
-		final String market = (subExchange.equals(TORONTO_STOCK_EXCHANGE) || subExchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE))
-				? MARKET_CANADA
-				: MARKET_UNITED_STATE;
+				: (subExchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE
+						: STRING_EMPTY_SPACE;
+		final String market = (subExchange.equals(TORONTO_STOCK_EXCHANGE)
+				|| subExchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? MARKET_CANADA : MARKET_UNITED_STATE;
 
 		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExchange
 				+ File.separator + symbol + DETAIL_FILE_SUFFIX + FILE_EXTENSION;
@@ -199,7 +204,7 @@ public class FileParseService {
 				map.put(x, object);
 			}
 		});
-		map.put(mapKey.getSymbol(), symbol.replaceAll(suffix, ""));
+		map.put(mapKey.getSymbol(), symbol.replaceAll(suffix, STRING_EMPTY_SPACE));
 		map.put(mapKey.getSubExchange(), subExchange);
 		map.put(mapKey.getMarket(), market);
 
@@ -268,7 +273,7 @@ public class FileParseService {
 			if (dataSource.equals(DATA_SOURCE_YAHOO)) {
 				fullFileName += File.separator + ticker + HISTORICAL_DAILY_FILE_SUFFIX + FILE_EXTENSION;
 			} else {
-				fullFileName += File.separator + symbol + ".us" + FILE_EXTENSION;
+				fullFileName += File.separator + symbol + STOOQ_FILE_PATTERN + FILE_EXTENSION;
 			}
 		}
 		return fullFileName;
@@ -370,18 +375,9 @@ public class FileParseService {
 		List<Map<String, Object>> outputList = list.stream().map(x -> {
 			Map<String, Object> map = null;
 
-			try {
-				Calendar calendar = null;
-				String date = x[columns.get(0)];
-				Date sDate;
-				sDate = new SimpleDateFormat(dateFormat).parse(date);
-				calendar = Calendar.getInstance();
-				calendar.setTime(sDate);
-				calendar.set(Calendar.MILLISECOND, 0);
-				calendar.set(Calendar.SECOND, 0);
-				calendar.set(Calendar.MINUTE, 0);
-				calendar.set(Calendar.HOUR, 0);
+			Calendar calendar = getCalendar(dateFormat, x[columns.get(0)]);
 
+			if (calendar != null) {
 				int year = calendar.get(Calendar.YEAR);
 				int dayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
 				int weekOfYear = calendar.get(Calendar.WEEK_OF_YEAR);
@@ -395,7 +391,7 @@ public class FileParseService {
 				}
 				if (symbol.equals(STRING_DASH)) {
 					String tempSymbol = x[0];
-					if (tempSymbol != null && tempSymbol.endsWith(".US")) {
+					if (tempSymbol != null && tempSymbol.endsWith(STOOQ_TICKER_SUFFIX)) {
 						tempSymbol = tempSymbol.substring(0, tempSymbol.length() - 3);
 					}
 					map.put(mapKey.getTicker(), tempSymbol);
@@ -437,13 +433,29 @@ public class FileParseService {
 				} else {
 					map.put(mapKey.getMarket(), MARKET_UNITED_STATE);
 				}
-			} catch (ParseException e) {
-				logger.info(e.toString());
 			}
+
 			return map;
 		}).filter(x -> x != null).collect(Collectors.toList());
 
 		return outputList;
+	}
+
+	private Calendar getCalendar(String dateFormat, String date) {
+		Calendar calendar = null;
+		Date sDate;
+		try {
+			sDate = new SimpleDateFormat(dateFormat).parse(date);
+			calendar = Calendar.getInstance();
+			calendar.setTime(sDate);
+			calendar.set(Calendar.MILLISECOND, 0);
+			calendar.set(Calendar.SECOND, 0);
+			calendar.set(Calendar.MINUTE, 0);
+			calendar.set(Calendar.HOUR, 0);
+		} catch (ParseException e) {
+			logger.info(e.toString());
+		}
+		return calendar;
 	}
 
 	public List<Map<String, Object>> parseExchangeFile(final String exchange) throws IOException {
@@ -454,9 +466,11 @@ public class FileParseService {
 		logger.info(fileName);
 
 		final String suffix = (exchange.equals(TORONTO_STOCK_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE
-				: (exchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE : STRING_EMPTY_SPACE;
+				: (exchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE
+						: STRING_EMPTY_SPACE;
 
-		final boolean neededSuffix = (exchange.equals(TORONTO_STOCK_EXCHANGE) || exchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? true : false;
+		final boolean neededSuffix = (exchange.equals(TORONTO_STOCK_EXCHANGE)
+				|| exchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? true : false;
 
 		CSVFileReader csvFileReader = new CSVFileReader();
 
