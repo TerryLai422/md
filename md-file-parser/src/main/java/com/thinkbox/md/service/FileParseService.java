@@ -71,6 +71,14 @@ public class FileParseService {
 
 	private final static String DATA_SOURCE_STOOP = "stooq";
 
+	private final static String DATE_FORMAT_YAHOO = "yyyy-MM-dd";
+
+	private final static String DATE_FORMAT_STOOP = "yyyyMMdd";
+
+	private final static List<Integer> COLUMN_LIST_YAHOO = Arrays.asList(0, 1, 2, 3, 4, 5, 6);
+
+	private final static List<Integer> COLUMN_LIST_STOOP = Arrays.asList(2, 4, 5, 6, 7, 7, 8);
+
 	private final static String MARKET_CANADA = "CA";
 
 	private final static String MARKET_UNITED_STATE = "US";
@@ -84,9 +92,9 @@ public class FileParseService {
 	private final static String TORONTO_STOCK_VENTURE_EXCHANGE = "TSXV";
 
 	private final static String STOOQ_TICKER_SUFFIX = ".US";
-	
+
 	private final static String STOOQ_FILE_PATTERN = ".us";
-	
+
 	private final static String STRING_DASH = "-";
 
 	private final static String STRING_EMPTY_SPACE = "";
@@ -94,7 +102,6 @@ public class FileParseService {
 	private final static Character CHARACTER_DASH = '-';
 
 	private final static Character CHARACTER_DOT = '.';
-	
 
 	@Value("${app.data.directory:-}")
 	private String dataDirectory;
@@ -238,25 +245,15 @@ public class FileParseService {
 	}
 
 	private String getDateFormat(final String dataSource) {
-		String format;
-		if (dataSource.equals(DATA_SOURCE_YAHOO)) {
-			format = "yyyy-MM-dd";
-		} else {
-			format = "yyyyMMdd";
-		}
 
-		return format;
+		return (dataSource.equals(DATA_SOURCE_YAHOO)) ? DATE_FORMAT_YAHOO : DATE_FORMAT_STOOP;
+
 	}
 
 	private List<Integer> getColumnsPosition(final String dataSource) {
-		List<Integer> columns = null;
-		if (dataSource.equals(DATA_SOURCE_YAHOO)) {
-			columns = Arrays.asList(0, 1, 2, 3, 4, 5, 6);
-		} else {
-			columns = Arrays.asList(2, 4, 5, 6, 7, 7, 8);
-		}
 
-		return columns;
+		return (dataSource.equals(DATA_SOURCE_YAHOO)) ? COLUMN_LIST_YAHOO : COLUMN_LIST_STOOP;
+
 	}
 
 	private String getFullFileName(final String directory, final String subDirectory, final String fileName,
