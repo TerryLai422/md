@@ -473,11 +473,11 @@ public class FileParseService {
 			map.put(mapKey.getExchange(), new String(exchange));
 
 			if (neededSuffix) {
-				long count = symbol.chars().filter(ch -> ch == CHARACTER_DASH).count();
+				long count = symbol.chars().filter(ch -> ch == CHARACTER_DOT).count();
 				if (count == 0) {
 					ticker = symbol + suffix;
 				} else if (count == 1) {
-					ticker = symbol.replace(CHARACTER_DASH, CHARACTER_DASH) + suffix;
+					ticker = symbol.replace(CHARACTER_DOT, CHARACTER_DASH) + suffix;
 				} else {
 					ticker = STRING_DASH;
 				}

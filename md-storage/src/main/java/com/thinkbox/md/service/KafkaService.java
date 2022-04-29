@@ -32,32 +32,36 @@ public class KafkaService {
 	@Autowired
 	private MapKeyParameter mapKey;
 
-	private final String ASYNC_EXECUTOR = "asyncExecutor";
+	private final static String ASYNC_EXECUTOR = "asyncExecutor";
 
-	private final String TOPIC_SAVE_EXCHANGE_LIST = "save.exchange.list";
+	private final static String TOPIC_SAVE_EXCHANGE_LIST = "save.exchange.list";
 
-	private final String TOPIC_SAVE_HISTORICAL_LIST = "save.historical.list";
+	private final static String TOPIC_SAVE_HISTORICAL_LIST = "save.historical.list";
 
-	private final String TOPIC_SAVE_INSTRUMENT_LIST = "save.instrument.list";
+	private final static String TOPIC_SAVE_INSTRUMENT_LIST = "save.instrument.list";
 
-	private final String TOPIC_SAVE_INSTRUMENT_SINGLE = "save.instrument.single";
+	private final static String TOPIC_SAVE_INSTRUMENT_SINGLE = "save.instrument.single";
 
-	private final String TOPIC_DBGET_EXCHANGE_DATA = "dbget.exchange.data";
+	private final static String TOPIC_DBGET_EXCHANGE_DATA = "dbget.exchange.data";
 
-	private final String TOPIC_DBGET_TOTAL_FROM_INSTRUMENT = "dbget.total.from.instrument";
+	private final static String TOPIC_DBGET_TOTAL_FROM_INSTRUMENT = "dbget.total.from.instrument";
 
-	private final String TOPIC_DBGET_SUMMARY_SINGLE = "dbget.summary.single";
+	private final static String TOPIC_DBGET_SUMMARY_SINGLE = "dbget.summary.single";
 
-	private final String TOPIC_DBGET_SUMMARY_LIST = "dbget.summary.list";
+	private final static String TOPIC_DBGET_SUMMARY_LIST = "dbget.summary.list";
 
-	private final String TOPIC_DBGET_HISTORICAL_LIST = "dbget.historical.list";
+	private final static String TOPIC_DBGET_HISTORICAL_LIST = "dbget.historical.list";
 
-	private final String TOPIC_DBUPDATE_HISTORICAL_ALL = "dbupdate.historical.all";
+	private final static String TOPIC_DBUPDATE_HISTORICAL_ALL = "dbupdate.historical.all";
 
-	private final String CONTAINER_FACTORY_LIST = "listListener";
+	private final static String CONTAINER_FACTORY_LIST = "listListener";
 
-	private final String CONTAINER_FACTORY_MAP = "mapListener";
+	private final static String CONTAINER_FACTORY_MAP = "mapListener";
 
+	private final static String DEFAULT_STRING_VALUE = "-";
+
+	private final static String STRING_DASH = "-"; 
+	
 	private final int BATCH_LIMIT = 1500;
 
 	public void publish(String topic, Map<String, Object> map) {
@@ -161,8 +165,8 @@ public class KafkaService {
 		List<Map<String, Object>> outputList = null;
 
 		Integer limit = Integer.valueOf(map.getOrDefault("limit", "2").toString());
-		String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
-		if (!subExchange.equals("-")) {
+		String subExchange = map.getOrDefault(mapKey.getSubExchange(), DEFAULT_STRING_VALUE).toString();
+		if (!subExchange.equals(STRING_DASH)) {
 			outputList = storeService.getHistoricalTotalFromInstrument(subExchange, limit);
 		}
 
@@ -175,8 +179,8 @@ public class KafkaService {
 			if (outputList != null) {
 
 				outputList.forEach(x -> {
-					System.out.println("Ticker: " + x.getOrDefault(mapKey.getTicker(), "-").toString() + " - "
-							+ x.getOrDefault(mapKey.getHistoricalTotal(), "-").toString());
+					System.out.println("Ticker: " + x.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString() + " - "
+							+ x.getOrDefault(mapKey.getHistoricalTotal(), 0).toString());
 				});
 				System.out.println("Total: " + outputList.size());
 
@@ -192,7 +196,7 @@ public class KafkaService {
 
 		List<Map<String, Object>> outputList = null;
 
-		String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
+		String subExchange = map.getOrDefault(mapKey.getSubExchange(), DEFAULT_STRING_VALUE).toString();
 		if (!subExchange.equals("-")) {
 			outputList = storeService.getInstruments(subExchange);
 		}
@@ -206,8 +210,8 @@ public class KafkaService {
 			if (outputList != null) {
 
 				outputList.forEach(x -> {
-					System.out.println("Ticker: " + x.getOrDefault(mapKey.getTicker(), "-").toString() + " - "
-							+ x.getOrDefault(mapKey.getHistoricalTotal(), "-").toString());
+					System.out.println("Ticker: " + x.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString() + " - "
+							+ x.getOrDefault(mapKey.getHistoricalTotal(), 0).toString());
 				});
 				System.out.println("Total: " + outputList.size());
 
@@ -266,18 +270,18 @@ public class KafkaService {
 			Map<String, Object> summaryMap = storeService.getHistoricalSummary(ticker);
 
 			x.put(mapKey.getHistoricalTotal(), summaryMap.getOrDefault(mapKey.getHistoricalTotal(), 0));
-			x.put(mapKey.getHistoricalFirstDate(), summaryMap.getOrDefault(mapKey.getHistoricalFirstDate(), "-"));
-			x.put(mapKey.getHistoricalLastDate(), summaryMap.getOrDefault(mapKey.getHistoricalLastDate(), "-"));
+			x.put(mapKey.getHistoricalFirstDate(), summaryMap.getOrDefault(mapKey.getHistoricalFirstDate(), DEFAULT_STRING_VALUE));
+			x.put(mapKey.getHistoricalLastDate(), summaryMap.getOrDefault(mapKey.getHistoricalLastDate(), DEFAULT_STRING_VALUE));
 			x.put(mapKey.getLastPrice(), summaryMap.getOrDefault(mapKey.getLastPrice(), 0));
 
 			String temp1 = summaryMap.getOrDefault(mapKey.getHistoricalHigh(), "?").toString();
-			String[] temps1 = temp1.split("-");
+			String[] temps1 = temp1.split(STRING_DASH);
 			if (temps1.length == 2) {
 				x.put(mapKey.getHistoricalHigh(), Double.valueOf(temps1[0]));
 				x.put(mapKey.getHistoricalHighDate(), temps1[1]);				
 			}
 			String temp2 = summaryMap.getOrDefault(mapKey.getHistoricalLow(), "?").toString();
-			String[] temps2 = temp2.split("-");
+			String[] temps2 = temp2.split(STRING_DASH);
 			if (temps2.length == 2) {
 				x.put(mapKey.getHistoricalLow(), Double.valueOf(temps2[0]));
 				x.put(mapKey.getHistoricalLowDate(), temps2[1]);				

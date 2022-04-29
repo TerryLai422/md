@@ -28,6 +28,22 @@ public class EnrichService {
 
 	private final Logger logger = LoggerFactory.getLogger(EnrichService.class);
 
+	private final static String TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE = ".TO";
+
+	private final static String TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE = ".V";
+
+	private final static String TORONTO_STOCK_EXCHANGE = "TSX";
+
+	private final static String TORONTO_STOCK_VENTURE_EXCHANGE = "TSXV";
+
+	private final static String STRING_DASH = "-";
+
+	private final static String STRING_EMPTY_SPACE = "";
+
+	private final static Character CHARACTER_DASH = '-';
+
+	private final static Character CHARACTER_DOT = '.';
+
 	@Autowired
 	private MapKeyParameter mapKey;
 
@@ -75,7 +91,7 @@ public class EnrichService {
 				.map(x -> {
 
 					if (!x.containsKey(mapKey.getInd())) {
-						x.put("ind", new TreeMap<>());
+						x.put(mapKey.getInd(), new TreeMap<>());
 					}
 
 					for (Indicator indicator : indicators) {
@@ -89,21 +105,23 @@ public class EnrichService {
 
 		Map<String, Object> first = list.get(0);
 		final String exchange = (String) first.get(mapKey.getExchange());
-		final String suffix = (exchange.equals("TSX")) ? ".TO" : (exchange.equals("TSXV")) ? ".V" : "";
-		final boolean neededSuffix = (exchange.equals("TSX") || exchange.equals("TSXV")) ? true : false;
+		final String suffix = (exchange.equals(TORONTO_STOCK_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE
+				: (exchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE : STRING_EMPTY_SPACE;
+		final boolean neededSuffix = (exchange.equals(TORONTO_STOCK_EXCHANGE)
+				|| exchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? true : false;
 
 		List<Map<String, Object>> outputList = list.stream().skip(1).limit(1).map(x -> {
 			String symbol = (String) x.get(mapKey.getSymbol());
 			String ticker = symbol;
 
 			if (neededSuffix) {
-				long count = symbol.chars().filter(ch -> ch == '.').count();
+				long count = symbol.chars().filter(ch -> ch == CHARACTER_DOT).count();
 				if (count == 0) {
 					ticker = symbol + suffix;
 				} else if (count == 1) {
-					ticker = symbol.replace('.', '-') + suffix;
+					ticker = symbol.replace(CHARACTER_DOT, CHARACTER_DASH) + suffix;
 				} else {
-					ticker = "-";
+					ticker = STRING_DASH;
 				}
 			}
 
