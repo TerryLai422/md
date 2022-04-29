@@ -8,6 +8,8 @@ import com.thinkbox.md.config.MapKeyParameter;
 
 public class SimpleMovingAverage extends Indicator {
 
+	final private String PREFIX_STRING = "sma";
+
 	private Queue<Double> queue = new LinkedList<>();
 
 	private double sum = 0;
@@ -30,8 +32,11 @@ public class SimpleMovingAverage extends Indicator {
 		if (queue.size() > period) {
 			sum -= queue.poll();
 		}
-				
-		map.put(getKey(), getAverage());
+		
+		@SuppressWarnings("unchecked")
+		Map<String, Object> ind = (Map<String, Object>) map.get(mapKey.getInd());
+		
+		ind.put(getKey(), getAverage());
 
 	}
 	
@@ -43,6 +48,6 @@ public class SimpleMovingAverage extends Indicator {
 	}
 	
 	private String getKey() {
-		return "sma" + period;
+		return PREFIX_STRING + period;
 	}
 }

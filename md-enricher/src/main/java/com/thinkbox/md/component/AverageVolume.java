@@ -8,6 +8,8 @@ import com.thinkbox.md.config.MapKeyParameter;
 
 public class AverageVolume extends Indicator {
 
+	final private String PREFIX_STRING = "avgVol";
+
 	private Queue<Long> queue = new LinkedList<>();
 
 	private long sum = 0L;
@@ -38,8 +40,11 @@ public class AverageVolume extends Indicator {
 		if (queue.size() > period) {
 			sum -= queue.poll();
 		}
-				
-		map.put(getKey(), getAverage());
+
+		@SuppressWarnings("unchecked")
+		Map<String, Object> ind = (Map<String, Object>) map.get(mapKey.getInd());
+
+		ind.put(getKey(), getAverage());
 
 	}
 
@@ -51,6 +56,6 @@ public class AverageVolume extends Indicator {
 	}
 
 	private String getKey() {
-		return "avgVol" + period;
+		return PREFIX_STRING + period;
 	}
 }

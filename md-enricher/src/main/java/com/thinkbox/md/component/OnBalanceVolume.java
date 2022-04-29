@@ -8,6 +8,8 @@ import com.thinkbox.md.config.MapKeyParameter;
 
 public class OnBalanceVolume extends Indicator {
 
+	final private String PREFIX_STRING = "obv";
+
 	private Queue<Long> queue = new LinkedList<>();
 
 	private double last = 0d;
@@ -45,10 +47,13 @@ public class OnBalanceVolume extends Indicator {
 
 		last = close;
 
-		map.put(getKey(), sum);
+		@SuppressWarnings("unchecked")
+		Map<String, Object> ind = (Map<String, Object>) map.get(mapKey.getInd());
+
+		ind.put(getKey(), sum);
 	}
 
 	private String getKey() {
-		return "obv";
+		return PREFIX_STRING;
 	}
 }

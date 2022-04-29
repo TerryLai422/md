@@ -8,6 +8,8 @@ import com.thinkbox.md.config.MapKeyParameter;
 
 public class AverageTrueRange extends Indicator {
 
+	final private String PREFIX_STRING = "atr";
+	
 	private Queue<Double> queue = new LinkedList<>();
 
 	private double sum = 0d;
@@ -40,7 +42,11 @@ public class AverageTrueRange extends Indicator {
 			sum -= queue.poll();
 		}
 
-		map.put(getKey(), getAverage());
+		@SuppressWarnings("unchecked")
+		Map<String, Object> ind = (Map<String, Object>) map.get(mapKey.getInd());
+
+		ind.put(getKey(), getAverage());
+	
 	}
 
 	private Double getAverage() {
@@ -51,6 +57,6 @@ public class AverageTrueRange extends Indicator {
 	}
 	
 	private String getKey() {
-		return "atr" + period;
+		return PREFIX_STRING + period;
 	}
 }

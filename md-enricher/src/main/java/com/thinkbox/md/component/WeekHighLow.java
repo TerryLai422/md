@@ -8,6 +8,10 @@ import com.thinkbox.md.config.MapKeyParameter;
 
 public class WeekHighLow extends Indicator {
 
+	final private String PREFIX_STRING = "week";
+	
+	final private String SUFFIX_STRING = "W";
+	
 	private Queue<Integer> dayQueue = new LinkedList<>();
 
 	private Queue<Double> dataQueue = new LinkedList<>();
@@ -64,14 +68,17 @@ public class WeekHighLow extends Indicator {
 		Double high = getHigh();
 		Double low = getLow();
 		
-		map.put(mapKey.getNewHigh() + period + "W", close.equals(high));
-		map.put(mapKey.getNewLow() + period + "W", close.equals(low));
-		map.put(mapKey.getHistoricalHigh(), historicalHigh);
-		map.put(mapKey.getHistoricalHighDate(), historicalHighDate);
-		map.put(mapKey.getHistoricalLow(), historicalLow);
-		map.put(mapKey.getHistoricalLowDate(), historicalLowDate);
-		map.put(getPrefix() + mapKey.getSuffixHigh(), high);
-		map.put(getPrefix() + mapKey.getSuffixLow(), low);
+		@SuppressWarnings("unchecked")
+		Map<String, Object> ind = (Map<String, Object>) map.get(mapKey.getInd());
+
+		ind.put(mapKey.getNewHigh() + period + SUFFIX_STRING, close.equals(high));
+		ind.put(mapKey.getNewLow() + period + SUFFIX_STRING, close.equals(low));
+		ind.put(mapKey.getHistoricalHigh(), historicalHigh);
+		ind.put(mapKey.getHistoricalHighDate(), historicalHighDate);
+		ind.put(mapKey.getHistoricalLow(), historicalLow);
+		ind.put(mapKey.getHistoricalLowDate(), historicalLowDate);
+		ind.put(getPrefix() + mapKey.getSuffixHigh(), high);
+		ind.put(getPrefix() + mapKey.getSuffixLow(), low);
 
 	}
 
@@ -90,6 +97,6 @@ public class WeekHighLow extends Indicator {
 	}
 
 	private String getPrefix() {
-		return "week" + period;
+		return PREFIX_STRING + period;
 	}
 }
