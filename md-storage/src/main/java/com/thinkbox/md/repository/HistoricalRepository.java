@@ -12,13 +12,16 @@ import com.thinkbox.md.model.HistoricalSummary;
 
 public interface HistoricalRepository extends MongoRepository<Historical, String> {
 
-	@Query("{ 'ticker': {$exists: false} }")
+	@Query("{ ticker: {$exists: false} }")
 	List<Historical> findAllNull();
 
-	@Query("{ 'ticker': {$exists: false} }")
+	@Query("{ ticker: {$exists: false} }")
 	List<Historical> findAllNull(Pageable pageable);
 
 	List<Historical> findByTicker(String ticker);
+
+	@Query(value= "{ ticker: {$eq: ?0},  date: {$gte: ?1}}", sort="{date:1}")
+	List<Historical> findByTickerAndDate(String ticker, String date);
 
 	long countByTicker(String ticker);
 
