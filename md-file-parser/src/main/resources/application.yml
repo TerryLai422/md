@@ -95,6 +95,9 @@ map-value-parameter:
   daily: D
   weekly: W
   monthly: M
+  info: info
+  detail: detail
+  historical: historical
   
 indicator:
   sma:

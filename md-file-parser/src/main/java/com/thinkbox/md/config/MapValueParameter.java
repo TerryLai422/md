@@ -20,4 +20,10 @@ public class MapValueParameter {
 	
 	private String monthly;
 	
+	private String info;
+	
+	private String detail;
+	
+	private String historical;
+	
 }
