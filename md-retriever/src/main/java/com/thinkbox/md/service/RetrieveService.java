@@ -30,14 +30,16 @@ public class RetrieveService {
 
 	private final static String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
 
+	private final static String DEFAULT_STRING_VALUE = "-";
+
 	@Autowired
 	private MapKeyParameter mapKey;
 
 	private YahooRequest getYahooRequest(Map<String, Object> map) {
 		YahooRequest yahooRequest = null;
 
-		String ticker = map.getOrDefault(mapKey.getTicker(), "-").toString();
-		String dataType = map.getOrDefault(mapKey.getDataType(), "-").toString();
+		String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
+		String dataType = map.getOrDefault(mapKey.getDataType(), DEFAULT_STRING_VALUE).toString();
 
 		if (dataType.equals("-")) {
 			logger.info("Request missing yahooType");
@@ -54,11 +56,11 @@ public class RetrieveService {
 		} else if (dataType.equals("detail")) {
 			yahooRequest = new YahooDetailRequest(ticker);
 		} else if (dataType.equals("historical")) {
-			String date = map.getOrDefault(mapKey.getDate(), "-").toString();
-			String interval = map.getOrDefault("interval", "-").toString();
+			String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
+			String interval = map.getOrDefault(mapKey.getInterval(), DEFAULT_STRING_VALUE).toString();
 
 			Calendar startDate = null;
-			if (!date.equals("-")) {
+			if (!date.equals(DEFAULT_STRING_VALUE)) {
 				Date sDate;
 				try {
 					sDate = new SimpleDateFormat(DEFAULT_DATE_FORMAT).parse(date);
@@ -99,12 +101,12 @@ public class RetrieveService {
 
 		final Map<String, Object> firstMap = list.get(0);
 		final int wait = Integer.valueOf(firstMap.get(mapKey.getWait()).toString());
-		final String from = firstMap.getOrDefault(mapKey.getFrom(), "-").toString();
-		final String dataType = firstMap.getOrDefault(mapKey.getDataType(), "-").toString();
+		final String from = firstMap.getOrDefault(mapKey.getFrom(), DEFAULT_STRING_VALUE).toString();
+		final String dataType = firstMap.getOrDefault(mapKey.getDataType(), DEFAULT_STRING_VALUE).toString();
 		final String key = (dataType.equals("historical")) ? "retrieveHistorical"
-				: (dataType.equals("detail")) ? "retrieveDetail" : (dataType.equals("info")) ? "retrieveInfo" : "-";
+				: (dataType.equals("detail")) ? "retrieveDetail" : (dataType.equals("info")) ? "retrieveInfo" : DEFAULT_STRING_VALUE;
 
-		if (key.equals("-")) {
+		if (key.equals(DEFAULT_STRING_VALUE)) {
 			logger.info("Skip retrieve Yahoo data (missing/incorrect yahooType parameter");
 		} else {
 			Stream<Map<String, Object>> intermedicateList = null;
@@ -148,5 +150,4 @@ public class RetrieveService {
 		}
 		return outputList;
 	}
-
 }

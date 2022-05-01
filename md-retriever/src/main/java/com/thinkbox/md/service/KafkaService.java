@@ -40,16 +40,20 @@ public class KafkaService {
 
 	private final String CONTAINER_FACTORY_LIST = "listListener";
 
+	private final static String STRING_LOGGER_SENT_MESSAGE = "Sent topic: {} -> {}";
+	
+	private final static String STRING_LOGGER_RECEIVED_MESSAGE = "Received topic: {} -> parameter: {}";
+
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, Map<String, Object> map) {
-		logger.info("Sent topic: {} -> {}", topic, map);
+		logger.info(STRING_LOGGER_SENT_MESSAGE, topic, map);
 		
 		kafkaTemplateMap.send(topic, map);
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, List<Map<String, Object>> list) {
-		logger.info("Sent topic: {} -> {}", topic, list.toString());
+		logger.info(STRING_LOGGER_SENT_MESSAGE, topic, list.toString());
 
 		kafkaTemplateList.send(topic, list);
 	}
@@ -57,7 +61,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_RETRIEVE_YAHOO_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void retreiveYahoo(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_YAHOO_SINGLE, map);
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_RETRIEVE_YAHOO_SINGLE, map);
 		
 		retrieveService.retrieveYahoo(map);
 	}
@@ -65,7 +69,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_RETRIEVE_YAHOO_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void retrieveYahooList(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_RETRIEVE_YAHOO_LIST, list.toString());
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_RETRIEVE_YAHOO_LIST, list.toString());
 
 		Map<String, Object> firstMap = list.get(0);
 		

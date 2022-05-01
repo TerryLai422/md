@@ -19,9 +19,11 @@ public class KafkaService {
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
+	private final static String STRING_LOGGER_SENT_MESSAGE = "Sent topic: {} -> {}";
+
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, Map<String, Object> map) {
-		logger.info("Sent topic: {} -> {}", topic, map.toString());
+		logger.info(STRING_LOGGER_SENT_MESSAGE, topic, map.toString());
 		kafkaTemplate.send(topic, map);
 	}
 

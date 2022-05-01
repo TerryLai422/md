@@ -54,7 +54,11 @@ public class KafkaService {
 
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
-	private final static String STRING_DASH = "-"; 
+	private final static String STRING_LOGGER_SENT_MESSAGE = "Sent topic: {} -> {}";
+	
+	private final static String STRING_LOGGER_RECEIVED_MESSAGE = "Received topic: {} -> parameter: {}";
+
+	private final static String DEFAULT_STRING_VALUE = "-"; 
 
 	private final int BATCH_LIMIT = 2000;
 
@@ -67,7 +71,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, Map<String, Object> map) {
-		logger.info("Sent topic: {} -> {}", topic, map.toString());
+		logger.info(STRING_LOGGER_SENT_MESSAGE, topic, map.toString());
 
 		kafkaTemplateMap.send(topic, map);
 	}
@@ -75,10 +79,10 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_EXCHANGE_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseExchange(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_EXCHANGE_DATA, map.toString());
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_EXCHANGE_DATA, map.toString());
 
 		try {
-			String exchange = map.getOrDefault(mapKey.getSubExchange(), STRING_DASH).toString();
+			String exchange = map.getOrDefault(mapKey.getSubExchange(), DEFAULT_STRING_VALUE).toString();
 
 			List<Map<String, Object>> outputList = fileParseService.parseExchangeFile(exchange);
 
@@ -106,10 +110,10 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_DETAIL_LIST, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDetailList(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DETAIL_LIST, map.toString());
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DETAIL_LIST, map.toString());
 
 		try {
-			final String subExchange = map.getOrDefault(mapKey.getSubExchange(), STRING_DASH).toString();
+			final String subExchange = map.getOrDefault(mapKey.getSubExchange(), DEFAULT_STRING_VALUE).toString();
 
 			List<String> list = fileParseService.getSymbolsfromDetailDirectory(subExchange);
 
@@ -147,11 +151,11 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_DETAIL_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDetail(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DETAIL_SINGLE, map.toString());
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DETAIL_SINGLE, map.toString());
 
 		try {
-			String ticker = map.getOrDefault(mapKey.getTicker(), STRING_DASH).toString();
-			String subExchange = map.getOrDefault(mapKey.getSubExchange(), STRING_DASH).toString();
+			String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
+			String subExchange = map.getOrDefault(mapKey.getSubExchange(), DEFAULT_STRING_VALUE).toString();
 
 			Map<String, Object> outputMap = fileParseService.parseDetailFile(subExchange, ticker);
 
@@ -175,10 +179,10 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseHistoricalList(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_HISTORICAL_LIST, map.toString());
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_HISTORICAL_LIST, map.toString());
 
 		try {
-			final String directory = map.getOrDefault(mapKey.getDirectory(), STRING_DASH).toString();
+			final String directory = map.getOrDefault(mapKey.getDirectory(), DEFAULT_STRING_VALUE).toString();
 
 			List<Map<String, Object>> list = fileParseService.getSymbolsfromHistoricalDirectory(directory);
 			list.forEach(System.out::println);
@@ -200,17 +204,17 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseHisterical(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_HISTORICAL_SINGLE, map.toString());
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_HISTORICAL_SINGLE, map.toString());
 
 		parseHistericalData(map);
 	}
 
 	private void parseHistericalData(Map<String, Object> map) {
 		try {
-			String ticker = map.getOrDefault(mapKey.getTicker(), STRING_DASH).toString();
-			String symbol = map.getOrDefault(mapKey.getSymbol(), STRING_DASH).toString();
-			String dataSource = map.getOrDefault(mapKey.getDataSource(), STRING_DASH).toString();
-			String directory = map.getOrDefault(mapKey.getDirectory(), STRING_DASH).toString();
+			String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
+			String symbol = map.getOrDefault(mapKey.getSymbol(), DEFAULT_STRING_VALUE).toString();
+			String dataSource = map.getOrDefault(mapKey.getDataSource(), DEFAULT_STRING_VALUE).toString();
+			String directory = map.getOrDefault(mapKey.getDirectory(), DEFAULT_STRING_VALUE).toString();
 
 			final String topic = getTopicFromList(map);
 
@@ -255,10 +259,10 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_DAILY_LIST, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDailyList(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DAILY_LIST, map.toString());
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DAILY_LIST, map.toString());
 
 		try {
-			final String directory = map.getOrDefault(mapKey.getDirectory(), STRING_DASH).toString();
+			final String directory = map.getOrDefault(mapKey.getDirectory(), DEFAULT_STRING_VALUE).toString();
 
 			List<String> files = fileParseService.getSymbolsfromDailyDirectory(directory);
 			files.forEach(System.out::println);
@@ -281,7 +285,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_DAILY_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDaily(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_DAILY_SINGLE, map.toString());
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DAILY_SINGLE, map.toString());
 
 		parseDailyData(map);
 
@@ -289,9 +293,9 @@ public class KafkaService {
 
 	private void parseDailyData(Map<String, Object> map) {
 		try {
-			String dataSource = map.getOrDefault(mapKey.getDataSource(), STRING_DASH).toString();
-			String directory = map.getOrDefault(mapKey.getDirectory(), STRING_DASH).toString();
-			String fileName = map.getOrDefault(mapKey.getFileName(), STRING_DASH).toString();
+			String dataSource = map.getOrDefault(mapKey.getDataSource(), DEFAULT_STRING_VALUE).toString();
+			String directory = map.getOrDefault(mapKey.getDirectory(), DEFAULT_STRING_VALUE).toString();
+			String fileName = map.getOrDefault(mapKey.getFileName(), DEFAULT_STRING_VALUE).toString();
 
 			final String topic = getTopicFromList(map);
 
@@ -334,10 +338,10 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_INFO_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseInfo(Map<String, Object> map) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_PARSE_INFO_SINGLE, map.toString());
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_INFO_SINGLE, map.toString());
 
 		try {
-			String ticker = map.getOrDefault(mapKey.getTicker(), STRING_DASH).toString();
+			String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
 			Map<String, Object> outMap;
 			outMap = fileParseService.parseInfoFile(ticker);
 //			list.forEach(System.out::println);
