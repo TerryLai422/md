@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.thinkbox.md.config.MapKeyParameter;
-import com.thinkbox.md.model.Analysis;
 import com.thinkbox.md.model.Historical;
 import com.thinkbox.md.model.HistoricalSummary;
 import com.thinkbox.md.model.Instrument;
@@ -25,6 +24,14 @@ public class DataMapper {
 
 	private final static long DEFAULT_LONG_VALUE = 0l;
 
+	private final static String TORONTO_STOCK_EXCHANGE = "TSX";
+
+	private final static String TORONTO_STOCK_VENTURE_EXCHANGE = "TSXV";
+
+	private final static String STRING_DASH = "-";
+
+	private final static String STRING_AT_SYMBOL = "-";
+
 	public Historical convertMapToHistorical(Map<String, Object> map) {
 
 		return convertMapToHistorical(map, new Historical());
@@ -33,7 +40,7 @@ public class DataMapper {
 
 	private Historical convertMapToHistorical(Map<String, Object> map, Historical historical) {
 		
-		historical.setId(map.get(mapKey.getType()) + "-" + map.get(mapKey.getSymbol()) + "@" + map.get(mapKey.getDate())
+		historical.setId(map.get(mapKey.getType()) + STRING_DASH + map.get(mapKey.getSymbol()) + STRING_AT_SYMBOL + map.get(mapKey.getDate())
 				+ "-" + map.get(mapKey.getTime()));
 		historical.setInterval((String) map.get(mapKey.getInterval()));
 		historical.setSymbol((String) map.get(mapKey.getSymbol()));
@@ -61,14 +68,14 @@ public class DataMapper {
 
 		Instrument instrument = null;
 
-		String subExchange = map.getOrDefault(mapKey.getSubExchange(), "-").toString();
-		if (subExchange.equals("TSX") || subExchange.equals("TSXV")) {
+		String subExchange = map.getOrDefault(mapKey.getSubExchange(), DEFAULT_STRING_VALUE).toString();
+		if (subExchange.equals(TORONTO_STOCK_EXCHANGE) || subExchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) {
 			instrument = new InstrumentCA();
 		} else {
 			instrument = new Instrument();
 		}
 		instrument.setId(
-				map.getOrDefault(mapKey.getSubExchange(), DEFAULT_STRING_VALUE) + "@" + map.get(mapKey.getTicker()));
+				map.getOrDefault(mapKey.getSubExchange(), DEFAULT_STRING_VALUE) + STRING_AT_SYMBOL + map.get(mapKey.getTicker()));
 		instrument.setSymbol((String) map.getOrDefault(mapKey.getSymbol(), DEFAULT_STRING_VALUE));
 		instrument.setTicker((String) map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE));
 		instrument.setName((String) map.getOrDefault(mapKey.getName(), DEFAULT_STRING_VALUE));
