@@ -161,5 +161,7 @@ public class MapKeyParameter {
 	
 	private String ind;
 	
+	private String inst;
+	
 	private String limit;
 }

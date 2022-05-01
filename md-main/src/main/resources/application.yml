@@ -88,6 +88,10 @@ map-key-parameter:
   historicalTotal: historicalTotal
   historicalFirstDate: historicalFirstDate
   historicalLastDate: historicalLastDate
+  lastPrice: lastPrice
+  ind: ind
+  inst: inst
+  limit: limit
   
 map-value-parameter:
   daily: D
