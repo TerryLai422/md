@@ -90,6 +90,7 @@ map-key-parameter:
   historicalLastDate: historicalLastDate
   lastPrice: lastPrice
   ind: ind
+  limit: limit
   
 map-value-parameter:
   daily: D

@@ -160,4 +160,6 @@ public class MapKeyParameter {
 	private String lastPrice;
 	
 	private String ind;
+	
+	private String limit;
 }
