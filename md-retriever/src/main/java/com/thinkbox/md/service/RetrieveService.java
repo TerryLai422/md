@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.thinkbox.md.config.MapKeyParameter;
+import com.thinkbox.md.config.MapValueParameter;
 import com.thinkbox.md.request.YahooDetailRequest;
 import com.thinkbox.md.request.YahooHistoricalRequest;
 import com.thinkbox.md.request.YahooInfoRequest;
@@ -33,6 +34,9 @@ public class RetrieveService {
 	private final static String DEFAULT_STRING_VALUE = "-";
 
 	@Autowired
+	private MapValueParameter mapValue;
+
+	@Autowired
 	private MapKeyParameter mapKey;
 
 	private YahooRequest getYahooRequest(Map<String, Object> map) {
@@ -41,21 +45,21 @@ public class RetrieveService {
 		String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
 		String dataType = map.getOrDefault(mapKey.getDataType(), DEFAULT_STRING_VALUE).toString();
 
-		if (dataType.equals("-")) {
+		if (dataType.equals(DEFAULT_STRING_VALUE)) {
 			logger.info("Request missing yahooType");
 			return yahooRequest;
 
 		}
-		if (ticker.equals("-")) {
+		if (ticker.equals(DEFAULT_STRING_VALUE)) {
 			logger.info("Request missing ticker");
 			return yahooRequest;
 		}
 
-		if (dataType.equals("info")) {
+		if (dataType.equals(mapValue.getInfo())) {
 			yahooRequest = new YahooInfoRequest(ticker);
-		} else if (dataType.equals("detail")) {
+		} else if (dataType.equals(mapValue.getDetail())) {
 			yahooRequest = new YahooDetailRequest(ticker);
-		} else if (dataType.equals("historical")) {
+		} else if (dataType.equals(mapValue.getHistorical())) {
 			String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 			String interval = map.getOrDefault(mapKey.getInterval(), DEFAULT_STRING_VALUE).toString();
 
@@ -103,8 +107,8 @@ public class RetrieveService {
 		final int wait = Integer.valueOf(firstMap.get(mapKey.getWait()).toString());
 		final String from = firstMap.getOrDefault(mapKey.getFrom(), DEFAULT_STRING_VALUE).toString();
 		final String dataType = firstMap.getOrDefault(mapKey.getDataType(), DEFAULT_STRING_VALUE).toString();
-		final String key = (dataType.equals("historical")) ? "retrieveHistorical"
-				: (dataType.equals("detail")) ? "retrieveDetail" : (dataType.equals("info")) ? "retrieveInfo" : DEFAULT_STRING_VALUE;
+		final String key = (dataType.equals(mapValue.getHistorical())) ? "retrieveHistorical"
+				: (dataType.equals(mapValue.getDetail())) ? "retrieveDetail" : (dataType.equals(mapValue.getInfo())) ? "retrieveInfo" : DEFAULT_STRING_VALUE;
 
 		if (key.equals(DEFAULT_STRING_VALUE)) {
 			logger.info("Skip retrieve Yahoo data (missing/incorrect yahooType parameter");
