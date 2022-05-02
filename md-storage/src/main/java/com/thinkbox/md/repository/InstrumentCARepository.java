@@ -8,6 +8,6 @@ import com.thinkbox.md.model.InstrumentCA;
 
 public interface InstrumentCARepository extends MongoRepository<InstrumentCA, String> {
 
-	List<InstrumentCA> findBySubExchange(String subExchange);
+	List<InstrumentCA> findBySubExch(String subExch);
 
 }

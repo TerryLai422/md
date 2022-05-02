@@ -73,10 +73,10 @@ public class WeekHighLow extends Indicator {
 
 		ind.put(mapKey.getNewHigh() + period + SUFFIX_STRING, close.equals(high));
 		ind.put(mapKey.getNewLow() + period + SUFFIX_STRING, close.equals(low));
-		ind.put(mapKey.getHistoricalHigh(), historicalHigh);
-		ind.put(mapKey.getHistoricalHighDate(), historicalHighDate);
-		ind.put(mapKey.getHistoricalLow(), historicalLow);
-		ind.put(mapKey.getHistoricalLowDate(), historicalLowDate);
+		ind.put(mapKey.getHHigh(), historicalHigh);
+		ind.put(mapKey.getHHighD(), historicalHighDate);
+		ind.put(mapKey.getHLow(), historicalLow);
+		ind.put(mapKey.getHLowD(), historicalLowDate);
 		ind.put(getPrefix() + mapKey.getSuffixHigh(), high);
 		ind.put(getPrefix() + mapKey.getSuffixLow(), low);
 

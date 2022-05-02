@@ -26,7 +26,7 @@ public class MapKeyParameter {
 	
 	private String exchange;
 	
-	private String subExchange;
+	private String subExch;
 
 	private String name;
 	
@@ -107,13 +107,13 @@ public class MapKeyParameter {
 	
 	private String suffixLow;
 	
-	private String historicalHigh;
+	private String hHigh;
 	
-	private String historicalLow;
+	private String hLow;
 	
-	private String historicalHighDate;
+	private String hHighD;
 	
-	private String historicalLowDate;
+	private String hLowD;
 	
 	private String newHigh;
 	
@@ -121,7 +121,7 @@ public class MapKeyParameter {
 	
 	// instrument
 	
-	private String exchangeName;
+	private String exchangeN;
 	
 	private String country;
 	
@@ -133,13 +133,13 @@ public class MapKeyParameter {
 	
 	private String beta;
 	
-	private String forwardPE;
+	private String FPE;
 	
-	private String priceToBook;
+	private String PB;
 	
-	private String sharesOutstanding;
+	private String sharesO;
 	
-	private String marketCap;
+	private String mCap;
 	
 	private String dataType;
 	
@@ -151,11 +151,11 @@ public class MapKeyParameter {
 	
 	private String directory;
 	
-	private String historicalTotal;
+	private String hTotal;
 	
-	private String historicalFirstDate;
+	private String hFirstD;
 	
-	private String historicalLastDate;
+	private String hLastD;
 	
 	private String lastPrice;
 	
@@ -166,4 +166,8 @@ public class MapKeyParameter {
 	private String limit;
 	
 	private String save;
+	
+	private String group;
+	
+	private String yahooIndustry;
 }

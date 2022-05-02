@@ -171,9 +171,9 @@ public class FileParseService {
 
 	}
 
-	public List<String> getSymbolsfromDetailDirectory(final String subExchange) throws IOException {
+	public List<String> getSymbolsfromDetailDirectory(final String subExch) throws IOException {
 
-		String directory = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExchange;
+		String directory = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExch;
 
 		logger.info(directory);
 		File directoryPath = new File(directory);
@@ -186,15 +186,15 @@ public class FileParseService {
 
 	}
 
-	public Map<String, Object> parseDetailFile(final String subExchange, final String symbol) throws IOException {
+	public Map<String, Object> parseDetailFile(final String subExch, final String symbol) throws IOException {
 
-		final String suffix = (subExchange.equals(TORONTO_STOCK_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE
-				: (subExchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE
+		final String suffix = (subExch.equals(TORONTO_STOCK_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE
+				: (subExch.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE
 						: STRING_EMPTY_SPACE;
-		final String market = (subExchange.equals(TORONTO_STOCK_EXCHANGE)
-				|| subExchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? MARKET_CANADA : MARKET_UNITED_STATE;
+		final String market = (subExch.equals(TORONTO_STOCK_EXCHANGE)
+				|| subExch.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? MARKET_CANADA : MARKET_UNITED_STATE;
 
-		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExchange
+		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExch
 				+ File.separator + symbol + DETAIL_FILE_SUFFIX + FILE_EXTENSION;
 
 		logger.info(fileName);
@@ -212,7 +212,7 @@ public class FileParseService {
 			}
 		});
 		map.put(mapKey.getSymbol(), symbol.replaceAll(suffix, STRING_EMPTY_SPACE));
-		map.put(mapKey.getSubExchange(), subExchange);
+		map.put(mapKey.getSubExch(), subExch);
 		map.put(mapKey.getMarket(), market);
 
 		return map;

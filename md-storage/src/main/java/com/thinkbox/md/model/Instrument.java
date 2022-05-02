@@ -30,46 +30,46 @@ public class Instrument {
 	
 	private String exchange;
 	
-	private String subExchange;
+	private String subExch;
 	
-	private String exchangeName;
+	private String exchangeN;
 	
 	private String country;
 	
 	private String currency;
-	
-	private String industry;
-	
+		
 	private String sector;
 	
 	private String type;
 	
 	private Double beta;
 	
-	private Double forwardPE;
+	private Double FPE;
 	
-	private Double priceToBook;
+	private Double PB;
 	
-	private Long sharesOutstanding;
+	private Long sharesO;
 	
-	private Long marketCap;
+	private Long mCap;
 	
-	private Long historicalTotal;
+	private Long hTotal;
 	
-	private String historicalFirstDate;
+	private String hFirstD;
 	
-	private String historicalLastDate;
+	private String hLastD;
 	
-	private Double historicalHigh;
+	private Double hHigh;
 	
-	private Double historicalLow;
+	private Double hLow;
 	
-	private String historicalHighDate;
+	private String hHighD;
 	
-	private String historicalLowDate;
+	private String hLowD;
 	
 	private Double lastPrice;
-	
+		
+	private Map<String, Object> group;
+
 	private Map<String, Object> others;
 
 }

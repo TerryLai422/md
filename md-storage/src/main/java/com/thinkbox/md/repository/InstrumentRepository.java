@@ -8,7 +8,9 @@ import com.thinkbox.md.model.Instrument;
 
 public interface InstrumentRepository extends MongoRepository<Instrument, String> {
 
-	List<Instrument> findBySubExchange(String subExchange);
+	List<Instrument> findBySubExch(String subExch);
+	
+	List<Instrument> findBySubExchAndType(String subExch, String type);
 	
 	List<Instrument> findByTicker(String ticker);
 

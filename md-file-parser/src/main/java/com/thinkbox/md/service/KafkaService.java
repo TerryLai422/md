@@ -82,9 +82,9 @@ public class KafkaService {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_EXCHANGE_DATA, map.toString());
 
 		try {
-			String exchange = map.getOrDefault(mapKey.getSubExchange(), DEFAULT_STRING_VALUE).toString();
+			String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
 
-			List<Map<String, Object>> outputList = fileParseService.parseExchangeFile(exchange);
+			List<Map<String, Object>> outputList = fileParseService.parseExchangeFile(subExch);
 
 			outputList.forEach(System.out::println);
 
@@ -113,16 +113,16 @@ public class KafkaService {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DETAIL_LIST, map.toString());
 
 		try {
-			final String subExchange = map.getOrDefault(mapKey.getSubExchange(), DEFAULT_STRING_VALUE).toString();
+			final String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
 
-			List<String> list = fileParseService.getSymbolsfromDetailDirectory(subExchange);
+			List<String> list = fileParseService.getSymbolsfromDetailDirectory(subExch);
 
 			final String topic = getTopicFromList(map);
 
 			list.stream().forEach(x -> {
 				Map<String, Object> outputMap;
 				try {
-					outputMap = fileParseService.parseDetailFile(subExchange, x);
+					outputMap = fileParseService.parseDetailFile(subExch, x);
 
 					if (topic != null) {
 						List<Map<String, Object>> outputList = new ArrayList<>();
@@ -155,9 +155,9 @@ public class KafkaService {
 
 		try {
 			String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
-			String subExchange = map.getOrDefault(mapKey.getSubExchange(), DEFAULT_STRING_VALUE).toString();
+			String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
 
-			Map<String, Object> outputMap = fileParseService.parseDetailFile(subExchange, ticker);
+			Map<String, Object> outputMap = fileParseService.parseDetailFile(subExch, ticker);
 
 			String topic = getTopicFromList(map);
 

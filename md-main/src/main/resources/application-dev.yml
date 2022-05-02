@@ -29,7 +29,7 @@ rest-parameter:
     parse.exchange.data:
       - steps
       - next
-      - subExchange
+      - subExch
       - dataType
     parse.info.single:
       - steps
@@ -38,23 +38,23 @@ rest-parameter:
     parse.detail.list:
       - steps
       - next
-      - subExchange
+      - subExch
     parse.detail.single:
       - steps
       - next
-      - subExchange
+      - subExch
       - ticker
     dbget.exchange.data:
       - steps
       - next
-      - subExchange
+      - subExch
     dbupdate.historical.all:
       - steps
       - next
     parse.yahoo.data:
       - steps
       - next
-      - subExchange
+      - subExch
       - dataType     
     retrieve.yahoo.single:
       - steps
@@ -66,15 +66,22 @@ rest-parameter:
       - steps
       - next
       - wait
-      - subExchange
+      - subExch
       - date      
       - dataType
     dbget.total.from.instrument:
       - steps
       - next
-      - subExchange
+      - subExch
     dbget.summary.single:
       - steps
       - next      
       - ticker
+    dbget.historical.single:
+      - steps
+      - next
+      - ticker
+      - limit
+      - day
+      - date
     

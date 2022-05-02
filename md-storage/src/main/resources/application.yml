@@ -26,7 +26,7 @@ map-key-parameter:
   type: type
   interval: interval
   exchange: exchange
-  subExchange: subExchange
+  subExch: subExch
   name: name
   market: market
   ticker: ticker
@@ -64,35 +64,37 @@ map-key-parameter:
   toYearForWeek: toYearForWeek 
   suffixHigh: high
   suffixLow: low
-  historicalHigh: historicalHigh
-  historicalLow: historicalLow
-  historicalHighDate: historicalHighDate
-  historicalLowDate: historicalLowDate
+  hHigh: hHigh
+  hLow: hLow
+  hHighD: hHighD
+  hLowD: hLowD
   newHigh: newHigh
   newLow: newLow
-  exchangeName: exchangeName
+  exchangeN: exchangeN
   country: country
   currency: currency
   industry: industry
   sector: sector
   beta: beta
-  forwardPE: forwardPE
-  priceToBook: priceToBook
-  sharesOutstanding: sharesOutstanding
-  marketCap: marketCap
+  FPE: FPE
+  PB: PB
+  sharesO: sharesO
+  mCap: mCap
   dataType: dataType
   dataSource: dataSource
   directory: directory
   fileName: fileName
   from: from
-  historicalTotal: historicalTotal
-  historicalFirstDate: historicalFirstDate
-  historicalLastDate: historicalLastDate
+  hTotal: hTotal
+  hFirstD: hFirstD
+  hLastD: hLastD
   lastPrice: lastPrice
   ind: ind
   inst: inst
   limit: limit
   save: save
+  group: group
+  yahooIndustry: y
   
 map-value-parameter:
   daily: D
@@ -108,11 +110,11 @@ indicator:
 
 json-node:
   property:
-    forwardPE:
+    FPE:
       - defaultKeyStatistics
       - forwardPE
       - raw
-    sharesOutstanding:
+    sharesO:
       - defaultKeyStatistics
       - sharesOutstanding
       - raw
@@ -120,7 +122,7 @@ json-node:
       - defaultKeyStatistics
       - beta
       - raw
-    priceToBook:
+    PB:
       - defaultKeyStatistics
       - priceToBook
       - raw
@@ -136,7 +138,7 @@ json-node:
     exchange:
       - price
       - exchange
-    exchangeName:
+    exchangeN:
       - price 
       - exchangeName
     type:
@@ -151,7 +153,7 @@ json-node:
     currency:
       - price
       - currency
-    marketCap:
+    mCap:
       - price
       - marketCap
       - raw
