@@ -92,6 +92,7 @@ map-key-parameter:
   ind: ind
   inst: inst
   limit: limit
+  save: save
   
 map-value-parameter:
   daily: D
