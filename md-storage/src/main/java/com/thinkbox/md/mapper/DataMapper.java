@@ -39,6 +39,7 @@ public class DataMapper {
 		Map<String, Object> ind = (Map<String, Object>) map.remove(mapKey.getInd());
 		map.remove(mapKey.getSave());
 		Analysis analysis = (Analysis) convertMapToHistorical(map, new Analysis());
+		analysis.setOthers(null);
 		analysis.setInd(ind);
 		analysis.setInst(inst);
 		return analysis;
@@ -115,7 +116,7 @@ public class DataMapper {
 		instrument.setHHighD((String) map.getOrDefault(mapKey.getHHighD(), DEFAULT_STRING_VALUE));
 		instrument.setHLowD((String) map.getOrDefault(mapKey.getHLowD(), DEFAULT_STRING_VALUE));
 		instrument
-				.setLastPrice(Double.valueOf(map.getOrDefault(mapKey.getLastPrice(), DEFAULT_DOUBLE_VALUE).toString()));
+				.setLastP(Double.valueOf(map.getOrDefault(mapKey.getLastP(), DEFAULT_DOUBLE_VALUE).toString()));
 
 		String industry = (String) map.getOrDefault(mapKey.getIndustry(), DEFAULT_STRING_VALUE);
 		Object groupObject = map.get(mapKey.getGroup());
@@ -142,7 +143,7 @@ public class DataMapper {
 		if (summary != null) {
 			map.put(mapKey.getTicker(), summary.getTicker());
 			map.put(mapKey.getHTotal(), summary.getTotal());
-			map.put(mapKey.getLastPrice(), summary.getLastPrice());
+			map.put(mapKey.getLastP(), summary.getLastP());
 			map.put(mapKey.getHFirstD(), summary.getFirstDate());
 			map.put(mapKey.getHLastD(), summary.getLastDate());
 			map.put(mapKey.getHHigh(), summary.getHigh());

@@ -66,7 +66,7 @@ public class Instrument {
 	
 	private String hLowD;
 	
-	private Double lastPrice;
+	private Double lastP;
 		
 	private Map<String, Object> group;
 

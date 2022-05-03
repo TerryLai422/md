@@ -157,7 +157,7 @@ public class MapKeyParameter {
 	
 	private String hLastD;
 	
-	private String lastPrice;
+	private String lastP;
 	
 	private String ind;
 	
