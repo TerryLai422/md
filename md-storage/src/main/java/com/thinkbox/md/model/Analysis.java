@@ -12,8 +12,8 @@ import lombok.Setter;
 @Document(collection = "analysis")
 public class Analysis extends Historical {
 
-	private Map<String, Object> instrument;
+	private Map<String, Object> inst;
 	
-	private Map<String, Object> indicator;
+	private Map<String, Object> ind;
 	
 }
