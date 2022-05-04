@@ -1,6 +1,10 @@
-# Market Data Microservices
+# Market Data Quantitative Analysis
 
-Components
+Technical Components
+- Microservices
+- Java
+- Spring Boot
+- RESTful API
 - Kafka
 - MongoDB
 - Lombok
