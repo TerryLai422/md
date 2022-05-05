@@ -185,7 +185,7 @@ public class KafkaService {
 
 			} else {
 				if (outfile != null) {
-					System.out.println("File Size: " + outfile.length());
+					logger.info("File Size: " + outfile.length());
 				}
 				logger.info("outputList size: " + outputList.size());
 				logger.info("Finish Last Step: {}", firstMap.toString());

@@ -267,19 +267,21 @@ public class KafkaService {
 			}
 		} else {
 			if (outputList != null) {
-
-				outputList.forEach(x -> {
-					System.out.println("Ticker: " + x.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString()
-							+ " - " + x.getOrDefault(mapKey.getHTotal(), 0).toString() + " -- "
-							+ x.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString());
-				});
-				System.out.println("Total: " + outputList.size());
-
+				printList(outputList);
 			}
 			logger.info("Finish Last Step: {}", map.toString());
 		}
 	}
 
+	private void printList(List<Map<String, Object>> outputList) {
+		outputList.forEach(x -> {
+			logger.info("Ticker: " + x.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString()
+					+ " - " + x.getOrDefault(mapKey.getHTotal(), 0).toString() + " -- "
+					+ x.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString());
+		});
+		logger.info("Total: " + outputList.size());
+	}
+	
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_EXCHANGE_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void getInstruments(Map<String, Object> map) {
@@ -292,7 +294,6 @@ public class KafkaService {
 		String type = map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
 		String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
 		int max = Integer.valueOf(map.getOrDefault("max", 0).toString());
-		System.out.println("MAX: " + max);
 
 		if (!subExch.equals(DEFAULT_STRING_VALUE)) {
 			if (!type.equals(DEFAULT_STRING_VALUE)) {
@@ -305,29 +306,22 @@ public class KafkaService {
 				outputList = storeService.getInstruments(subExch);
 			}
 		}
-		System.out.println("SIZE: " + outputList.size());
+		logger.info("list size: " + outputList.size());
 		if (max != 0) {
 			outList = outputList.stream().limit(max).collect(Collectors.toList());
 		} else {
 			outList = outputList;
 		}
-		System.out.println("SIZE: " + outList.size());
+		logger.info("Limited list size: " + outList.size());
 
 		String topic = getTopicFromList(map);
 		if (topic != null) {
 			if (outList != null) {
-				System.out.println("SIZE: " + outList.size());
 				publish(topic, map, outList);
 			}
 		} else {
 			if (outList != null) {
-				System.out.println("SIZE: " + outList.size());
-				outList.forEach(x -> {
-					System.out.println("Ticker: " + x.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString()
-							+ " - " + x.getOrDefault(mapKey.getHTotal(), 0).toString());
-				});
-				logger.info("Total: " + outList.size());
-
+				printList(outputList);
 			}
 			logger.info("Finish Last Step: {}", map.toString());
 		}
@@ -369,22 +363,17 @@ public class KafkaService {
 		final Integer limit = Integer.parseInt(map.getOrDefault(mapKey.getLimit(), 0).toString());
 
 		final Integer day = Integer.parseInt(map.getOrDefault(mapKey.getDay(), 0).toString());
-//		System.out.println("Day: " + day);
 
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
-//		System.out.println("Date: " + date);
-//
-//		System.out.println("ticker: " + ticker);
 
 		List<Map<String, Object>> outputList = null;
 
 		Calendar calendar = getCalendar(DATE_FORMAT, date);
 
 		if (calendar != null) {
-//			System.out.println("Calendar:" + String.format(OUTPUT_DATE_FORMAT, calendar));
 			calendar.add(Calendar.DATE, -day);
 			final String formattedDate = String.format(OUTPUT_DATE_FORMAT, calendar);
-			System.out.println("Calendar:" + formattedDate);
+			logger.info("Calendar:" + formattedDate);
 			outputList = storeService.getHistoricals(ticker, formattedDate);
 		} else {
 			outputList = storeService.getHistoricals(ticker);
@@ -400,7 +389,7 @@ public class KafkaService {
 				outputAsFile(outputList, map, ticker, topic, size);
 			}
 		} else {
-			System.out.println("outputList size is zero");
+			logger.info("outputList size is zero");
 		}
 	}
 
@@ -428,7 +417,7 @@ public class KafkaService {
 
 			} else {
 				if (file != null) {
-					System.out.println("File Size: " + file.length());
+					logger.info("File Size: " + file.length());
 				}
 				logger.info("outputList size: " + outputList.size());
 				logger.info("Finish Last Step: {}", map.toString());
@@ -483,8 +472,6 @@ public class KafkaService {
 						skip = count * (limit - day);
 					}
 
-//					oList.forEach(System.out::println);
-
 					publish(topic, oList);
 				}
 
@@ -492,7 +479,6 @@ public class KafkaService {
 
 		} else {
 
-//			outputList.forEach(System.out::println);
 			logger.info("outputList size: " + outputList.size());
 			logger.info("Finish Last Step: {}", map.toString());
 
@@ -524,7 +510,6 @@ public class KafkaService {
 		final Map<String, Object> firstMap = list.get(0);
 		final String topic = getTopicFromList(firstMap);
 
-//		final String ticker = "RCFA";
 		list.stream().parallel().skip(1).forEach(x -> {
 
 			String ticker = x.get(mapKey.getTicker()).toString();
@@ -588,7 +573,6 @@ public class KafkaService {
 
 			publish(topic, outputList);
 		} else {
-//			System.out.println(instrumentMap.toString());
 			logger.info("Finish Last Step: {}", map.toString());
 		}
 	}
