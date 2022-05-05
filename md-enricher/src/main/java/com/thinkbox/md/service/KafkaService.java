@@ -155,7 +155,7 @@ public class KafkaService {
 	}
 
 	private void processFile(Map<String, Object> firstMap, String topic) {
-		String ticker = firstMap.getOrDefault(mapKey.getTicker(), "-").toString();
+		String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
 
 		File file = new File(System.getProperty(USER_HOME) + File.separator +  "enrich" +  File.separator + ticker + ".json");
 		try {
