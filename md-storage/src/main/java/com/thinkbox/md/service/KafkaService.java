@@ -132,7 +132,7 @@ public class KafkaService {
 	}
 	
 	private void processFile(Map<String, Object> firstMap, String topic) {
-		String ticker = firstMap.getOrDefault(mapKey.getTicker(), "-").toString();
+		String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
 
 		File file = new File(System.getProperty(USER_HOME) + File.separator +  "save" +  File.separator + ticker + ".json");
 		try {
@@ -163,11 +163,11 @@ public class KafkaService {
 	public void saveAnalysisList(List<Map<String, Object>> list) {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_ANALYSIS_LIST, list.toString());
 		Map<String, Object> firstMap = list.get(0);
-		final String format = firstMap.getOrDefault("format", "-").toString();
+		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		System.out.println("FORMAT :" + format);
 		String topic = getTopicFromList(firstMap);
 
-		if (!format.equals("-")) {
+		if (!format.equals(DEFAULT_STRING_VALUE)) {
 		
 			System.out.println("FORMAT FILE:");
 			processFile(firstMap, topic);
@@ -207,10 +207,10 @@ public class KafkaService {
 
 		Map<String, Object> firstMap = list.get(0);
 
-		final String format = firstMap.getOrDefault("format", "-").toString();
+		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		System.out.println("FORMAT :" + format);
 
-		if (!format.equals("-")) {
+		if (!format.equals(DEFAULT_STRING_VALUE)) {
 			System.out.println("FORMAT FILE:");
 		} else {
 			storeService.saveInstrumentList(list);
@@ -271,7 +271,7 @@ public class KafkaService {
 				outputList.forEach(x -> {
 					System.out.println("Ticker: " + x.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString()
 							+ " - " + x.getOrDefault(mapKey.getHTotal(), 0).toString() + " -- "
-							+ x.getOrDefault(mapKey.getType(), "-").toString());
+							+ x.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString());
 				});
 				System.out.println("Total: " + outputList.size());
 
@@ -364,14 +364,14 @@ public class KafkaService {
 
 	private void getHistoricalData(Map<String, Object> map, String ticker) {
 
-		final String format = map.getOrDefault("format", "-").toString();
+		final String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 
-		final Integer limit = Integer.parseInt(map.getOrDefault("limit", 0).toString());
+		final Integer limit = Integer.parseInt(map.getOrDefault(mapKey.getLimit(), 0).toString());
 
-		final Integer day = Integer.parseInt(map.getOrDefault("day", 0).toString());
+		final Integer day = Integer.parseInt(map.getOrDefault(mapKey.getDay(), 0).toString());
 //		System.out.println("Day: " + day);
 
-		final String date = map.getOrDefault("date", "-").toString();
+		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 //		System.out.println("Date: " + date);
 //
 //		System.out.println("ticker: " + ticker);
@@ -419,7 +419,7 @@ public class KafkaService {
 				newMap.put(mapKey.getTicker(), ticker);
 				newMap.put(mapKey.getTotal(), size);
 				if (file != null) {
-					newMap.put("length", file.length());
+					newMap.put(mapKey.getLength(), file.length());
 				}
 				List<Map<String, Object>> outList = new ArrayList<>();
 

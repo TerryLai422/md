@@ -157,7 +157,7 @@ public class MapKeyParameter {
 	
 	private String hLastD;
 	
-	private String lastPrice;
+	private String lastP;
 	
 	private String ind;
 	
@@ -170,4 +170,8 @@ public class MapKeyParameter {
 	private String group;
 	
 	private String yahooIndustry;
+	
+	private String format;
+	
+	private String length;
 }

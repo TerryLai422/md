@@ -88,13 +88,15 @@ map-key-parameter:
   hTotal: hTotal
   hFirstD: hFirstD
   hLastD: hLastD
-  lastPrice: lastPrice
+  lastP: lastP
   ind: ind
   inst: inst
   limit: limit
   save: save
   group: group
   yahooIndustry: y
+  format: format
+  length: length
   
 map-value-parameter:
   daily: D

@@ -170,4 +170,8 @@ public class MapKeyParameter {
 	private String group;
 	
 	private String yahooIndustry;
+	
+	private String format;
+	
+	private String length;
 }

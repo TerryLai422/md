@@ -59,6 +59,8 @@ public class KafkaService {
 
 	private final static String STRING_LOGGER_RECEIVED_MESSAGE = "Received topic: {} -> parameter: {}";
 
+	private final static String DEFAULT_STRING_VALUE = "-";
+
 	private final int BATCH_LIMIT = 1000;
 
 	@Async(ASYNC_EXECUTOR)
@@ -124,11 +126,11 @@ public class KafkaService {
 //		monthlyList.forEach(System.out::println);
 		Map<String, Object> firstMap = list.get(0);
 
-		String format = firstMap.getOrDefault("format", "-").toString();
+		String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		List<Map<String, Object>> outputList = null;
 		String topic = getTopicFromList(firstMap);
 
-		if (!format.equals("-")) {
+		if (!format.equals(DEFAULT_STRING_VALUE)) {
 			System.out.println("MMAP: " + firstMap.toString());
 			processFile(firstMap, topic);
 		} else {
@@ -174,7 +176,7 @@ public class KafkaService {
 				newMap.put(mapKey.getTotal(), outputList.size());
 
 				if (outfile != null) {
-					newMap.put("length", outfile.length());
+					newMap.put(mapKey.getLength(), outfile.length());
 				}
 				List<Map<String, Object>> outList = new ArrayList<>();
 

@@ -99,10 +99,10 @@ public class EnrichService {
 			try {
 				if (x.get(mapKey.getDate()).toString().compareTo(date) > 0) {
 //						logger.info("x:" + x.get(mapKey.getDate()).toString() + "  -  " + date + ":true");
-					x.put("save", true);
+					x.put(mapKey.getSave(), true);
 				} else {
 //						logger.info("x:" + x.get(mapKey.getDate()).toString() + "  -  " + date + ":false");
-					x.put("save", false);
+					x.put(mapKey.getSave(), false);
 				}
 
 				if (!x.containsKey(mapKey.getInd())) {
@@ -117,7 +117,7 @@ public class EnrichService {
 				System.out.println("X:" + x.toString());
 			}
 			return x;
-		}).filter(x -> Boolean.valueOf(x.getOrDefault("save", false).toString())).collect(Collectors.toList());
+		}).filter(x -> Boolean.valueOf(x.getOrDefault(mapKey.getSave(), false).toString())).collect(Collectors.toList());
 
 	}
 
