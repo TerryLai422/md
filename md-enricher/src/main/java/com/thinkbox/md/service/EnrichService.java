@@ -36,7 +36,7 @@ public class EnrichService {
 
 	private final static String TORONTO_STOCK_VENTURE_EXCHANGE = "TSXV";
 
-	private final static String STRING_DASH = "-";
+	private final static String DEFAULT_STRING_VALUE = "-";
 
 	private final static String STRING_EMPTY_SPACE = "";
 
@@ -73,7 +73,7 @@ public class EnrichService {
 		indicators.add(previousClose);
 		indicators.add(weekHighLow);
 		indicators.add(volumeAverage);
-		indicators.add(onBalanceVolume);
+//		indicators.add(onBalanceVolume);
 		indicators.add(averageTrueRange);
 
 		for (Indicator indicator : smaList) {
@@ -84,21 +84,41 @@ public class EnrichService {
 
 	public List<Map<String, Object>> enrichHistorical(List<Map<String, Object>> list) {
 
+		Map<String, Object> firstMap = list.get(0);
+
+		System.out.println(firstMap.toString());
+
+		final String date = firstMap.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
+
+		System.out.println("DATE: " + date);
+
 		final List<Indicator> indicators = getIndicators();
 
-		return list.stream().skip(1)
-				.sorted((i, j) -> i.get(mapKey.getDate()).toString().compareTo(j.get(mapKey.getDate()).toString()))
-				.map(x -> {
+		return list.stream().skip(1).map(x -> {
 
-					if (!x.containsKey(mapKey.getInd())) {
-						x.put(mapKey.getInd(), new TreeMap<>());
-					}
+			try {
+				if (x.get(mapKey.getDate()).toString().compareTo(date) > 0) {
+//						logger.info("x:" + x.get(mapKey.getDate()).toString() + "  -  " + date + ":true");
+					x.put("save", true);
+				} else {
+//						logger.info("x:" + x.get(mapKey.getDate()).toString() + "  -  " + date + ":false");
+					x.put("save", false);
+				}
 
-					for (Indicator indicator : indicators) {
-						indicator.process(x);
-					}
-					return x;
-				}).collect(Collectors.toList());
+				if (!x.containsKey(mapKey.getInd())) {
+					x.put(mapKey.getInd(), new TreeMap<>());
+				}
+
+				for (Indicator indicator : indicators) {
+					indicator.process(x);
+				}
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+				System.out.println("X:" + x.toString());
+			}
+			return x;
+		}).filter(x -> Boolean.valueOf(x.getOrDefault("save", false).toString())).collect(Collectors.toList());
+
 	}
 
 	public List<Map<String, Object>> enrichExchange(List<Map<String, Object>> list) {
@@ -106,7 +126,8 @@ public class EnrichService {
 		Map<String, Object> first = list.get(0);
 		final String exchange = (String) first.get(mapKey.getExchange());
 		final String suffix = (exchange.equals(TORONTO_STOCK_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE
-				: (exchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE : STRING_EMPTY_SPACE;
+				: (exchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE
+						: STRING_EMPTY_SPACE;
 		final boolean neededSuffix = (exchange.equals(TORONTO_STOCK_EXCHANGE)
 				|| exchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? true : false;
 
@@ -121,7 +142,7 @@ public class EnrichService {
 				} else if (count == 1) {
 					ticker = symbol.replace(CHARACTER_DOT, CHARACTER_DASH) + suffix;
 				} else {
-					ticker = STRING_DASH;
+					ticker = DEFAULT_STRING_VALUE;
 				}
 			}
 

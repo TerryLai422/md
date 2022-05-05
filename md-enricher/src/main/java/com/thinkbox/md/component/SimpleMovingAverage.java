@@ -37,6 +37,9 @@ public class SimpleMovingAverage extends Indicator {
 		Map<String, Object> ind = (Map<String, Object>) map.get(mapKey.getInd());
 		
 		ind.put(getKey(), getAverage());
+		ind.put(getKey() + "-sum", sum);
+		ind.put(getKey() + "-count", queue.size());
+		ind.put(getKey() + "-first", queue.peek());
 
 	}
 	

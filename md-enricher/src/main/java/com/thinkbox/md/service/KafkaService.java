@@ -1,7 +1,12 @@
 package com.thinkbox.md.service;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +16,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.MapValueParameter;
 
@@ -34,6 +41,10 @@ public class KafkaService {
 	@Autowired
 	private MapValueParameter mapValue;
 
+	private static final ObjectMapper objectMapper = new ObjectMapper();
+
+	private final static String USER_HOME = "user.home";
+
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
 	private final String TOPIC_ENRICH_EXCHANGE_DATA_LIST = "enrich.exchange.list";
@@ -44,17 +55,41 @@ public class KafkaService {
 
 	private final String CONTAINER_FACTORY_LIST = "listListener";
 
+	private final static String STRING_LOGGER_SENT_MESSAGE = "Sent topic: {} -> {}";
+
+	private final static String STRING_LOGGER_RECEIVED_MESSAGE = "Received topic: {} -> parameter: {}";
+
+	private final int BATCH_LIMIT = 1000;
+
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, List<Map<String, Object>> list) {
-		logger.info("Sent topic: {} -> {}", topic, list.toString());
+//		logger.info(STRING_LOGGER_SENT_MESSAGE, topic, list.toString());
 
 		kafkaTemplateList.send(topic, list);
+	}
+
+	private void publish(String topic, Map<String, Object> map, List<Map<String, Object>> list) {
+		int size = list.size();
+
+		if (size <= BATCH_LIMIT) {
+			map.put(mapKey.getTotal(), size);
+			list.add(0, map);
+			publish(topic, list);
+		} else {
+			List<Map<String, Object>> subList = null;
+			for (int i = 0; i < size; i += BATCH_LIMIT) {
+				subList = list.stream().skip(i).limit(BATCH_LIMIT).map(y -> y).collect(Collectors.toList());
+				map.put(mapKey.getTotal(), subList.size());
+				subList.add(0, map);
+				publish(topic, subList);
+			}
+		}
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_ENRICH_EXCHANGE_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void processExchangeData(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_ENRICH_EXCHANGE_DATA_LIST, list.toString());
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_EXCHANGE_DATA_LIST, list.get(0).toString());
 
 		List<Map<String, Object>> outputList = enrichService.enrichExchange(list);
 
@@ -80,16 +115,83 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_ENRICH_HISTORICAL_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void processHistericalData(List<Map<String, Object>> list) {
-		logger.info("Received topic: {} -> parameter: {}", TOPIC_ENRICH_HISTORICAL_DATA_LIST, list.toString());
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_HISTORICAL_DATA_LIST, list.get(0).toString());
 
 //		List<Map<String, Object>> weeklyList = enrichService.consolidate(mapValue.getWeekly(), list);
 //		weeklyList.forEach(System.out::println);
 //		
 //		List<Map<String, Object>> monthlyList = enrichService.consolidate(mapValue.getMonthly(), list);	
 //		monthlyList.forEach(System.out::println);
+		Map<String, Object> firstMap = list.get(0);
 
-		List<Map<String, Object>> outputList = enrichService.enrichHistorical(list);
-		outputList.forEach(System.out::println);
+		String format = firstMap.getOrDefault("format", "-").toString();
+		List<Map<String, Object>> outputList = null;
+		String topic = getTopicFromList(firstMap);
+
+		if (!format.equals("-")) {
+			System.out.println("MMAP: " + firstMap.toString());
+			processFile(firstMap, topic);
+		} else {
+			outputList = enrichService.enrichHistorical(list);
+
+//		outputList.forEach(System.out::println);
+
+			if (topic != null) {
+//			outputList.add(0, firstMap);
+				System.out.println("Size:" + outputList.size());
+//			outputList.forEach(System.out::println);
+				publish(topic, firstMap, outputList);
+			} else {
+				System.out.println("Size:" + outputList.size());
+//			outputList.forEach(x -> {
+//				logger.info(x.toString());
+//			});
+				logger.info("Finish Last Step: {}", firstMap.toString());
+			}
+
+		}
+	}
+
+	private void processFile(Map<String, Object> firstMap, String topic) {
+		String ticker = firstMap.getOrDefault(mapKey.getTicker(), "-").toString();
+
+		File file = new File(System.getProperty(USER_HOME) + File.separator +  "enrich" +  File.separator + ticker + ".json");
+		try {
+			List<Map<String, Object>> mapperList = objectMapper.readValue(new FileInputStream(file),
+					new TypeReference<List<Map<String, Object>>>() {
+					});
+			System.out.println("MapperList Size: " + mapperList.size());
+			mapperList.add(0, firstMap);
+			List<Map<String, Object>> outputList = enrichService.enrichHistorical(mapperList);
+			File outfile = new File(System.getProperty(USER_HOME) + File.separator + "save" +  File.separator + ticker + ".json");
+			objectMapper.writeValue(outfile, outputList);
+
+			if (topic != null) {
+
+				Map<String, Object> newMap = firstMap.entrySet().stream()
+						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+				newMap.put(mapKey.getTicker(), ticker);
+				newMap.put(mapKey.getTotal(), outputList.size());
+
+				if (outfile != null) {
+					newMap.put("length", outfile.length());
+				}
+				List<Map<String, Object>> outList = new ArrayList<>();
+
+				outList.add(0, newMap);
+				publish(topic, outList);
+
+			} else {
+				if (outfile != null) {
+					System.out.println("File Size: " + outfile.length());
+				}
+				logger.info("outputList size: " + outputList.size());
+				logger.info("Finish Last Step: {}", firstMap.toString());
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private String getTopicFromList(Map<String, Object> map) {

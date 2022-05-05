@@ -83,5 +83,4 @@ rest-parameter:
       - ticker
       - limit
       - day
-      - date
     
