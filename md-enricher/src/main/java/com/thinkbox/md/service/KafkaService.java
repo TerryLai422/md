@@ -59,6 +59,8 @@ public class KafkaService {
 
 	private final static String STRING_LOGGER_RECEIVED_MESSAGE = "Received topic: {} -> parameter: {}";
 
+	private final static String STRING_LOGGER_FINISHED_MESSAGE = "Finish Last Step: {}";
+
 	private final static String DEFAULT_STRING_VALUE = "-";
 
 	private final int BATCH_LIMIT = 1000;
@@ -105,12 +107,12 @@ public class KafkaService {
 			});
 
 			outputList.add(0, first);
-			outputList.forEach(System.out::println);
+//			outputList.forEach(System.out::println);
 
 			publish(topic, outputList);
 		} else {
-			outputList.forEach(System.out::println);
-			logger.info("Finish Last Step: {}", firstMap.toString());
+//			outputList.forEach(System.out::println);
+			logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 		}
 	}
 
@@ -131,7 +133,6 @@ public class KafkaService {
 		String topic = getTopicFromList(firstMap);
 
 		if (!format.equals(DEFAULT_STRING_VALUE)) {
-			System.out.println("MMAP: " + firstMap.toString());
 			processFile(firstMap, topic);
 		} else {
 			outputList = enrichService.enrichHistorical(list);
@@ -148,7 +149,7 @@ public class KafkaService {
 //			outputList.forEach(x -> {
 //				logger.info(x.toString());
 //			});
-				logger.info("Finish Last Step: {}", firstMap.toString());
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
 
 		}
@@ -162,7 +163,6 @@ public class KafkaService {
 			List<Map<String, Object>> mapperList = objectMapper.readValue(new FileInputStream(file),
 					new TypeReference<List<Map<String, Object>>>() {
 					});
-			System.out.println("MapperList Size: " + mapperList.size());
 			mapperList.add(0, firstMap);
 			List<Map<String, Object>> outputList = enrichService.enrichHistorical(mapperList);
 			File outfile = new File(System.getProperty(USER_HOME) + File.separator + "save" +  File.separator + ticker + ".json");
@@ -188,7 +188,7 @@ public class KafkaService {
 					logger.info("File Size: " + outfile.length());
 				}
 				logger.info("outputList size: " + outputList.size());
-				logger.info("Finish Last Step: {}", firstMap.toString());
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

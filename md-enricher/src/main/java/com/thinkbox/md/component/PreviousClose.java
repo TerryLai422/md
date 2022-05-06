@@ -32,6 +32,6 @@ public class PreviousClose extends Indicator {
 	}
 
 	private String getKey() {
-		return "prevClose";
+		return PREFIX_STRING;
 	}
 }

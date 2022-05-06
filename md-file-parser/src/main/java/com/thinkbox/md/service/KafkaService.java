@@ -58,13 +58,15 @@ public class KafkaService {
 	
 	private final static String STRING_LOGGER_RECEIVED_MESSAGE = "Received topic: {} -> parameter: {}";
 
+	private final static String STRING_LOGGER_FINISHED_MESSAGE = "Finish Last Step: {}";
+
 	private final static String DEFAULT_STRING_VALUE = "-"; 
 
 	private final int BATCH_LIMIT = 2000;
 
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, List<Map<String, Object>> list) {
-		logger.info("Sent topic: {} -> {}", topic, list.toString());
+		logger.info(STRING_LOGGER_SENT_MESSAGE, topic, list.toString());
 
 		kafkaTemplateList.send(topic, list);
 	}
@@ -100,7 +102,7 @@ public class KafkaService {
 
 				publish(topic, outputList);
 			} else {
-				logger.info("Finish Last Step: {}", map.toString());
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 		} catch (IOException e) {
 			logger.info(e.toString());
@@ -135,7 +137,7 @@ public class KafkaService {
 						publish(topic, outputList);
 					} else {
 						logger.info(outputMap.toString());
-						logger.info("Finish Last Step: {}", map.toString());
+						logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 					}
 				} catch (IOException e) {
 					logger.info(e.toString());
@@ -169,7 +171,7 @@ public class KafkaService {
 				publish(topic, outputList);
 			} else {
 				logger.info(outputMap.toString());
-				logger.info("Finish Last Step: {}", map.toString());
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 		} catch (IOException e) {
 			logger.info(e.toString());
@@ -248,7 +250,7 @@ public class KafkaService {
 				}
 			} else {
 				logger.info(outputList.toString());
-				logger.info("Finish Last Step: {}", map.toString());
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 
 		} catch (IOException e) {
@@ -327,7 +329,7 @@ public class KafkaService {
 				}
 			} else {
 				logger.info(outputList.toString());
-				logger.info("Finish Last Step: {}", map.toString());
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 
 		} catch (IOException e) {

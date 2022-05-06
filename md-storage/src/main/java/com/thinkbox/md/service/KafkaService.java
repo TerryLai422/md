@@ -79,6 +79,8 @@ public class KafkaService {
 	private final static String STRING_LOGGER_SENT_MESSAGE = "Sent topic: {} -> {}";
 
 	private final static String STRING_LOGGER_RECEIVED_MESSAGE = "Received topic: {} -> parameter: {}";
+	
+	private final static String STRING_LOGGER_FINISHED_MESSAGE = "Finish Last Step: {}";
 
 	private final static String OUTPUT_DATE_FORMAT = "%1$tY%1$tm%1$td";
 
@@ -88,10 +90,8 @@ public class KafkaService {
 
 	private final static Double DEFAULT_DOUBLE_VALUE = 0d;
 
-	private final static String STRING_DASH = "-";
-
-	private final static String STRING_QUESTION_MARK = "?";
-
+	private final static String FILE_EXTENSION = ".json";
+	
 	private final static int BATCH_LIMIT = 1500;
 
 	private final static int DEFAULT_LIMIT = 2;
@@ -137,23 +137,22 @@ public class KafkaService {
 		String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
 
 		File file = new File(
-				System.getProperty(USER_HOME) + File.separator + "save" + File.separator + ticker + ".json");
+				System.getProperty(USER_HOME) + File.separator + "save" + File.separator + ticker + FILE_EXTENSION);
 		try {
 			List<Map<String, Object>> mapperList = objectMapper.readValue(new FileInputStream(file),
 					new TypeReference<List<Map<String, Object>>>() {
 					});
-			System.out.println("MapperList Size: " + mapperList.size());
+
 			mapperList.add(0, firstMap);
-
-			storeService.saveAnalysisList(mapperList);
-
+			if (mapperList.size() > 1) {
+				storeService.saveAnalysisList(mapperList);
+			}
 			if (topic != null) {
 
 				publish(topic, mapperList);
 
 			} else {
-				logger.info("mapperList size: " + mapperList.size());
-				logger.info("Finish Last Step: {}", firstMap.toString());
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -167,12 +166,10 @@ public class KafkaService {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_ANALYSIS_LIST, list.toString());
 		Map<String, Object> firstMap = list.get(0);
 		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
-		System.out.println("FORMAT :" + format);
 		String topic = getTopicFromList(firstMap);
 
 		if (!format.equals(DEFAULT_STRING_VALUE)) {
 
-			System.out.println("FORMAT FILE:");
 			processFile(firstMap, topic);
 
 		} else {
@@ -181,7 +178,7 @@ public class KafkaService {
 			if (topic != null) {
 				publish(topic, list.remove(0), list);
 			} else {
-				logger.info("Finish Last Step: {} {}", firstMap.toString());
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
 		}
 	}
@@ -211,7 +208,6 @@ public class KafkaService {
 		Map<String, Object> firstMap = list.get(0);
 
 		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
-		System.out.println("FORMAT :" + format);
 
 		if (!format.equals(DEFAULT_STRING_VALUE)) {
 			System.out.println("FORMAT FILE:");
@@ -222,7 +218,7 @@ public class KafkaService {
 			if (topic != null) {
 				publish(topic, list.remove(0), list);
 			} else {
-				logger.info("Finish Last Step: {} {}", firstMap.toString());
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
 		}
 
@@ -246,7 +242,7 @@ public class KafkaService {
 
 			publish(topic, outputList);
 		} else {
-			logger.info("Finish Last Step: {}", firstMap.toString());
+			logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 		}
 	}
 
@@ -272,7 +268,7 @@ public class KafkaService {
 			if (outputList != null) {
 				printList(outputList);
 			}
-			logger.info("Finish Last Step: {}", map.toString());
+			logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 		}
 	}
 
@@ -326,7 +322,7 @@ public class KafkaService {
 			if (outList != null) {
 				printList(outputList);
 			}
-			logger.info("Finish Last Step: {}", map.toString());
+			logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 		}
 
 //		System.out.println(storeService.updateAnalysisField("RFP", "20220502", "ind.obv", 21));
@@ -367,12 +363,9 @@ public class KafkaService {
 	private void getHistoricalData(Map<String, Object> map, String ticker) {
 
 		final String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
-
-		final Integer limit = Integer.parseInt(map.getOrDefault(mapKey.getLimit(), 0).toString());
-
-		final Integer day = Integer.parseInt(map.getOrDefault(mapKey.getDay(), 0).toString());
-
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
+		final Integer limit = Integer.parseInt(map.getOrDefault(mapKey.getLimit(), 0).toString());
+		final Integer day = Integer.parseInt(map.getOrDefault(mapKey.getDay(), 0).toString());
 
 		List<Map<String, Object>> outputList = null;
 
@@ -381,7 +374,6 @@ public class KafkaService {
 		if (calendar != null) {
 			calendar.add(Calendar.DATE, -day);
 			final String formattedDate = String.format(OUTPUT_DATE_FORMAT, calendar);
-			logger.info("Calendar:" + formattedDate);
 			outputList = storeService.getHistoricals(ticker, formattedDate);
 		} else {
 			outputList = storeService.getHistoricals(ticker);
@@ -391,7 +383,7 @@ public class KafkaService {
 
 		int size = outputList.size();
 		if (size > 0) {
-			if (!format.equals("file")) {
+			if (format.equals(DEFAULT_STRING_VALUE)) {
 				publishList(outputList, map, ticker, topic, date, size, limit, day);
 			} else {
 				outputAsFile(outputList, map, ticker, topic, size);
@@ -406,8 +398,9 @@ public class KafkaService {
 
 		File file = null;
 		try {
+			System.out.println("TOPIC: " + topic);
 			file = new File(
-					System.getProperty(USER_HOME) + File.separator + "enrich" + File.separator + ticker + ".json");
+					System.getProperty(USER_HOME) + File.separator + "enrich" + File.separator + ticker + FILE_EXTENSION);
 			objectMapper.writeValue(file, outputList);
 
 			if (topic != null) {
@@ -429,7 +422,7 @@ public class KafkaService {
 					logger.info("File Size: " + file.length());
 				}
 				logger.info("outputList size: " + outputList.size());
-				logger.info("Finish Last Step: {}", map.toString());
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -444,7 +437,7 @@ public class KafkaService {
 
 			if (size < limit) {
 
-				System.out.println("Send without processing");
+				logger.info("Send without processing: " + ticker);
 				Map<String, Object> newMap = map.entrySet().stream()
 						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 				newMap.put(mapKey.getTicker(), ticker);
@@ -454,7 +447,7 @@ public class KafkaService {
 
 			} else {
 
-				System.out.println("Processing before sending");
+				logger.info("Processing before sending: " + ticker);
 				int skip = 0;
 				int count = 0;
 				String oDate = date;
@@ -489,7 +482,7 @@ public class KafkaService {
 		} else {
 
 			logger.info("outputList size: " + outputList.size());
-			logger.info("Finish Last Step: {}", map.toString());
+			logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 
 		}
 	}
@@ -535,7 +528,7 @@ public class KafkaService {
 		if (topic != null) {
 			publish(topic, list.remove(0), list);
 		} else {
-			logger.info("Finish Last Step: {}", firstMap.toString());
+			logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 		}
 	}
 
@@ -616,7 +609,7 @@ public class KafkaService {
 
 			publish(topic, outputList);
 		} else {
-			logger.info("Finish Last Step: {}", map.toString());
+			logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 		}
 	}
 
@@ -641,7 +634,7 @@ public class KafkaService {
 
 				publish(topic, outputList);
 			} else {
-				logger.info("Finish Last Step: {}", map.toString());
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 
 		});

@@ -44,6 +44,8 @@ public class KafkaService {
 	
 	private final static String STRING_LOGGER_RECEIVED_MESSAGE = "Received topic: {} -> parameter: {}";
 
+	private final static String STRING_LOGGER_FINISHED_MESSAGE = "Finish Last Step: {}";
+
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, Map<String, Object> map) {
 		logger.info(STRING_LOGGER_SENT_MESSAGE, topic, map);
@@ -93,7 +95,7 @@ public class KafkaService {
 
 		} else {
 			outputList.forEach(System.out::println);
-			logger.info("Finish Last Step: {}", firstMap.toString());
+			logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 		}
 	}
 	

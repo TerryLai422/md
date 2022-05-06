@@ -114,7 +114,7 @@ public class RetrieveService {
 			logger.info("Skip retrieve Yahoo data (missing/incorrect yahooType parameter");
 		} else {
 			Stream<Map<String, Object>> intermedicateList = null;
-			if (from.equals("-")) {
+			if (from.equals(DEFAULT_STRING_VALUE)) {
 				intermedicateList = list.stream().skip(1).sorted(
 						(i, j) -> i.get(mapKey.getTicker()).toString().compareTo(j.get(mapKey.getTicker()).toString()));
 			} else {

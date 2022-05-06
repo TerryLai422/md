@@ -86,11 +86,7 @@ public class EnrichService {
 
 		Map<String, Object> firstMap = list.get(0);
 
-		System.out.println(firstMap.toString());
-
 		final String date = firstMap.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
-
-		System.out.println("DATE: " + date);
 
 		final List<Indicator> indicators = getIndicators();
 

@@ -95,7 +95,7 @@ public class FileParseService {
 
 	private final static String STOOQ_FILE_PATTERN = ".us";
 
-	private final static String STRING_DASH = "-";
+	private final static String DEFAULT_STRING_VALUE = "-";
 
 	private final static String STRING_EMPTY_SPACE = "";
 
@@ -117,7 +117,7 @@ public class FileParseService {
 
 	@PostConstruct
 	public void init() {
-		if (dataDirectory != null && dataDirectory.equals(STRING_DASH)) {
+		if (dataDirectory != null && dataDirectory.equals(DEFAULT_STRING_VALUE)) {
 			dataDirectory = System.getProperty(USER_HOME);
 		}
 	}
@@ -126,7 +126,7 @@ public class FileParseService {
 
 		String directory = dataDirectory + File.separator + HISTORICAL_DIRECTORY;
 
-		if (!subDirectory.equals(STRING_DASH)) {
+		if (!subDirectory.equals(DEFAULT_STRING_VALUE)) {
 			directory += File.separator + subDirectory;
 		}
 
@@ -157,7 +157,7 @@ public class FileParseService {
 
 		String directory = dataDirectory + File.separator + DAILY_DIRECTORY;
 
-		if (!subDirectory.equals(STRING_DASH)) {
+		if (!subDirectory.equals(DEFAULT_STRING_VALUE)) {
 			directory += File.separator + subDirectory;
 		}
 
@@ -261,10 +261,10 @@ public class FileParseService {
 
 		String fullFileName = dataDirectory + File.separator + directory;
 
-		if (!subDirectory.equals(STRING_DASH)) {
+		if (!subDirectory.equals(DEFAULT_STRING_VALUE)) {
 			fullFileName += File.separator + subDirectory;
 		}
-		if (!fileName.equals(STRING_DASH)) {
+		if (!fileName.equals(DEFAULT_STRING_VALUE)) {
 			fullFileName += File.separator + fileName;
 		} else {
 			if (dataSource.equals(DATA_SOURCE_YAHOO)) {
@@ -295,7 +295,7 @@ public class FileParseService {
 	public List<Map<String, Object>> parseHistoricalFile(final String subDirectory, final String dataSource,
 			final String symbol, final String ticker) throws IOException {
 
-		final String fileName = STRING_DASH;
+		final String fileName = DEFAULT_STRING_VALUE;
 		List<Map<String, Object>> outputList = parseQuoteFile(HISTORICAL_DIRECTORY, subDirectory, fileName, dataSource,
 				symbol, ticker);
 
@@ -332,8 +332,8 @@ public class FileParseService {
 	public List<Map<String, Object>> parseDailyFile(final String subDirectory, final String fileName,
 			final String dataSource) throws IOException {
 
-		final String symbol = STRING_DASH;
-		final String ticker = STRING_DASH;
+		final String symbol = DEFAULT_STRING_VALUE;
+		final String ticker = DEFAULT_STRING_VALUE;
 
 		List<Map<String, Object>> outputList = parseQuoteFile(DAILY_DIRECTORY, subDirectory, fileName, dataSource,
 				symbol, ticker);
@@ -386,7 +386,7 @@ public class FileParseService {
 				} else {
 					map.put(mapKey.getInterval(), new String(x[intervalPosition]));
 				}
-				if (symbol.equals(STRING_DASH)) {
+				if (symbol.equals(DEFAULT_STRING_VALUE)) {
 					String tempSymbol = x[0];
 					if (tempSymbol != null && tempSymbol.endsWith(STOOQ_TICKER_SUFFIX)) {
 						tempSymbol = tempSymbol.substring(0, tempSymbol.length() - 3);
@@ -490,7 +490,7 @@ public class FileParseService {
 				} else if (count == 1) {
 					ticker = symbol.replace(CHARACTER_DOT, CHARACTER_DASH) + suffix;
 				} else {
-					ticker = STRING_DASH;
+					ticker = DEFAULT_STRING_VALUE;
 				}
 			}
 
