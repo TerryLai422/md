@@ -1,8 +1,12 @@
 package com.thinkbox.md.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +26,10 @@ import com.thinkbox.md.repository.InstrumentRepository;
 @Component
 public class StoreService {
 
+	private final static String DEFAULT_STRING_VALUE = "-";
+	
+	private final static Double DEFAULT_DOUBLE_VALUE = 0d;
+	
 	@Autowired
 	private AnalysisRepository analysisRepository;
 
@@ -40,9 +48,9 @@ public class StoreService {
 	public void saveAnalysisList(List<Map<String, Object>> list) {
 
 		final Map<String, Object> firstMap = list.get(0);
-		final String ticker = firstMap.get(mapKey.getTicker()).toString();		
+		final String ticker = firstMap.get(mapKey.getTicker()).toString();
 		final Map<String, Object> inst = getInstrument(ticker);
-		
+
 		List<Analysis> convertedList = list.stream().skip(1).map(x -> {
 			return mapper.convertMapToAnalysis(x, inst);
 		}).collect(Collectors.toList());
@@ -119,7 +127,7 @@ public class StoreService {
 	}
 
 	public List<Map<String, Object>> getHistoricalTotalFromInstrument(final String subExch, int limit) {
-			
+
 		List<Instrument> instruments = instrumentRepository.findBySubExchAndTotal(subExch, limit);
 //
 //		return instruments.stream().filter(x -> x.getHistoricalTotal() <= limit).map(x -> x.getOthers()).collect(Collectors.toList());
@@ -150,7 +158,6 @@ public class StoreService {
 
 		List<Historical> historicals = Arrays.asList();
 
-
 		historicals = historicalRepository.findByTickerAndDate(ticker, date);
 
 		return historicals.stream().map(x -> x.getOthers()).collect(Collectors.toList());
@@ -179,9 +186,68 @@ public class StoreService {
 		return mapper.convertHistoricalSummaryToMap(summary);
 	}
 
+	public Map<String, Object> getHistoricalSummaryFromAllRecords(final String ticker) {
+
+		List<Historical> list = historicalRepository.findByTicker(ticker);
+
+		Map<String, Object> x = new TreeMap<>();
+		int size = list.size();
+		x.put(mapKey.getHTotal(), size);
+		if (size > 0) {
+			Historical historical = list.get(0);
+			x.put(mapKey.getHFirstD(), historical.getDate());
+			historical = list.get(list.size() - 1);
+			x.put(mapKey.getHLastD(), historical.getDate());
+			x.put(mapKey.getLastP(), historical.getClose());
+		} else {
+			x.put(mapKey.getHFirstD(), DEFAULT_STRING_VALUE);
+			x.put(mapKey.getHLastD(), DEFAULT_STRING_VALUE);
+			x.put(mapKey.getLastP(), DEFAULT_DOUBLE_VALUE);
+		}
+		
+		Optional<Historical> oHighest = list.stream().max(Comparator.comparing(Historical::getClose));
+		if (oHighest != null && oHighest.isPresent()) {
+			Historical hHigh = oHighest.get();
+			x.put(mapKey.getHHighD(), hHigh.getDate());
+			x.put(mapKey.getHHigh(), hHigh.getClose());
+		}
+
+		Optional<Historical> oLowest = list.stream().min(Comparator.comparing(Historical::getClose));
+		if (oLowest != null && oLowest.isPresent()) {
+			Historical hLow = oLowest.get();
+			x.put(mapKey.getHLowD(), hLow.getDate());
+			x.put(mapKey.getHLow(), hLow.getClose());
+		}
+		return x;
+	}
+	
 	public Long getHistoricalsTotal(final String ticker) {
 
 		return historicalRepository.countByTicker(ticker);
 
+	}
+	
+	public String getDate(final String ticker, Double close) {
+
+		List<Historical> historicals = Arrays.asList();
+
+		historicals = historicalRepository.findByTickerAndClose(ticker, close);
+
+		if (historicals.size() > 0) {
+			Historical historical = historicals.get(0);
+			return historical.getDate();
+		}
+		return DEFAULT_STRING_VALUE;
+	}
+
+	public int countByCriterion(String criterion) {
+
+		List<Analysis> list = analysisRepository.countByCriterion(criterion);
+		return list.size();
+
+	}
+	
+	public long updateAnalysisField(String ticker, String date, String name, Object value) {
+		return analysisRepository.countByCriterion(date, name);
 	}
 }

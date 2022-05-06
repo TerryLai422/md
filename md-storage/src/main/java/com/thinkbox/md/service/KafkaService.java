@@ -86,6 +86,8 @@ public class KafkaService {
 
 	private final static String DEFAULT_STRING_VALUE = "-";
 
+	private final static Double DEFAULT_DOUBLE_VALUE = 0d;
+
 	private final static String STRING_DASH = "-";
 
 	private final static String STRING_QUESTION_MARK = "?";
@@ -130,11 +132,12 @@ public class KafkaService {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_EXCHANGE_LIST, list.toString());
 		storeService.saveInstrumentList(list);
 	}
-	
+
 	private void processFile(Map<String, Object> firstMap, String topic) {
 		String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
 
-		File file = new File(System.getProperty(USER_HOME) + File.separator +  "save" +  File.separator + ticker + ".json");
+		File file = new File(
+				System.getProperty(USER_HOME) + File.separator + "save" + File.separator + ticker + ".json");
 		try {
 			List<Map<String, Object>> mapperList = objectMapper.readValue(new FileInputStream(file),
 					new TypeReference<List<Map<String, Object>>>() {
@@ -168,7 +171,7 @@ public class KafkaService {
 		String topic = getTopicFromList(firstMap);
 
 		if (!format.equals(DEFAULT_STRING_VALUE)) {
-		
+
 			System.out.println("FORMAT FILE:");
 			processFile(firstMap, topic);
 
@@ -275,13 +278,13 @@ public class KafkaService {
 
 	private void printList(List<Map<String, Object>> outputList) {
 		outputList.forEach(x -> {
-			logger.info("Ticker: " + x.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString()
-					+ " - " + x.getOrDefault(mapKey.getHTotal(), 0).toString() + " -- "
+			logger.info("Ticker: " + x.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString() + " - "
+					+ x.getOrDefault(mapKey.getHTotal(), 0).toString() + " -- "
 					+ x.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString());
 		});
 		logger.info("Total: " + outputList.size());
 	}
-	
+
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_EXCHANGE_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void getInstruments(Map<String, Object> map) {
@@ -325,6 +328,11 @@ public class KafkaService {
 			}
 			logger.info("Finish Last Step: {}", map.toString());
 		}
+
+//		System.out.println(storeService.updateAnalysisField("RFP", "20220502", "ind.obv", 21));
+//		System.out.println("50 > 200 Counter:" + storeService.countByCriterion("this.ind.sma50>this.ind.sma200"));
+//		System.out.println("21 > 50 Counter:" + storeService.countByCriterion("this.ind.sma21>this.ind.sma50"));
+
 	}
 
 	@Async(ASYNC_EXECUTOR)
@@ -398,7 +406,8 @@ public class KafkaService {
 
 		File file = null;
 		try {
-			file = new File(System.getProperty(USER_HOME) + File.separator + "enrich" + File.separator + ticker + ".json");
+			file = new File(
+					System.getProperty(USER_HOME) + File.separator + "enrich" + File.separator + ticker + ".json");
 			objectMapper.writeValue(file, outputList);
 
 			if (topic != null) {
@@ -428,7 +437,7 @@ public class KafkaService {
 		}
 
 	}
-	
+
 	private void publishList(List<Map<String, Object>> outputList, Map<String, Object> map, String ticker, String topic,
 			String date, int size, int limit, int day) {
 		if (topic != null) {
@@ -508,45 +517,79 @@ public class KafkaService {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_SUMMARY_LIST, list.get(0).toString());
 
 		final Map<String, Object> firstMap = list.get(0);
+		final String method = firstMap.getOrDefault(mapKey.getMethod(), DEFAULT_STRING_VALUE).toString();
 		final String topic = getTopicFromList(firstMap);
 
+		Long start = System.currentTimeMillis();
 		list.stream().parallel().skip(1).forEach(x -> {
 
-			String ticker = x.get(mapKey.getTicker()).toString();
-
-			Map<String, Object> summaryMap = storeService.getHistoricalSummary(ticker);
-
-			x.put(mapKey.getHTotal(), summaryMap.getOrDefault(mapKey.getHTotal(), 0));
-			x.put(mapKey.getHFirstD(), summaryMap.getOrDefault(mapKey.getHFirstD(), DEFAULT_STRING_VALUE));
-			x.put(mapKey.getHLastD(), summaryMap.getOrDefault(mapKey.getHLastD(), DEFAULT_STRING_VALUE));
-			Double last = Double.valueOf(summaryMap.getOrDefault(mapKey.getLastP(), 0).toString());
-			if (last != 0) {
-				x.put(mapKey.getLastP(), last);
-				Long sharesO = Long.valueOf(x.getOrDefault(mapKey.getSharesO(), 0).toString());
-				if (sharesO != 0) {
-					x.put(mapKey.getMCap(), Double.valueOf(last * sharesO).longValue());
-				}
-			}
-			String temp1 = summaryMap.getOrDefault(mapKey.getHHigh(), STRING_QUESTION_MARK).toString();
-			String[] temps1 = temp1.split(STRING_DASH);
-			if (temps1.length == 2) {
-				x.put(mapKey.getHHigh(), Double.valueOf(temps1[0]));
-				x.put(mapKey.getHHighD(), temps1[1]);
-			}
-			String temp2 = summaryMap.getOrDefault(mapKey.getHLow(), STRING_QUESTION_MARK).toString();
-			String[] temps2 = temp2.split(STRING_DASH);
-			if (temps2.length == 2) {
-				x.put(mapKey.getHLow(), Double.valueOf(temps2[0]));
-				x.put(mapKey.getHLowD(), temps2[1]);
+			if (method.equals(DEFAULT_STRING_VALUE)) {
+				updateSummary(x);
+			} else {
+				updateSummaryFromAllRecords(x);
 			}
 
 		});
-
+		Long end = System.currentTimeMillis();
+		logger.info("Total time for getting summary:" + (end - start));
 		if (topic != null) {
 			publish(topic, list.remove(0), list);
 		} else {
 			logger.info("Finish Last Step: {}", firstMap.toString());
 		}
+	}
+
+	private void updateSummary(Map<String, Object> x) {
+		String ticker = x.get(mapKey.getTicker()).toString();
+
+		Map<String, Object> summaryMap = storeService.getHistoricalSummary(ticker);
+
+		x.put(mapKey.getHTotal(), summaryMap.getOrDefault(mapKey.getHTotal(), 0));
+		x.put(mapKey.getHFirstD(), summaryMap.getOrDefault(mapKey.getHFirstD(), DEFAULT_STRING_VALUE));
+		x.put(mapKey.getHLastD(), summaryMap.getOrDefault(mapKey.getHLastD(), DEFAULT_STRING_VALUE));
+
+		Double last = Double.valueOf(summaryMap.getOrDefault(mapKey.getLastP(), 0).toString());
+		if (last != 0) {
+			x.put(mapKey.getLastP(), last);
+			Long sharesO = Long.valueOf(x.getOrDefault(mapKey.getSharesO(), 0).toString());
+			if (sharesO != 0) {
+				x.put(mapKey.getMCap(), Double.valueOf(last * sharesO).longValue());
+			}
+		}
+
+		Double hHigh = Double.valueOf(summaryMap.getOrDefault(mapKey.getHHigh(), 0).toString());
+		x.put(mapKey.getHHigh(), hHigh);
+		if (hHigh != 0) {
+			String hHighD = storeService.getDate(ticker, hHigh);
+			x.put(mapKey.getHHighD(), hHighD);
+		}
+
+		Double hLow = Double.valueOf(summaryMap.getOrDefault(mapKey.getHLow(), 0).toString());
+		x.put(mapKey.getHLow(), hLow);
+		if (hLow != 0) {
+			String hLowD = storeService.getDate(ticker, hLow);
+			x.put(mapKey.getHLowD(), hLowD);
+		}
+	}
+
+	private void updateSummaryFromAllRecords(Map<String, Object> x) {
+
+		String ticker = x.get(mapKey.getTicker()).toString();
+
+		Map<String, Object> y = storeService.getHistoricalSummaryFromAllRecords(ticker);
+
+		y.entrySet().forEach((i) -> {
+			x.put(i.getKey(), i.getValue());
+		});
+
+		Double last = Double.valueOf(y.getOrDefault(mapKey.getLastP(), DEFAULT_DOUBLE_VALUE).toString());
+		if (last != 0) {
+			Long sharesO = Long.valueOf(x.getOrDefault(mapKey.getSharesO(), 0).toString());
+			if (sharesO != 0) {
+				x.put(mapKey.getMCap(), Double.valueOf(last * sharesO).longValue());
+			}
+		}
+
 	}
 
 	@Async(ASYNC_EXECUTOR)

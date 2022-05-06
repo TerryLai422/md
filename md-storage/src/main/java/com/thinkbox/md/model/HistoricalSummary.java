@@ -22,9 +22,9 @@ public class HistoricalSummary {
 	
 	private String lastDate;
 	
-	private String high;
+	private Double high;
 	
-	private String low;
+	private Double low;
 	
 	private Double lastP;
 
