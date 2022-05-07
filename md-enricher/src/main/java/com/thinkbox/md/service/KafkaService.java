@@ -47,9 +47,9 @@ public class KafkaService {
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
-	private final String TOPIC_ENRICH_EXCHANGE_DATA_LIST = "enrich.exchange.list";
+	private final String TOPIC_ENRICH_EXCHANGE_LIST = "enrich.exchange.list";
 
-	private final String TOPIC_ENRICH_HISTORICAL_DATA_LIST = "enrich.historical.list";
+	private final String TOPIC_ENRICH_HISTORICAL_LIST = "enrich.historical.list";
 
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
@@ -62,6 +62,14 @@ public class KafkaService {
 	private final static String STRING_LOGGER_FINISHED_MESSAGE = "Finish Last Step: {}";
 
 	private final static String DEFAULT_STRING_VALUE = "-";
+
+	private final static String FILE_EXTENSION = ".json";
+
+	private final static String TOPIC_DELIMITER = "[.]";
+
+	private final static String DEFAULT_TOPIC_ACTION = "unknown";
+
+	private final static String DEFAULT_TOPIC_TYPE = "unknown";
 
 	private final int BATCH_LIMIT = 1000;
 
@@ -91,9 +99,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_ENRICH_EXCHANGE_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = TOPIC_ENRICH_EXCHANGE_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void processExchangeData(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_EXCHANGE_DATA_LIST, list.get(0).toString());
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_EXCHANGE_LIST, list.get(0).toString());
 
 		List<Map<String, Object>> outputList = enrichService.enrichExchange(list);
 
@@ -117,83 +125,121 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_ENRICH_HISTORICAL_DATA_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = TOPIC_ENRICH_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void processHistericalData(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_HISTORICAL_DATA_LIST, list.get(0).toString());
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_HISTORICAL_LIST, list.get(0).toString());
 
 //		List<Map<String, Object>> weeklyList = enrichService.consolidate(mapValue.getWeekly(), list);
 //		weeklyList.forEach(System.out::println);
 //		
 //		List<Map<String, Object>> monthlyList = enrichService.consolidate(mapValue.getMonthly(), list);	
 //		monthlyList.forEach(System.out::println);
+
+		List<Map<String, Object>> outputList = null;
+
 		Map<String, Object> firstMap = list.get(0);
 
-		String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
-		List<Map<String, Object>> outputList = null;
-		String topic = getTopicFromList(firstMap);
+		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+		final String currentTopic = getCurrentTopicFromList(firstMap);
+		final String topic = getTopicFromList(firstMap);
 
 		if (!format.equals(DEFAULT_STRING_VALUE)) {
-			processFile(firstMap, topic);
-		} else {
-			outputList = enrichService.enrichHistorical(list);
+			list = processFile(firstMap, currentTopic);
+		}
+		outputList = enrichService.enrichHistorical(list);
 
-//		outputList.forEach(System.out::println);
-
+		int size = outputList.size();
+		if (size > 0) {
 			if (topic != null) {
-//			outputList.add(0, firstMap);
-				System.out.println("Size:" + outputList.size());
-//			outputList.forEach(System.out::println);
-				publish(topic, firstMap, outputList);
+				if (format.equals(DEFAULT_STRING_VALUE)) {
+					publish(topic, firstMap, outputList);
+				} else {
+					outputAsFile(outputList, firstMap, topic);
+				}
 			} else {
-				System.out.println("Size:" + outputList.size());
-//			outputList.forEach(x -> {
-//				logger.info(x.toString());
-//			});
 				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
-
+		} else {
+			logger.info("outputList size is zero");
 		}
 	}
 
-	private void processFile(Map<String, Object> firstMap, String topic) {
-		String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
+	private List<Map<String, Object>> processFile(Map<String, Object> firstMap, String currentTopic) {
+		final String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
 
-		File file = new File(System.getProperty(USER_HOME) + File.separator +  "enrich" +  File.separator + ticker + ".json");
+		List<Map<String, Object>> mapperList = null;
 		try {
-			List<Map<String, Object>> mapperList = objectMapper.readValue(new FileInputStream(file),
+			String[] topicBreakDown = currentTopic.split(TOPIC_DELIMITER);
+			String topicAction = DEFAULT_TOPIC_ACTION;
+			String topicType = DEFAULT_TOPIC_TYPE;
+			if (topicBreakDown.length >= 2) {
+				topicAction = topicBreakDown[0];
+				topicType = topicBreakDown[1];
+			}
+			File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator
+					+ topicType + File.separator + ticker + FILE_EXTENSION);
+
+			mapperList = objectMapper.readValue(new FileInputStream(file),
 					new TypeReference<List<Map<String, Object>>>() {
 					});
 			mapperList.add(0, firstMap);
-			List<Map<String, Object>> outputList = enrichService.enrichHistorical(mapperList);
-			File outfile = new File(System.getProperty(USER_HOME) + File.separator + "save" +  File.separator + ticker + ".json");
-			objectMapper.writeValue(outfile, outputList);
 
-			if (topic != null) {
-
-				Map<String, Object> newMap = firstMap.entrySet().stream()
-						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-				newMap.put(mapKey.getTicker(), ticker);
-				newMap.put(mapKey.getTotal(), outputList.size());
-
-				if (outfile != null) {
-					newMap.put(mapKey.getLength(), outfile.length());
-				}
-				List<Map<String, Object>> outList = new ArrayList<>();
-
-				outList.add(0, newMap);
-				publish(topic, outList);
-
-			} else {
-				if (outfile != null) {
-					logger.info("File Size: " + outfile.length());
-				}
-				logger.info("outputList size: " + outputList.size());
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
-			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return mapperList;
+	}
+
+	private void outputAsFile(List<Map<String, Object>> outputList, Map<String, Object> map, String topic) {
+
+		try {
+			final String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
+
+			String[] topicBreakDown = topic.split(TOPIC_DELIMITER);
+			String topicAction = DEFAULT_TOPIC_ACTION;
+			String topicType = DEFAULT_TOPIC_TYPE;
+			if (topicBreakDown.length >= 2) {
+				topicAction = topicBreakDown[0];
+				topicType = topicBreakDown[1];
+			}
+			File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator
+					+ topicType + File.separator + ticker + FILE_EXTENSION);
+			objectMapper.writeValue(file, outputList);
+
+			Map<String, Object> newMap = map.entrySet().stream()
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+			newMap.put(mapKey.getTicker(), ticker);
+			newMap.put(mapKey.getTotal(), outputList.size());
+
+			if (file != null) {
+				newMap.put(mapKey.getLength(), file.length());
+			}
+			List<Map<String, Object>> outList = new ArrayList<>();
+
+			outList.add(0, newMap);
+			publish(topic, outList);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private String getCurrentTopicFromList(Map<String, Object> map) {
+		Object objNext = map.get(mapKey.getNext());
+		int next = Integer.valueOf(objNext.toString());
+
+		Object objStep = map.get(mapKey.getSteps());
+
+		@SuppressWarnings("unchecked")
+		List<String> stepList = (List<String>) objStep;
+
+		String topic = null;
+
+		if (stepList.size() > next) {
+			topic = stepList.get(next);
+		}
+		return topic;
 	}
 
 	private String getTopicFromList(Map<String, Object> map) {

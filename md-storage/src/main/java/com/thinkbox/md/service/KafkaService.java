@@ -79,7 +79,7 @@ public class KafkaService {
 	private final static String STRING_LOGGER_SENT_MESSAGE = "Sent topic: {} -> {}";
 
 	private final static String STRING_LOGGER_RECEIVED_MESSAGE = "Received topic: {} -> parameter: {}";
-	
+
 	private final static String STRING_LOGGER_FINISHED_MESSAGE = "Finish Last Step: {}";
 
 	private final static String OUTPUT_DATE_FORMAT = "%1$tY%1$tm%1$td";
@@ -91,7 +91,13 @@ public class KafkaService {
 	private final static Double DEFAULT_DOUBLE_VALUE = 0d;
 
 	private final static String FILE_EXTENSION = ".json";
-	
+
+	private final static String TOPIC_DELIMITER = "[.]";
+
+	private final static String DEFAULT_TOPIC_ACTION = "unknown";
+
+	private final static String DEFAULT_TOPIC_TYPE = "unknown";
+
 	private final static int BATCH_LIMIT = 1500;
 
 	private final static int DEFAULT_LIMIT = 2;
@@ -133,31 +139,58 @@ public class KafkaService {
 		storeService.saveInstrumentList(list);
 	}
 
-	private void processFile(Map<String, Object> firstMap, String topic) {
-		String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
+	private List<Map<String, Object>> processSubExchFile(Map<String, Object> firstMap, String currentTopic) {
+		final String subExch = firstMap.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
 
-		File file = new File(
-				System.getProperty(USER_HOME) + File.separator + "save" + File.separator + ticker + FILE_EXTENSION);
+		String[] topicBreakDown = currentTopic.split(TOPIC_DELIMITER);
+		String topicAction = DEFAULT_TOPIC_ACTION;
+		String topicType = DEFAULT_TOPIC_TYPE;
+		if (topicBreakDown.length >= 2) {
+			topicAction = topicBreakDown[0];
+			topicType = topicBreakDown[1];
+		}
+		File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
+				+ File.separator + subExch + FILE_EXTENSION);
+		List<Map<String, Object>> mapperList = null;
 		try {
-			List<Map<String, Object>> mapperList = objectMapper.readValue(new FileInputStream(file),
+			mapperList = objectMapper.readValue(new FileInputStream(file),
 					new TypeReference<List<Map<String, Object>>>() {
 					});
 
-			mapperList.add(0, firstMap);
-			if (mapperList.size() > 1) {
-				storeService.saveAnalysisList(mapperList);
-			}
-			if (topic != null) {
-
-				publish(topic, mapperList);
-
-			} else {
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
-			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return mapperList;
+	}
+
+	private List<Map<String, Object>> processAnalysisFile(Map<String, Object> firstMap, String currentTopic) {
+		final String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
+
+		String[] topicBreakDown = currentTopic.split(TOPIC_DELIMITER);
+		String topicAction = DEFAULT_TOPIC_ACTION;
+		String topicType = DEFAULT_TOPIC_TYPE;
+		if (topicBreakDown.length >= 2) {
+			topicAction = topicBreakDown[0];
+			topicType = topicBreakDown[1];
+		}
+//		System.out.println("TOPIC ACTION: " + topicAction);
+//		System.out.println("TOPIC TYPE: " + topicType);
+//		System.out.println("ticker: " + ticker);
+		File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
+				+ File.separator + ticker + FILE_EXTENSION);
+		List<Map<String, Object>> mapperList = null;
+
+		try {
+			mapperList = objectMapper.readValue(new FileInputStream(file),
+					new TypeReference<List<Map<String, Object>>>() {
+					});
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return mapperList;
 	}
 
 	@Async(ASYNC_EXECUTOR)
@@ -166,20 +199,27 @@ public class KafkaService {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_ANALYSIS_LIST, list.toString());
 		Map<String, Object> firstMap = list.get(0);
 		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
-		String topic = getTopicFromList(firstMap);
+		final String currentTopic = getCurrentTopicFromList(firstMap);
+		final String topic = getTopicFromList(firstMap);
 
 		if (!format.equals(DEFAULT_STRING_VALUE)) {
+			list = processAnalysisFile(firstMap, currentTopic);
+			list.add(0, firstMap);
+		}
+		storeService.saveAnalysisList(list);
 
-			processFile(firstMap, topic);
-
-		} else {
-
-			storeService.saveAnalysisList(list);
+		if (list.size() > 0) {
 			if (topic != null) {
-				publish(topic, list.remove(0), list);
+				if (format.equals(DEFAULT_STRING_VALUE)) {
+					publish(topic, list.remove(0), list);
+				} else {
+					publish(topic, list);
+				}
 			} else {
 				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
+		} else {
+			logger.info("outputList size is zero");
 		}
 	}
 
@@ -195,7 +235,7 @@ public class KafkaService {
 		if (topic != null) {
 			publish(topic, list.remove(0), list);
 		} else {
-			logger.info("Finish Last Step: {} {}", firstMap.toString());
+			logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 		}
 
 	}
@@ -208,20 +248,28 @@ public class KafkaService {
 		Map<String, Object> firstMap = list.get(0);
 
 		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+		final String currentTopic = getCurrentTopicFromList(firstMap);
+		final String topic = getTopicFromList(firstMap);
 
 		if (!format.equals(DEFAULT_STRING_VALUE)) {
-			System.out.println("FORMAT FILE:");
-		} else {
-			storeService.saveInstrumentList(list);
+			list = processSubExchFile(firstMap, currentTopic);
+			list.add(0, firstMap);
+		}
+		storeService.saveInstrumentList(list);
 
-			String topic = getTopicFromList(firstMap);
+		if (list.size() > 0) {
 			if (topic != null) {
-				publish(topic, list.remove(0), list);
+				if (format.equals(DEFAULT_STRING_VALUE)) {
+					publish(topic, list.remove(0), list);
+				} else {
+					outputAsFile(list, firstMap, topic);
+				}
 			} else {
 				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
+		} else {
+			logger.info("outputList size is zero");
 		}
-
 	}
 
 	@Async(ASYNC_EXECUTOR)
@@ -253,13 +301,14 @@ public class KafkaService {
 
 		List<Map<String, Object>> outputList = null;
 
-		Integer limit = Integer.valueOf(map.getOrDefault(mapKey.getLimit(), DEFAULT_LIMIT).toString());
-		String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
+		final Integer limit = Integer.valueOf(map.getOrDefault(mapKey.getLimit(), DEFAULT_LIMIT).toString());
+		final String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
+		final String topic = getTopicFromList(map);
+
 		if (!subExch.equals(DEFAULT_STRING_VALUE)) {
 			outputList = storeService.getHistoricalTotalFromInstrument(subExch, limit);
 		}
 
-		String topic = getTopicFromList(map);
 		if (topic != null) {
 			if (outputList != null) {
 				publish(topic, map, outputList);
@@ -289,9 +338,12 @@ public class KafkaService {
 		List<Map<String, Object>> outputList = null;
 		List<Map<String, Object>> outList = null;
 
-		String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
-		String type = map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
-		String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
+		final String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+		final String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
+		final String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
+		final String type = map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
+		final String topic = getTopicFromList(map);
+
 		int max = Integer.valueOf(map.getOrDefault("max", 0).toString());
 
 		if (!subExch.equals(DEFAULT_STRING_VALUE)) {
@@ -313,18 +365,21 @@ public class KafkaService {
 		}
 		logger.info("Limited list size: " + outList.size());
 
-		String topic = getTopicFromList(map);
-		if (topic != null) {
-			if (outList != null) {
-				publish(topic, map, outList);
+		int size = outList.size();
+		if (size > 0) {
+			if (topic != null) {
+				if (format.equals(DEFAULT_STRING_VALUE)) {
+					publish(topic, map, outList);
+				} else {
+					outputAsFile(outList, map, topic);
+				}
+			} else {
+				printList(outList);
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 		} else {
-			if (outList != null) {
-				printList(outputList);
-			}
-			logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+			logger.info("outList size is zero");
 		}
-
 //		System.out.println(storeService.updateAnalysisField("RFP", "20220502", "ind.obv", 21));
 //		System.out.println("50 > 200 Counter:" + storeService.countByCriterion("this.ind.sma50>this.ind.sma200"));
 //		System.out.println("21 > 50 Counter:" + storeService.countByCriterion("this.ind.sma21>this.ind.sma50"));
@@ -333,17 +388,25 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_LIST)
-	public void getHistorical(List<Map<String, Object>> list) {
+	public void getHistoricalList(List<Map<String, Object>> list) {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_HISTORICAL_LIST, list.get(0).toString());
 
 		final Map<String, Object> firstMap = list.get(0);
+
+		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+		final String currentTopic = getCurrentTopicFromList(firstMap);
+
+		if (!format.equals(DEFAULT_STRING_VALUE)) {
+			list = processSubExchFile(firstMap, currentTopic);
+			list.add(0, firstMap);
+		}
 
 		list.stream().skip(1).forEach(x -> {
 			Map<String, Object> newMap = firstMap.entrySet().stream()
 					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 			String ticker = x.get(mapKey.getTicker()).toString();
-
+			newMap.put(mapKey.getTicker(), ticker);
 			getHistoricalData(newMap, ticker);
 
 		});
@@ -354,7 +417,7 @@ public class KafkaService {
 	public void getHistorical(Map<String, Object> map) {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_HISTORICAL_SINGLE, map.toString());
 
-		String ticker = map.get(mapKey.getTicker()).toString();
+		final String ticker = map.get(mapKey.getTicker()).toString();
 
 		getHistoricalData(map, ticker);
 
@@ -364,8 +427,8 @@ public class KafkaService {
 
 		final String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
-		final Integer limit = Integer.parseInt(map.getOrDefault(mapKey.getLimit(), 0).toString());
 		final Integer day = Integer.parseInt(map.getOrDefault(mapKey.getDay(), 0).toString());
+		final String topic = getTopicFromList(map);
 
 		List<Map<String, Object>> outputList = null;
 
@@ -379,51 +442,60 @@ public class KafkaService {
 			outputList = storeService.getHistoricals(ticker);
 		}
 
-		final String topic = getTopicFromList(map);
-
 		int size = outputList.size();
 		if (size > 0) {
-			if (format.equals(DEFAULT_STRING_VALUE)) {
-				publishList(outputList, map, ticker, topic, date, size, limit, day);
+			if (topic != null) {
+				if (format.equals(DEFAULT_STRING_VALUE)) {
+					publishList(outputList, map, ticker, topic, date, size, day);
+				} else {
+					outputAsFile(outputList, map, topic);
+				}
 			} else {
-				outputAsFile(outputList, map, ticker, topic, size);
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 		} else {
 			logger.info("outputList size is zero");
 		}
 	}
 
-	private void outputAsFile(List<Map<String, Object>> outputList, Map<String, Object> map, String ticker,
-			String topic, int size) {
-
+	private void outputAsFile(List<Map<String, Object>> outputList, Map<String, Object> map, String topic) {
 		File file = null;
 		try {
-			System.out.println("TOPIC: " + topic);
-			file = new File(
-					System.getProperty(USER_HOME) + File.separator + "enrich" + File.separator + ticker + FILE_EXTENSION);
+			final String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
+			final String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
+
+			String[] topicBreakDown = topic.split(TOPIC_DELIMITER);
+			String topicAction = DEFAULT_TOPIC_ACTION;
+			String topicType = DEFAULT_TOPIC_TYPE;
+			if (topicBreakDown.length >= 2) {
+				topicAction = topicBreakDown[0];
+				topicType = topicBreakDown[1];
+			}
+//			System.out.println("TOPIC ACTION: " + topicAction);
+//			System.out.println("TOPIC TYPE: " + topicType);
+//			System.out.println("List size: " + outputList.size());
+//			System.out.println("ticker: " + ticker);
+//			System.out.println("subExch: " + subExch);
+			if (ticker != null && ticker.length() > 0 && !ticker.equals(DEFAULT_STRING_VALUE)) {
+				file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator
+						+ topicType + File.separator + ticker + FILE_EXTENSION);
+			} else {
+				file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator
+						+ topicType + File.separator + subExch + FILE_EXTENSION);
+			}
 			objectMapper.writeValue(file, outputList);
 
-			if (topic != null) {
-
-				Map<String, Object> newMap = map.entrySet().stream()
-						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-				newMap.put(mapKey.getTicker(), ticker);
-				newMap.put(mapKey.getTotal(), size);
-				if (file != null) {
-					newMap.put(mapKey.getLength(), file.length());
-				}
-				List<Map<String, Object>> outList = new ArrayList<>();
-
-				outList.add(0, newMap);
-				publish(topic, outList);
-
-			} else {
-				if (file != null) {
-					logger.info("File Size: " + file.length());
-				}
-				logger.info("outputList size: " + outputList.size());
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+			Map<String, Object> newMap = map.entrySet().stream()
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+			newMap.put(mapKey.getTicker(), ticker);
+			newMap.put(mapKey.getTotal(), outputList.size());
+			if (file != null) {
+				newMap.put(mapKey.getLength(), file.length());
 			}
+			List<Map<String, Object>> outList = new ArrayList<>();
+
+			outList.add(0, newMap);
+			publish(topic, outList);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -432,9 +504,10 @@ public class KafkaService {
 	}
 
 	private void publishList(List<Map<String, Object>> outputList, Map<String, Object> map, String ticker, String topic,
-			String date, int size, int limit, int day) {
-		if (topic != null) {
+			String date, int size, int day) {
+		final Integer limit = Integer.parseInt(map.getOrDefault(mapKey.getLimit(), 0).toString());
 
+		if (topic != null) {
 			if (size < limit) {
 
 				logger.info("Send without processing: " + ticker);
@@ -510,9 +583,15 @@ public class KafkaService {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_SUMMARY_LIST, list.get(0).toString());
 
 		final Map<String, Object> firstMap = list.get(0);
+		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String method = firstMap.getOrDefault(mapKey.getMethod(), DEFAULT_STRING_VALUE).toString();
+		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
 
+		if (!format.equals(DEFAULT_STRING_VALUE)) {
+			list = processSubExchFile(firstMap, currentTopic);
+			list.add(0, firstMap);
+		}
 		Long start = System.currentTimeMillis();
 		list.stream().parallel().skip(1).forEach(x -> {
 
@@ -525,10 +604,18 @@ public class KafkaService {
 		});
 		Long end = System.currentTimeMillis();
 		logger.info("Total time for getting summary:" + (end - start));
-		if (topic != null) {
-			publish(topic, list.remove(0), list);
+		if (list.size() > 0) {
+			if (topic != null) {
+				if (format.equals(DEFAULT_STRING_VALUE)) {
+					publish(topic, list.remove(0), list);
+				} else {
+					outputAsFile(list, firstMap, topic);
+				}
+			} else {
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+			}
 		} else {
-			logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+			logger.info("outputList size is zero");
 		}
 	}
 
@@ -639,6 +726,23 @@ public class KafkaService {
 
 		});
 
+	}
+
+	private String getCurrentTopicFromList(Map<String, Object> map) {
+		Object objNext = map.get(mapKey.getNext());
+		int next = Integer.valueOf(objNext.toString());
+
+		Object objStep = map.get(mapKey.getSteps());
+
+		@SuppressWarnings("unchecked")
+		List<String> stepList = (List<String>) objStep;
+
+		String topic = null;
+
+		if (stepList.size() > next) {
+			topic = stepList.get(next);
+		}
+		return topic;
 	}
 
 	private String getTopicFromList(Map<String, Object> map) {
