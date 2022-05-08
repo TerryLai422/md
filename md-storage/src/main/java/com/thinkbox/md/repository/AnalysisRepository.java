@@ -9,6 +9,7 @@ import com.thinkbox.md.model.Analysis;
 
 public interface AnalysisRepository extends MongoRepository<Analysis, String>, AnalysisRepositoryCustom {
 
+	@Query(value= "{ticker:{$eq:?0}}", sort="{date:1}")
 	List<Analysis> findByTicker(String ticker);
 	
 	List<Analysis> findByDate(String date);
