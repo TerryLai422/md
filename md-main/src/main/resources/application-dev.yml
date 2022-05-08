@@ -83,4 +83,9 @@ rest-parameter:
       - ticker
       - limit
       - day
-    
+    dbget.analysis.single:
+      - steps
+      - next
+      - ticker
+      - limit
+      - day    

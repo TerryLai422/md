@@ -51,6 +51,8 @@ public class KafkaService {
 
 	private final String TOPIC_ENRICH_HISTORICAL_LIST = "enrich.historical.list";
 
+	private final String TOPIC_ENRICH_ANALYSIS_LIST = "enrich.analysis.list";
+
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
 	private final String CONTAINER_FACTORY_LIST = "listListener";
@@ -125,8 +127,17 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_ENRICH_ANALYSIS_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	public void enrichAnalysisList(List<Map<String, Object>> list) {
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_ANALYSIS_LIST, list.get(0).toString());
+
+		enrichList(list, enrichService.OBJECT_TYPE_ANALYSIS);
+
+	}
+
+	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_ENRICH_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_LIST)
-	public void processHistericalData(List<Map<String, Object>> list) {
+	public void enrichHistericalList(List<Map<String, Object>> list) {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_HISTORICAL_LIST, list.get(0).toString());
 
 //		List<Map<String, Object>> weeklyList = enrichService.consolidate(mapValue.getWeekly(), list);
@@ -135,6 +146,11 @@ public class KafkaService {
 //		List<Map<String, Object>> monthlyList = enrichService.consolidate(mapValue.getMonthly(), list);	
 //		monthlyList.forEach(System.out::println);
 
+		enrichList(list, enrichService.OBJECT_TYPE_HISTORICAL);
+		
+	}
+
+	private void enrichList(List<Map<String, Object>> list, int type) {
 		List<Map<String, Object>> outputList = null;
 
 		Map<String, Object> firstMap = list.get(0);
@@ -144,9 +160,9 @@ public class KafkaService {
 		final String topic = getTopicFromList(firstMap);
 
 		if (!format.equals(DEFAULT_STRING_VALUE)) {
-			list = processFile(firstMap, currentTopic);
+			list = readFile(firstMap, currentTopic);
 		}
-		outputList = enrichService.enrichHistorical(list);
+		outputList = enrichService.enrichList(list, type);
 
 		int size = outputList.size();
 		if (size > 0) {
@@ -161,10 +177,10 @@ public class KafkaService {
 			}
 		} else {
 			logger.info("outputList size is zero");
-		}
+		}	
 	}
-
-	private List<Map<String, Object>> processFile(Map<String, Object> firstMap, String currentTopic) {
+	
+	private List<Map<String, Object>> readFile(Map<String, Object> firstMap, String currentTopic) {
 		final String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
 
 		List<Map<String, Object>> mapperList = null;

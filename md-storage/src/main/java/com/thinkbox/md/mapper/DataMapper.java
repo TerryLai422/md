@@ -33,13 +33,41 @@ public class DataMapper {
 
 	private final static String STRING_AT_SYMBOL = "@";
 
-	@SuppressWarnings("unchecked")
-	public Analysis convertMapToAnalysis(Map<String, Object> map, Map<String, Object> inst) {
+	public Map<String, Object> convertAnalysisToMap(Analysis analysis) {
 
+		Map<String, Object> map = new TreeMap<>();
+		
+		map.put(mapKey.getInst(), analysis.getInst());
+		map.put(mapKey.getInd(), analysis.getInd());
+		map.put(mapKey.getInterval(), analysis.getInterval());
+		map.put(mapKey.getSymbol(), analysis.getSymbol());
+		map.put(mapKey.getTicker(), analysis.getTicker());
+		map.put(mapKey.getDate(), analysis.getDate());
+		map.put(mapKey.getTime(), analysis.getTime());
+		map.put(mapKey.getYear(), analysis.getYear());
+		map.put(mapKey.getMonth(), analysis.getMonth());
+		map.put(mapKey.getDay(), analysis.getDay());
+		map.put(mapKey.getWeekOfYear(), analysis.getWeekOfYear());
+		map.put(mapKey.getDayOfYear(), analysis.getDayOfYear());
+		map.put(mapKey.getDayOfWeek(), analysis.getDayOfWeek());
+		map.put(mapKey.getOpen(), analysis.getOpen());
+		map.put(mapKey.getHigh(), analysis.getHigh());
+		map.put(mapKey.getLow(), analysis.getLow());
+		map.put(mapKey.getClose(), analysis.getClose());
+		map.put(mapKey.getAdjClose(), analysis.getAdjClose());
+		map.put(mapKey.getVolume(), analysis.getVolume());
+
+		return map;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public Analysis convertMapToAnalysis(Map<String, Object> map) {
+
+		Map<String, Object> inst = (Map<String, Object>) map.remove(mapKey.getInst());
 		Map<String, Object> ind = (Map<String, Object>) map.remove(mapKey.getInd());
 		map.remove(mapKey.getSave());
 		Analysis analysis = (Analysis) convertMapToHistorical(map, new Analysis());
-		analysis.setOthers(null);
+//		analysis.setOthers(null);
 		analysis.setInd(ind);
 		analysis.setInst(inst);
 		return analysis;

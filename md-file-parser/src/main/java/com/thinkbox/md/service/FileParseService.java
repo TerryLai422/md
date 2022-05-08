@@ -338,7 +338,7 @@ public class FileParseService {
 		List<Map<String, Object>> outputList = parseQuoteFile(DAILY_DIRECTORY, subDirectory, fileName, dataSource,
 				symbol, ticker);
 
-		if (outputList.size() >= 0) {
+		if (outputList.size() > 0) {
 			Map<String, Object> first = outputList.get(0);
 
 			Map<String, Object> index = new TreeMap<String, Object>();

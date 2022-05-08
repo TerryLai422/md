@@ -26,6 +26,10 @@ import com.thinkbox.md.config.MapValueParameter;
 @Component
 public class EnrichService {
 
+	public final static int OBJECT_TYPE_HISTORICAL = 1;
+
+	public final static int OBJECT_TYPE_ANALYSIS = 2;
+
 	private final Logger logger = LoggerFactory.getLogger(EnrichService.class);
 
 	private final static String TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE = ".TO";
@@ -61,34 +65,39 @@ public class EnrichService {
 		return list;
 	}
 
-	private List<Indicator> getIndicators() {
-		List<SimpleMovingAverage> smaList = getSMAList();
-		PreviousClose previousClose = new PreviousClose(mapKey, 0);
-		WeekHighLow weekHighLow = new WeekHighLow(mapKey, 52);
-		AverageVolume volumeAverage = new AverageVolume(mapKey, 50);
-		OnBalanceVolume onBalanceVolume = new OnBalanceVolume(mapKey, 0);
-		AverageTrueRange averageTrueRange = new AverageTrueRange(mapKey, 14);
-
+	private List<Indicator> getIndicators(int type) {
 		List<Indicator> indicators = new ArrayList<>();
-		indicators.add(previousClose);
-		indicators.add(weekHighLow);
-		indicators.add(volumeAverage);
-//		indicators.add(onBalanceVolume);
-		indicators.add(averageTrueRange);
 
-		for (Indicator indicator : smaList) {
-			indicators.add(indicator);
+		if (type == OBJECT_TYPE_HISTORICAL) {
+			List<SimpleMovingAverage> smaList = getSMAList();
+			PreviousClose previousClose = new PreviousClose(mapKey, 0);
+			WeekHighLow weekHighLow = new WeekHighLow(mapKey, 52);
+			AverageVolume volumeAverage = new AverageVolume(mapKey, 50);
+			AverageTrueRange averageTrueRange = new AverageTrueRange(mapKey, 14);
+
+			indicators.add(previousClose);
+			indicators.add(weekHighLow);
+			indicators.add(volumeAverage);
+			indicators.add(averageTrueRange);
+
+			for (Indicator indicator : smaList) {
+				indicators.add(indicator);
+			}
+		} else {
+			OnBalanceVolume onBalanceVolume = new OnBalanceVolume(mapKey, 0);
+			indicators.add(onBalanceVolume);
 		}
+
 		return indicators;
 	}
 
-	public List<Map<String, Object>> enrichHistorical(List<Map<String, Object>> list) {
+	public List<Map<String, Object>> enrichList(List<Map<String, Object>> list, int type) {
 
 		Map<String, Object> firstMap = list.get(0);
 
 		final String date = firstMap.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 
-		final List<Indicator> indicators = getIndicators();
+		final List<Indicator> indicators = getIndicators(type);
 
 		return list.stream().skip(1).map(x -> {
 
@@ -113,7 +122,8 @@ public class EnrichService {
 				System.out.println("X:" + x.toString());
 			}
 			return x;
-		}).filter(x -> Boolean.valueOf(x.getOrDefault(mapKey.getSave(), false).toString())).collect(Collectors.toList());
+		}).filter(x -> Boolean.valueOf(x.getOrDefault(mapKey.getSave(), false).toString()))
+				.collect(Collectors.toList());
 
 	}
 

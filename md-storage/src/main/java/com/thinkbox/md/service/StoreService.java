@@ -1,6 +1,5 @@
 package com.thinkbox.md.service;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -52,7 +51,8 @@ public class StoreService {
 		final Map<String, Object> inst = getInstrument(ticker);
 
 		List<Analysis> convertedList = list.stream().skip(1).map(x -> {
-			return mapper.convertMapToAnalysis(x, inst);
+			x.put(mapKey.getInst(), inst);
+			return mapper.convertMapToAnalysis(x);
 		}).collect(Collectors.toList());
 
 		analysisRepository.saveAll(convertedList);
@@ -102,7 +102,7 @@ public class StoreService {
 		return null;
 	}
 
-	public List<Map<String, Object>> getInstruments(final String subExch) {
+	public List<Map<String, Object>> getInstrumentList(final String subExch) {
 
 		List<Instrument> instruments = instrumentRepository.findBySubExch(subExch);
 
@@ -110,7 +110,7 @@ public class StoreService {
 
 	}
 
-	public List<Map<String, Object>> getInstruments(final String subExch, final String type) {
+	public List<Map<String, Object>> getInstrumentList(final String subExch, final String type) {
 
 		List<Instrument> instruments = instrumentRepository.findBySubExchAndType(subExch, type);
 
@@ -118,7 +118,7 @@ public class StoreService {
 
 	}
 
-	public List<Map<String, Object>> getInstruments(final String subExch, final String type, final String ticker) {
+	public List<Map<String, Object>> getInstrumentList(final String subExch, final String type, final String ticker) {
 
 		List<Instrument> instruments = instrumentRepository.findBySubExchAndTypeAndTicker(subExch, type, ticker);
 
@@ -136,7 +136,7 @@ public class StoreService {
 
 	}
 
-	public List<Map<String, Object>> getHistoricals(int page) {
+	public List<Map<String, Object>> getHistoricalList(int page) {
 
 		PageRequest pageRequest = PageRequest.of(page, 2000);
 
@@ -146,7 +146,7 @@ public class StoreService {
 
 	}
 
-	public List<Map<String, Object>> getHistoricals(final String ticker) {
+	public List<Map<String, Object>> getHistoricalList(final String ticker) {
 
 		List<Historical> historicals = historicalRepository.findByTicker(ticker);
 
@@ -154,16 +154,14 @@ public class StoreService {
 
 	}
 
-	public List<Map<String, Object>> getHistoricals(final String ticker, String date) {
+	public List<Map<String, Object>> getHistoricalList(final String ticker, String date) {
 
-		List<Historical> historicals = Arrays.asList();
-
-		historicals = historicalRepository.findByTickerAndDate(ticker, date);
+		List<Historical> historicals = historicalRepository.findByTickerAndDate(ticker, date);
 
 		return historicals.stream().map(x -> x.getOthers()).collect(Collectors.toList());
 	}
 
-	public List<Map<String, Object>> getHistoricals(final String ticker, long limit) {
+	public List<Map<String, Object>> getHistoricalList(final String ticker, long limit) {
 
 		List<Historical> historicals = Arrays.asList();
 
@@ -227,7 +225,7 @@ public class StoreService {
 
 	}
 	
-	public String getDate(final String ticker, Double close) {
+	public String getHistoricalDate(final String ticker, Double close) {
 
 		List<Historical> historicals = Arrays.asList();
 
@@ -240,14 +238,35 @@ public class StoreService {
 		return DEFAULT_STRING_VALUE;
 	}
 
+	public List<Map<String, Object>> getAnalysisList(String ticker) {
+	
+		List<Analysis> analysisList = analysisRepository.findByTicker(ticker);
+
+		return analysisList.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
+	}
+
+	public List<Map<String, Object>> getAnalysisList(String ticker, String date) {
+		
+		List<Analysis> analysisList = analysisRepository.findByTickerAndDate(ticker, date);
+
+		return analysisList.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
+	}
+
+	public List<Map<String, Object>> getAnalysisListByDate(String date) {
+		
+		List<Analysis> analysisList = analysisRepository.findByDate(date);
+
+		return analysisList.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
+	}
+	
+	public long updateAnalysisField(String ticker, String date, String name, Object value) {
+		return analysisRepository.countByCriterion(date, name);
+	}
+
 	public int countByCriterion(String criterion) {
 
 		List<Analysis> list = analysisRepository.countByCriterion(criterion);
 		return list.size();
 
-	}
-	
-	public long updateAnalysisField(String ticker, String date, String name, Object value) {
-		return analysisRepository.countByCriterion(date, name);
 	}
 }
