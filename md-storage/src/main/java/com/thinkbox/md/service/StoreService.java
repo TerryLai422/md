@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -18,17 +20,24 @@ import com.thinkbox.md.model.Analysis;
 import com.thinkbox.md.model.Historical;
 import com.thinkbox.md.model.HistoricalSummary;
 import com.thinkbox.md.model.Instrument;
+import com.thinkbox.md.model.TradeDate;
 import com.thinkbox.md.repository.AnalysisRepository;
 import com.thinkbox.md.repository.HistoricalRepository;
 import com.thinkbox.md.repository.InstrumentRepository;
+import com.thinkbox.md.repository.TradeDateRepository;
 
 @Component
 public class StoreService {
 
+	private final Logger logger = LoggerFactory.getLogger(StoreService.class);
+
 	private final static String DEFAULT_STRING_VALUE = "-";
 	
 	private final static Double DEFAULT_DOUBLE_VALUE = 0d;
-	
+
+	@Autowired
+	private TradeDateRepository tradeDateRepository;
+
 	@Autowired
 	private AnalysisRepository analysisRepository;
 
@@ -44,6 +53,15 @@ public class StoreService {
 	@Autowired
 	private MapKeyParameter mapKey;
 
+	public void saveTradeDateList(List<Map<String, Object>> list) {
+
+		List<TradeDate> convertedList = list.stream().skip(1).map(mapper::convertMapToTradeDate)
+				.collect(Collectors.toList());
+
+		tradeDateRepository.saveAll(convertedList);
+
+	}
+	
 	public void saveAnalysisList(List<Map<String, Object>> list) {
 
 		final Map<String, Object> firstMap = list.get(0);
@@ -104,35 +122,35 @@ public class StoreService {
 
 	public List<Map<String, Object>> getInstrumentList(final String subExch) {
 
-		List<Instrument> instruments = instrumentRepository.findBySubExch(subExch);
+		List<Instrument> list = instrumentRepository.findBySubExch(subExch);
 
-		return instruments.stream().map(x -> x.getOthers()).collect(Collectors.toList());
+		return list.stream().map(x -> x.getOthers()).collect(Collectors.toList());
 
 	}
 
 	public List<Map<String, Object>> getInstrumentList(final String subExch, final String type) {
 
-		List<Instrument> instruments = instrumentRepository.findBySubExchAndType(subExch, type);
+		List<Instrument> list = instrumentRepository.findBySubExchAndType(subExch, type);
 
-		return instruments.stream().map(x -> x.getOthers()).collect(Collectors.toList());
+		return list.stream().map(x -> x.getOthers()).collect(Collectors.toList());
 
 	}
 
 	public List<Map<String, Object>> getInstrumentList(final String subExch, final String type, final String ticker) {
 
-		List<Instrument> instruments = instrumentRepository.findBySubExchAndTypeAndTicker(subExch, type, ticker);
+		List<Instrument> list = instrumentRepository.findBySubExchAndTypeAndTicker(subExch, type, ticker);
 
-		return instruments.stream().map(x -> x.getOthers()).collect(Collectors.toList());
+		return list.stream().map(x -> x.getOthers()).collect(Collectors.toList());
 
 	}
 
 	public List<Map<String, Object>> getHistoricalTotalFromInstrument(final String subExch, int limit) {
 
-		List<Instrument> instruments = instrumentRepository.findBySubExchAndTotal(subExch, limit);
+		List<Instrument> list = instrumentRepository.findBySubExchAndTotal(subExch, limit);
 //
 //		return instruments.stream().filter(x -> x.getHistoricalTotal() <= limit).map(x -> x.getOthers()).collect(Collectors.toList());
 
-		return instruments.stream().map(x -> x.getOthers()).collect(Collectors.toList());
+		return list.stream().map(x -> x.getOthers()).collect(Collectors.toList());
 
 	}
 
@@ -148,28 +166,28 @@ public class StoreService {
 
 	public List<Map<String, Object>> getHistoricalList(final String ticker) {
 
-		List<Historical> historicals = historicalRepository.findByTicker(ticker);
+		List<Historical> list = historicalRepository.findByTicker(ticker);
 
-		return historicals.stream().map(x -> x.getOthers()).collect(Collectors.toList());
+		return list.stream().map(x -> x.getOthers()).collect(Collectors.toList());
 
 	}
 
 	public List<Map<String, Object>> getHistoricalList(final String ticker, String date) {
 
-		List<Historical> historicals = historicalRepository.findByTickerAndDate(ticker, date);
+		List<Historical> list = historicalRepository.findByTickerAndDate(ticker, date);
 
-		return historicals.stream().map(x -> x.getOthers()).collect(Collectors.toList());
+		return list.stream().map(x -> x.getOthers()).collect(Collectors.toList());
 	}
 
 	public List<Map<String, Object>> getHistoricalList(final String ticker, long limit) {
 
-		List<Historical> historicals = Arrays.asList();
+		List<Historical> list = Arrays.asList();
 
 		if (historicalRepository.countByTicker(ticker) <= limit) {
-			historicals = historicalRepository.findByTicker(ticker);
+			list = historicalRepository.findByTicker(ticker);
 		}
 
-		return historicals.stream().sorted((i, j) -> i.getDate().toString().compareTo(j.getDate().toString()))
+		return list.stream().sorted((i, j) -> i.getDate().toString().compareTo(j.getDate().toString()))
 				.map(x -> x.getOthers()).collect(Collectors.toList());
 	}
 
@@ -240,29 +258,45 @@ public class StoreService {
 
 	public List<Map<String, Object>> getAnalysisList(String ticker) {
 	
-		List<Analysis> analysisList = analysisRepository.findByTicker(ticker);
+		List<Analysis> list = analysisRepository.findByTicker(ticker);
 
-		return analysisList.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
+		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
 	}
 
+	public List<Map<String, Object>> getTradeDateList(String date) {
+		
+		List<TradeDate> List = tradeDateRepository.findByDate(date);
+
+		return List.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
+	}
+
+	
 	public List<Map<String, Object>> getAnalysisList(String ticker, String date) {
 		
-		List<Analysis> analysisList = analysisRepository.findByTickerAndDate(ticker, date);
+		List<Analysis> list = analysisRepository.findByTickerAndDate(ticker, date);
 
-		return analysisList.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
+		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
 	}
 
 	public List<Map<String, Object>> getAnalysisListByDate(String date) {
 		
-		List<Analysis> analysisList = analysisRepository.findByDate(date);
+		List<Analysis> list = analysisRepository.findByDate(date);
 
-		return analysisList.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
+		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
 	}
 	
 	public long updateAnalysisField(String ticker, String date, String name, Object value) {
 		return analysisRepository.countByCriterion(date, name);
 	}
 
+	public List<Map<String, Object>> getDates() {
+		Long start = System.currentTimeMillis();
+		List<TradeDate> list = analysisRepository.getDates();
+		Long end = System.currentTimeMillis();
+		logger.info("Total time for getting summary:" + (end - start));
+		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
+	}
+	
 	public int countByCriterion(String criterion) {
 
 		List<Analysis> list = analysisRepository.countByCriterion(criterion);

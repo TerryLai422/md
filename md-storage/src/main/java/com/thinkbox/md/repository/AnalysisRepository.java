@@ -2,10 +2,12 @@ package com.thinkbox.md.repository;
 
 import java.util.List;
 
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
 import com.thinkbox.md.model.Analysis;
+import com.thinkbox.md.model.TradeDate;
 
 public interface AnalysisRepository extends MongoRepository<Analysis, String>, AnalysisRepositoryCustom {
 
@@ -21,5 +23,8 @@ public interface AnalysisRepository extends MongoRepository<Analysis, String>, A
 	
 	@Query(value="{_id: { $regex: '.*@20220504-000000' }, $where: ?0}", fields= "{ _id: 1}")
 	List<Analysis> countByCriterion(String criterion);
+	
+	@Aggregation(pipeline = { "{$group:{_id :$date, total:{$sum:1}}}, {$sort:{_id: 1}}" })	
+	List<TradeDate> getDates(); 
 
 }

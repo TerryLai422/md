@@ -89,3 +89,10 @@ rest-parameter:
       - ticker
       - limit
       - day    
+    dbget.analysis.tradedate:
+      - steps
+      - next
+    dbget.tradedate.single:
+      - steps
+      - next
+      - date

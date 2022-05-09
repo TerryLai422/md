@@ -48,6 +48,8 @@ public class KafkaService {
 
 	private final static String ASYNC_EXECUTOR = "asyncExecutor";
 
+	private final static String TOPIC_SAVE_TRADEDATE_LIST = "save.tradedate.list";
+
 	private final static String TOPIC_SAVE_EXCHANGE_LIST = "save.exchange.list";
 
 	private final static String TOPIC_SAVE_ANALYSIS_LIST = "save.analysis.list";
@@ -73,6 +75,10 @@ public class KafkaService {
 	private final static String TOPIC_DBGET_ANALYSIS_SINGLE = "dbget.analysis.single";
 
 	private final static String TOPIC_DBGET_ANALYSIS_LIST = "dbget.analysis.list";
+
+	private final static String TOPIC_DBGET_TRADEDATE_SINGLE = "dbget.tradedate.single";
+
+	private final static String TOPIC_DBGET_ANALYSIS_TRADEDATE = "dbget.analysis.tradedate";
 
 	private final static String TOPIC_DBUPDATE_HISTORICAL_ALL = "dbupdate.historical.all";
 
@@ -111,6 +117,8 @@ public class KafkaService {
 	private final static int OBJECT_TYPE_HISTORICAL = 2;
 
 	private final static int OBJECT_TYPE_ANALYSIS = 3;
+	
+	private final static int OBJECT_TYPE_TRADEDATE = 4;
 
 	public void publish(String topic, Map<String, Object> map) {
 //		logger.debug(STRING_LOGGER_SENT_MESSAGE, topic, map.toString());
@@ -173,6 +181,15 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_SAVE_TRADEDATE_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	public void saveTradeDateList(List<Map<String, Object>> list) {
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_TRADEDATE_LIST, list.get(0).toString());
+
+		Map<String, Object> firstMap = list.get(0);
+		saveList(list, OBJECT_TYPE_TRADEDATE, "tradedates");
+	}
+	
+	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_INSTRUMENT_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveInstrumentList(List<Map<String, Object>> list) {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_INSTRUMENT_LIST, list.get(0).toString());
@@ -220,6 +237,8 @@ public class KafkaService {
 		}
 		if (objType == OBJECT_TYPE_INSTRUMENT) {
 			storeService.saveInstrumentList(list);
+		} else if (objType == OBJECT_TYPE_TRADEDATE){
+			storeService.saveTradeDateList(list);
 		} else {
 			storeService.saveAnalysisList(list);
 		}
@@ -354,13 +373,52 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_DBGET_ANALYSIS_TRADEDATE, containerFactory = CONTAINER_FACTORY_LIST)
+	public void getAnalysisDate(Map<String, Object> map) {
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_ANALYSIS_TRADEDATE, map.toString());
+		final String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+		final String topic = getTopicFromList(map);
+
+		List<Map<String, Object>> outputList = storeService.getDates();
+
+		int size = outputList.size();
+		if (size > 0) {
+			if (topic != null) {
+				if (format.equals(DEFAULT_STRING_VALUE)) {
+//					publishList(outputList, map, ticker, topic, date, size, day);
+				} else {
+					outputAsFile(outputList, map, topic, "tradedates");
+				}
+			} else {
+				logger.info("Size: " + size);
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+			}
+		} else {
+			logger.info("outputList size is zero");
+		}
+	}
+
+	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_DBGET_TRADEDATE_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
+	public void getTradeDateList(Map<String, Object> map) {
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_TRADEDATE_SINGLE, map.toString());
+
+		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
+		List<Map<String, Object>> list = storeService.getTradeDateList(date);
+		
+		if (list.size()> 0) {
+			getData(map, OBJECT_TYPE_TRADEDATE, date);
+		}
+	}
+	
+	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_ANALYSIS_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void getAnalysisList(List<Map<String, Object>> list) {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_ANALYSIS_LIST, list.get(0).toString());
 
 		getDataList(list, OBJECT_TYPE_ANALYSIS);
 	}
-	
+
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void getHistoricalList(List<Map<String, Object>> list) {
@@ -368,7 +426,7 @@ public class KafkaService {
 
 		getDataList(list, OBJECT_TYPE_HISTORICAL);
 	}
-	
+
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_ANALYSIS_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void getAnalysis(Map<String, Object> map) {
@@ -407,14 +465,18 @@ public class KafkaService {
 			final String formattedDate = String.format(OUTPUT_DATE_FORMAT, calendar);
 			if (objType == OBJECT_TYPE_HISTORICAL) {
 				outputList = storeService.getHistoricalList(ticker, formattedDate);
-			} else {
+			} else if (objType == OBJECT_TYPE_ANALYSIS){
 				outputList = storeService.getAnalysisList(ticker, formattedDate);
+			} else {
+				outputList = storeService.getAnalysisListByDate(date);
 			}
 		} else {
 			if (objType == OBJECT_TYPE_HISTORICAL) {
 				outputList = storeService.getHistoricalList(ticker);
-			} else {
+			} else  if (objType == OBJECT_TYPE_ANALYSIS){
 				outputList = storeService.getAnalysisList(ticker);
+			} else {
+				outputList = storeService.getAnalysisListByDate(date);
 			}
 		}
 
@@ -434,7 +496,7 @@ public class KafkaService {
 			logger.info("outputList size is zero");
 		}
 	}
-	
+
 	private void getDataList(List<Map<String, Object>> list, int objType) {
 		final Map<String, Object> firstMap = list.get(0);
 
@@ -461,36 +523,44 @@ public class KafkaService {
 	private void outputAsFile(List<Map<String, Object>> outputList, Map<String, Object> map, String topic,
 			String fileName) {
 		try {
-			String[] topicBreakDown = topic.split(TOPIC_DELIMITER);
-			String topicAction = DEFAULT_TOPIC_ACTION;
-			String topicType = DEFAULT_TOPIC_TYPE;
-			if (topicBreakDown.length >= 2) {
-				topicAction = topicBreakDown[0];
-				topicType = topicBreakDown[1];
-			}
+			File file = getFile(topic, fileName);
 
-			File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
-					+ File.separator + fileName + FILE_EXTENSION);
-
-//			System.out.println("FILE: " + file);
 			objectMapper.writeValue(file, outputList);
 
-			Map<String, Object> newMap = map.entrySet().stream()
-					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-//			newMap.put(mapKey.getTicker(), ticker);
-			newMap.put(mapKey.getTotal(), outputList.size());
-			if (file != null) {
-				newMap.put(mapKey.getLength(), file.length());
-			}
-			List<Map<String, Object>> outList = new ArrayList<>();
-
-			outList.add(0, newMap);
-			publish(topic, outList);
+			publishAfterOutputAsFile(map, file, topic, outputList.size());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
 
+
+	private File getFile(String topic, String fileName) {
+		String[] topicBreakDown = topic.split(TOPIC_DELIMITER);
+		String topicAction = DEFAULT_TOPIC_ACTION;
+		String topicType = DEFAULT_TOPIC_TYPE;
+		if (topicBreakDown.length >= 2) {
+			topicAction = topicBreakDown[0];
+			topicType = topicBreakDown[1];
+		}
+
+		return new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
+				+ File.separator + fileName + FILE_EXTENSION);
+
+	}
+
+	private void publishAfterOutputAsFile(Map<String, Object> map, File file, String topic, int size) {
+		Map<String, Object> newMap = map.entrySet().stream()
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+		newMap.put(mapKey.getTotal(), size);
+		if (file != null) {
+			newMap.put(mapKey.getLength(), file.length());
+		}
+		List<Map<String, Object>> outList = new ArrayList<>();
+
+		outList.add(0, newMap);
+		publish(topic, outList);
 	}
 
 	private void publishList(List<Map<String, Object>> outputList, Map<String, Object> map, String ticker, String topic,

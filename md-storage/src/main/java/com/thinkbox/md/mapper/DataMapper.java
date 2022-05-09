@@ -12,6 +12,7 @@ import com.thinkbox.md.model.Historical;
 import com.thinkbox.md.model.HistoricalSummary;
 import com.thinkbox.md.model.Instrument;
 import com.thinkbox.md.model.InstrumentCA;
+import com.thinkbox.md.model.TradeDate;
 
 @Component
 public class DataMapper {
@@ -25,6 +26,8 @@ public class DataMapper {
 
 	private final static long DEFAULT_LONG_VALUE = 0l;
 
+	private final static int DEFAULT_INTEGER_VALUE = 0;
+
 	private final static String TORONTO_STOCK_EXCHANGE = "TSX";
 
 	private final static String TORONTO_STOCK_VENTURE_EXCHANGE = "TSXV";
@@ -33,6 +36,7 @@ public class DataMapper {
 
 	private final static String STRING_AT_SYMBOL = "@";
 
+	
 	public Map<String, Object> convertAnalysisToMap(Analysis analysis) {
 
 		Map<String, Object> map = new TreeMap<>();
@@ -178,6 +182,29 @@ public class DataMapper {
 			map.put(mapKey.getHLow(), summary.getLow());
 		}
 		return map;
+
+	}
+
+	public Map<String, Object> convertTradeDateToMap(TradeDate tradeDate) {
+
+		Map<String, Object> map = new TreeMap<>();
+
+		if (tradeDate != null) {
+			map.put(mapKey.getDate(), tradeDate.getDate());
+			map.put(mapKey.getTotal(), tradeDate.getTotal());
+		}
+		return map;
+
+	}
+	
+	public TradeDate convertMapToTradeDate(Map<String, Object> map) {
+
+		TradeDate tradeDate = new TradeDate();;
+
+		tradeDate.setDate((String) map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE));
+		tradeDate.setTotal(Integer.valueOf(map.getOrDefault(mapKey.getDate(), DEFAULT_INTEGER_VALUE).toString()));
+
+		return tradeDate;
 
 	}
 }

@@ -48,18 +48,7 @@ public class AnalysisRepositoryImpl implements AnalysisRepositoryCustom {
 		else
 			return 0l;
 	}
-
-	public List<String> getDates() {
-		DistinctIterable<String> iterable = mongoTemplate.getCollection("analysis").distinct("date", String.class);
-		MongoCursor<String> mongoCursor = iterable.iterator();
-		List<String> list = new ArrayList<>();
-		while (mongoCursor.hasNext()) {
-			list.add(mongoCursor.next());
-		}
-
-		return list;
-	}
-
+	
 //	@Query(value="{_id: { $regex: '.*@20220504-000000' }, $where: ?0}", fields= "{ _id: 1}")
 
 	public int countByCriterion(String date, String criterion) {
