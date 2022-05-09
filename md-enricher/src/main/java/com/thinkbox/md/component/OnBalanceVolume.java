@@ -30,6 +30,9 @@ public class OnBalanceVolume extends Indicator {
 
 		long volume = 0L;
 
+		@SuppressWarnings("unchecked")
+		Map<String, Object> indMap = (Map<String, Object>) map.get(mapKey.getInd());
+
 		Object vol = map.get(mapKey.getVolume());
 		if (vol.getClass().equals(Integer.class)) {
 			volume = (Integer) vol;
@@ -43,14 +46,27 @@ public class OnBalanceVolume extends Indicator {
 			} else {
 				sum -= volume;
 			}
+		} else {
+			if (sum == 0) {
+				if (indMap != null) {
+					if (indMap.containsKey(getKey())) {
+						System.out.println("Key: " + getKey());
+						System.out.println("existing OBV1: " + indMap.get(getKey()));
+
+						Object existingOBV = indMap.get(getKey());
+						if (existingOBV.getClass().equals(Integer.class)) {
+							sum = (Integer) existingOBV;
+						} else {
+							sum = (Long) existingOBV;
+						}
+					}
+				}
+			}
 		}
 
 		last = close;
 
-		@SuppressWarnings("unchecked")
-		Map<String, Object> ind = (Map<String, Object>) map.get(mapKey.getInd());
-
-		ind.put(getKey(), sum);
+		indMap.put(getKey(), sum);
 	}
 
 	private String getKey() {
