@@ -1,5 +1,6 @@
 package com.thinkbox.md.repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,50 +17,65 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.aggregation.AggregationExpression;
 
 import com.mongodb.DBObject;
+import com.mongodb.client.DistinctIterable;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoIterable;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.internal.operation.CountOperation;
 import com.thinkbox.md.model.Analysis;
 
 public class AnalysisRepositoryImpl implements AnalysisRepositoryCustom {
 
-    @Autowired
-    MongoTemplate mongoTemplate;
-    
+	@Autowired
+	MongoTemplate mongoTemplate;
+
 	@Override
 	public long updateField(String ticker, String date, String name, Object value) {
 
-        Query query = new Query(Criteria.where("ticker").is(ticker).andOperator(Criteria.where("date").is(date)));
-        Update update = new Update();
-        if (value == null) {
-        	update.unset(name);
-	
-        } else {
-        	update.set(name, value);
-        }
+		Query query = new Query(Criteria.where("ticker").is(ticker).andOperator(Criteria.where("date").is(date)));
+		Update update = new Update();
+		if (value == null) {
+			update.unset(name);
 
-        UpdateResult result = mongoTemplate.updateFirst(query, update, Analysis.class);
+		} else {
+			update.set(name, value);
+		}
 
-        if(result!=null)
-            return result.getModifiedCount();
-        else
-            return 0l;
+		UpdateResult result = mongoTemplate.updateFirst(query, update, Analysis.class);
+
+		if (result != null)
+			return result.getModifiedCount();
+		else
+			return 0l;
+	}
+
+	public List<String> getDates() {
+		DistinctIterable<String> iterable = mongoTemplate.getCollection("analysis").distinct("date", String.class);
+		MongoCursor<String> mongoCursor = iterable.iterator();
+		List<String> list = new ArrayList<>();
+		while (mongoCursor.hasNext()) {
+			list.add(mongoCursor.next());
+		}
+
+		return list;
 	}
 
 //	@Query(value="{_id: { $regex: '.*@20220504-000000' }, $where: ?0}", fields= "{ _id: 1}")
 
 	public int countByCriterion(String date, String criterion) {
-	    Query query = new Query(Criteria.where("id").regex(".*@20220504-000000"));
+		Query query = new Query(Criteria.where("id").regex(".*@20220504-000000"));
 //	       
 //		return 0;
 		GroupOperation group = Aggregation.group("date");
 //		AggregationExpression aggregationExpression = AggregationExpression.from(MongoExpression.create("$expr: { $gt: ['$ind.sma50','$ind.sma200'] }"));
-		AggregationExpression aggregationExpression = AggregationExpression.from(MongoExpression.create(" date: '20220504', $expr: { $gt: ['ind.sma50','ind.sma200'] }"));
+		AggregationExpression aggregationExpression = AggregationExpression
+				.from(MongoExpression.create(" date: '20220504', $expr: { $gt: ['ind.sma50','ind.sma200'] }"));
 
 		MatchOperation match = Aggregation.match(aggregationExpression);
 
-
 		Aggregation aggregation = Aggregation.newAggregation(match, Aggregation.group().count().as("Total"));
-		AggregationResults<DBObject> results = mongoTemplate.aggregate(aggregation, mongoTemplate.getCollectionName(Analysis.class), DBObject.class);
+		AggregationResults<DBObject> results = mongoTemplate.aggregate(aggregation,
+				mongoTemplate.getCollectionName(Analysis.class), DBObject.class);
 		System.out.println(results.getMappedResults().toString());
 		return 0;
 	}
