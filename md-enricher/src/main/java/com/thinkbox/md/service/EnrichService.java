@@ -120,6 +120,7 @@ public class EnrichService {
 			} catch (RuntimeException e) {
 				e.printStackTrace();
 				System.out.println("X:" + x.toString());
+				x.put(mapKey.getSave(), false);
 			}
 			return x;
 		}).filter(x -> Boolean.valueOf(x.getOrDefault(mapKey.getSave(), false).toString()))
