@@ -460,11 +460,7 @@ public class KafkaService {
 
 	private void outputAsFile(List<Map<String, Object>> outputList, Map<String, Object> map, String topic,
 			String fileName) {
-		File file = null;
 		try {
-			final String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
-			final String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
-
 			String[] topicBreakDown = topic.split(TOPIC_DELIMITER);
 			String topicAction = DEFAULT_TOPIC_ACTION;
 			String topicType = DEFAULT_TOPIC_TYPE;
@@ -473,7 +469,7 @@ public class KafkaService {
 				topicType = topicBreakDown[1];
 			}
 
-			file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
+			File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
 					+ File.separator + fileName + FILE_EXTENSION);
 
 //			System.out.println("FILE: " + file);
