@@ -450,9 +450,16 @@ public class KafkaService {
 	public void getAnalysisDate(Map<String, Object> map) {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_ANALYSIS_TRADEDATE, map.toString());
 		final String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		final String topic = getTopicFromList(map);
 
-		List<Map<String, Object>> outputList = storeService.getDates();
+		List<Map<String, Object>> outputList = null;
+		
+		if (date.equals(DEFAULT_STRING_VALUE)) {
+		outputList = storeService.getDates();
+		} else {
+			outputList = storeService.getDates(date);
+		}
 
 		int size = outputList.size();
 		if (size > 0) {

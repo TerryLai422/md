@@ -336,6 +336,15 @@ public class StoreService {
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
 	
+	public List<Map<String, Object>> getDates(String date) {
+		Long start = System.currentTimeMillis();
+		logger.info("Start to get dates:" + date);
+		List<TradeDate> list = analysisRepository.getDates(date);
+		Long end = System.currentTimeMillis();
+		logger.info("Total time for getting summary:" + (end - start));
+		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
+	}
+	
 	public int countByCriterion(String criterion) {
 
 		List<Analysis> list = analysisRepository.countByCriterion(criterion);

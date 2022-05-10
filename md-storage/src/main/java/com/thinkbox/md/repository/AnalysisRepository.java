@@ -27,4 +27,6 @@ public interface AnalysisRepository extends MongoRepository<Analysis, String>, A
 	@Aggregation(pipeline = { "{$group:{_id :$date, total:{$sum:1}}}, {$sort:{_id: 1}}" })	
 	List<TradeDate> getDates(); 
 
+	@Aggregation(pipeline = { "{$match:{date:{$gte:?0}}}","{$group:{_id :$date, total:{$sum:1}}}","{$sort:{_id: 1}}" })	
+	List<TradeDate> getDates(String date); 
 }
