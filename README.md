@@ -18,7 +18,7 @@ Microservice Components
 
 - md-file-parser: Module to convert data from Yahoo CSV/JSON files into JSON objects
 
-- md-enricher: Application to add various kinds of technical indicators (configurable) to EOD data, consolidate them based on different criterions 
+- md-enricher: Service to add various kinds of technical indicators (configurable) to EOD data, consolidate them based on different criterions 
 
 - md-retreiver: RESTful consumer to retrieve stock EOD prices, stock detail information from Yahoo Finance API 
 
