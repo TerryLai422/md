@@ -27,6 +27,7 @@ public class PreviousClose extends Indicator {
 
 		ind.put(mapKey.getPercentChange(), (close - last)/ last);
 		ind.put(getKey(), last);
+		ind.put(mapKey.getClose(), close);
 		
 		last = close;
 	}
