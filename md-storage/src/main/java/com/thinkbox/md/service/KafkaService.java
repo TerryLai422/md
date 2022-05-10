@@ -119,9 +119,9 @@ public class KafkaService {
 	private final static int OBJECT_TYPE_HISTORICAL = 2;
 
 	private final static int OBJECT_TYPE_ANALYSIS = 3;
-	
+
 	private final static int OBJECT_TYPE_TRADEDATE = 4;
-	
+
 	private final static int OBJECT_TYPE_DAILYSUMMARY = 5;
 
 	public void publish(String topic, Map<String, Object> map) {
@@ -173,9 +173,8 @@ public class KafkaService {
 				+ File.separator + fileName + FILE_EXTENSION);
 		Map<String, Object> map = null;
 		try {
-			map = objectMapper.readValue(new FileInputStream(file),
-					new TypeReference<Map<String, Object>>() {
-					});
+			map = objectMapper.readValue(new FileInputStream(file), new TypeReference<Map<String, Object>>() {
+			});
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -183,7 +182,7 @@ public class KafkaService {
 		}
 		return map;
 	}
-	
+
 	private List<Map<String, Object>> readFileList(Map<String, Object> firstMap, String currentTopic, String fileName) {
 		String[] topicBreakDown = currentTopic.split(TOPIC_DELIMITER);
 		String topicAction = DEFAULT_TOPIC_ACTION;
@@ -218,7 +217,7 @@ public class KafkaService {
 
 		saveMap(firstMap, OBJECT_TYPE_DAILYSUMMARY, date);
 	}
-	
+
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_TRADEDATE_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveTradeDateList(List<Map<String, Object>> list) {
@@ -227,7 +226,7 @@ public class KafkaService {
 		Map<String, Object> firstMap = list.get(0);
 		saveList(list, OBJECT_TYPE_TRADEDATE, "tradedates");
 	}
-	
+
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_INSTRUMENT_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveInstrumentList(List<Map<String, Object>> list) {
@@ -275,7 +274,7 @@ public class KafkaService {
 		}
 		if (objType == OBJECT_TYPE_INSTRUMENT) {
 			storeService.saveInstrumentList(list);
-		} else if (objType == OBJECT_TYPE_TRADEDATE){
+		} else if (objType == OBJECT_TYPE_TRADEDATE) {
 			storeService.saveTradeDateList(list);
 		} else {
 			storeService.saveAnalysisList(list);
@@ -307,11 +306,11 @@ public class KafkaService {
 		}
 		if (objType == OBJECT_TYPE_INSTRUMENT) {
 			storeService.saveInstrument(map);
-		} else if (objType == OBJECT_TYPE_TRADEDATE){
+		} else if (objType == OBJECT_TYPE_TRADEDATE) {
 			storeService.saveTradeDate(map);
-		} else if (objType == OBJECT_TYPE_DAILYSUMMARY){
+		} else if (objType == OBJECT_TYPE_DAILYSUMMARY) {
 			storeService.saveDailySummary(map);
-		} else {
+		} else if (objType == OBJECT_TYPE_ANALYSIS) {
 			storeService.saveAnalysis(map);
 		}
 		if (map != null) {
@@ -331,7 +330,7 @@ public class KafkaService {
 		}
 
 	}
-	
+
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_INSTRUMENT_SINGLE, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveInstrument(List<Map<String, Object>> list) {
@@ -479,12 +478,12 @@ public class KafkaService {
 
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		List<Map<String, Object>> list = storeService.getTradeDateList(date);
-		
-		if (list.size()> 0) {
+
+		if (list.size() > 0) {
 			getData(map, OBJECT_TYPE_TRADEDATE, date);
 		}
 	}
-	
+
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_ANALYSIS_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void getAnalysisList(List<Map<String, Object>> list) {
@@ -539,7 +538,7 @@ public class KafkaService {
 			final String formattedDate = String.format(OUTPUT_DATE_FORMAT, calendar);
 			if (objType == OBJECT_TYPE_HISTORICAL) {
 				outputList = storeService.getHistoricalList(criterion, formattedDate);
-			} else if (objType == OBJECT_TYPE_ANALYSIS){
+			} else if (objType == OBJECT_TYPE_ANALYSIS) {
 				outputList = storeService.getAnalysisList(criterion, formattedDate);
 			} else {
 				outputList = storeService.getAnalysisListByDate(criterion);
@@ -547,7 +546,7 @@ public class KafkaService {
 		} else {
 			if (objType == OBJECT_TYPE_HISTORICAL) {
 				outputList = storeService.getHistoricalList(criterion);
-			} else  if (objType == OBJECT_TYPE_ANALYSIS){
+			} else if (objType == OBJECT_TYPE_ANALYSIS) {
 				outputList = storeService.getAnalysisList(criterion);
 			} else {
 				outputList = storeService.getAnalysisListByDate(criterion);
@@ -592,9 +591,8 @@ public class KafkaService {
 
 		});
 	}
-	
-	private void outputAsFile(Map<String, Object> outMap, Map<String, Object> map, String topic,
-			String fileName) {
+
+	private void outputAsFile(Map<String, Object> outMap, Map<String, Object> map, String topic, String fileName) {
 		try {
 			File file = getFile(topic, fileName);
 
@@ -620,7 +618,6 @@ public class KafkaService {
 			e.printStackTrace();
 		}
 	}
-
 
 	private File getFile(String topic, String fileName) {
 		String[] topicBreakDown = topic.split(TOPIC_DELIMITER);
@@ -740,7 +737,9 @@ public class KafkaService {
 			list = readFileList(firstMap, currentTopic, subExch);
 		}
 		Long start = System.currentTimeMillis();
-		list.stream().parallel().skip(1).forEach(x -> {
+
+		list.remove(0);
+		list.stream().parallel().forEach(x -> {
 
 			if (method.equals(DEFAULT_STRING_VALUE)) {
 				updateSummary(x);
@@ -749,12 +748,13 @@ public class KafkaService {
 			}
 
 		});
+
 		Long end = System.currentTimeMillis();
 		logger.info("Total time for getting summary:" + (end - start));
 		if (list.size() > 0) {
 			if (topic != null) {
 				if (format.equals(DEFAULT_STRING_VALUE)) {
-					publish(topic, list.remove(0), list);
+					publish(topic, firstMap, list);
 				} else {
 					outputAsFileList(list, firstMap, topic, subExch);
 				}
@@ -764,38 +764,44 @@ public class KafkaService {
 		} else {
 			logger.info("outputList size is zero");
 		}
+
 	}
 
 	private void updateSummary(Map<String, Object> x) {
-		String ticker = x.get(mapKey.getTicker()).toString();
+		try {
+			String ticker = x.get(mapKey.getTicker()).toString();
 
-		Map<String, Object> summaryMap = storeService.getHistoricalSummary(ticker);
+			Map<String, Object> summaryMap = storeService.getHistoricalSummary(ticker);
 
-		x.put(mapKey.getHTotal(), summaryMap.getOrDefault(mapKey.getHTotal(), 0));
-		x.put(mapKey.getHFirstD(), summaryMap.getOrDefault(mapKey.getHFirstD(), DEFAULT_STRING_VALUE));
-		x.put(mapKey.getHLastD(), summaryMap.getOrDefault(mapKey.getHLastD(), DEFAULT_STRING_VALUE));
+			x.put(mapKey.getHTotal(), summaryMap.getOrDefault(mapKey.getHTotal(), 0));
+			x.put(mapKey.getHFirstD(), summaryMap.getOrDefault(mapKey.getHFirstD(), DEFAULT_STRING_VALUE));
+			x.put(mapKey.getHLastD(), summaryMap.getOrDefault(mapKey.getHLastD(), DEFAULT_STRING_VALUE));
 
-		Double last = Double.valueOf(summaryMap.getOrDefault(mapKey.getLastP(), 0).toString());
-		if (last != 0) {
-			x.put(mapKey.getLastP(), last);
-			Long sharesO = Long.valueOf(x.getOrDefault(mapKey.getSharesO(), 0).toString());
-			if (sharesO != 0) {
-				x.put(mapKey.getMCap(), Double.valueOf(last * sharesO).longValue());
+			Double last = Double.valueOf(summaryMap.getOrDefault(mapKey.getLastP(), 0).toString());
+			if (last != 0) {
+				x.put(mapKey.getLastP(), last);
+				Long sharesO = Long.valueOf(x.getOrDefault(mapKey.getSharesO(), 0).toString());
+				if (sharesO != 0) {
+					x.put(mapKey.getMCap(), Double.valueOf(last * sharesO).longValue());
+				}
 			}
-		}
 
-		Double hHigh = Double.valueOf(summaryMap.getOrDefault(mapKey.getHHigh(), 0).toString());
-		x.put(mapKey.getHHigh(), hHigh);
-		if (hHigh != 0) {
-			String hHighD = storeService.getHistoricalDate(ticker, hHigh);
-			x.put(mapKey.getHHighD(), hHighD);
-		}
+			Double hHigh = Double.valueOf(summaryMap.getOrDefault(mapKey.getHHigh(), 0).toString());
+			x.put(mapKey.getHHigh(), hHigh);
+			if (hHigh != 0) {
+				String hHighD = storeService.getHistoricalDate(ticker, hHigh);
+				x.put(mapKey.getHHighD(), hHighD);
+			}
 
-		Double hLow = Double.valueOf(summaryMap.getOrDefault(mapKey.getHLow(), 0).toString());
-		x.put(mapKey.getHLow(), hLow);
-		if (hLow != 0) {
-			String hLowD = storeService.getHistoricalDate(ticker, hLow);
-			x.put(mapKey.getHLowD(), hLowD);
+			Double hLow = Double.valueOf(summaryMap.getOrDefault(mapKey.getHLow(), 0).toString());
+			x.put(mapKey.getHLow(), hLow);
+			if (hLow != 0) {
+				String hLowD = storeService.getHistoricalDate(ticker, hLow);
+				x.put(mapKey.getHLowD(), hLowD);
+			}
+		} catch (Exception e) {
+			System.out.println("X:" + x.toString());
+			e.printStackTrace();
 		}
 	}
 
