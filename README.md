@@ -16,6 +16,6 @@ Microservice Components
 
 - md-enricher: Application to add various kinds of technical indicators to EOD data, consolidate them based on different criterions 
 
-- md-retreiver: RESTful consumer to retrieve stock EOD prices, stock detail information from Yahoo API (via CSV or JSON payload)
+- md-retreiver: RESTful consumer to retrieve stock EOD prices, stock detail information from Yahoo Finance API 
 
 - md-storage: Component to access MongoDB
