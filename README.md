@@ -10,7 +10,9 @@ Technical Components
 - Docker
 
 Microservice Components
-- md-main: RESTful controller to provide entry point for the whole application
+- md-main: RESTful controller to provide entry point 
+
+- md-config: Configuration Server 
 
 - md-file-parser: Module to convert data from Yahoo CSV/JSON files into JSON objects
 
