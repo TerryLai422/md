@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.model.Analysis;
+import com.thinkbox.md.model.DailySummary;
 import com.thinkbox.md.model.Historical;
 import com.thinkbox.md.model.HistoricalSummary;
 import com.thinkbox.md.model.Instrument;
@@ -205,6 +206,17 @@ public class DataMapper {
 		tradeDate.setTotal(Integer.valueOf(map.getOrDefault(mapKey.getDate(), DEFAULT_INTEGER_VALUE).toString()));
 
 		return tradeDate;
+
+	}
+	
+	public DailySummary convertMapToDailySummary(Map<String, Object> map) {
+
+		DailySummary dailySummary = new DailySummary();;
+
+		dailySummary.setDate((String) map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE));
+		dailySummary.setMap(map);
+
+		return dailySummary;
 
 	}
 }

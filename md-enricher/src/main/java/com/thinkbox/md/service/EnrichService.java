@@ -22,6 +22,7 @@ import com.thinkbox.md.component.AverageVolume;
 import com.thinkbox.md.config.IndicatorProperties;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.MapValueParameter;
+import java.util.function.Function;
 
 @Component
 public class EnrichService {
@@ -220,4 +221,72 @@ public class EnrichService {
 
 		return outputMapList;
 	}
+
+	public Map<String, Object> createDailySummary(List<Map<String, Object>> list) {
+
+		Map<String, Object> firstMap = list.remove(0);
+
+		System.out.println("FirstMap:" + firstMap);
+
+		final String date = firstMap.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
+
+		Map<String, Object> outMap = new TreeMap<>();
+
+		outMap.put(mapKey.getDate(), date);
+
+		outMap.put("all", getMaps(list));
+		
+		outMap.put("sma50-sma200", getMaps(getFilterList(list, "sma50", "sma200")));
+		
+		System.out.println("OUTMAP: " + outMap.toString());
+		
+		return outMap;
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<Map<String, Object>> getFilterList(List<Map<String, Object>> list, String key1, String key2) {
+		return list.stream().filter(x -> {
+			Map<String, Object> y = (Map<String, Object>) x.get(mapKey.getInd());
+			Double i = Double.valueOf(y.getOrDefault(key1, 0).toString());
+			Double j = Double.valueOf(y.getOrDefault(key2, 0).toString());
+			return i != 0 && j !=0 && i > j;
+		}).collect(Collectors.toList());
+	}
+	
+	private Map<String, Object> getMaps(List<Map<String, Object>> list) {
+		Map<String, Object> map = new TreeMap<>();
+
+		map.put(mapKey.getTotal(), list.size());
+
+		Map<String, Long> sectorMap = consolidate(list, mapKey.getInst(), mapKey.getSector());
+		map.put(mapKey.getSector(), sectorMap);
+
+		Map<String, Long> exchMap = consolidate(list, mapKey.getInst(), mapKey.getSubExch());
+		map.put(mapKey.getSubExch(), exchMap);
+
+		Map<String, Long> indMap = consolidate(list, mapKey.getInst(), mapKey.getGroup(), mapKey.getYahooIndustry());
+		map.put(mapKey.getIndustry(), indMap);
+
+		return map;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private Map<String, Long> consolidate(List<Map<String, Object>> list, String key1, String key2) {
+		Map<String, Long> map = list.stream().map(x -> {
+			Map<String, Object> y = (Map<String, Object>) x.get(key1);
+			return y.getOrDefault(key2, "").toString();
+		}).collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+		return map;
+	}
+
+	@SuppressWarnings("unchecked")
+	private Map<String, Long> consolidate(List<Map<String, Object>> list, String key1, String key2, String key3) {
+		Map<String, Long> map = list.stream().map(x -> {
+			Map<String, Object> y = (Map<String, Object>) x.get(key1);
+			Map<String, Object> z = (Map<String, Object>) y.get(key2);
+			return z.getOrDefault(key3, "").toString();
+		}).collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+		return map;
+	}
+
 }

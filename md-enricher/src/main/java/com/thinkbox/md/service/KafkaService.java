@@ -47,6 +47,8 @@ public class KafkaService {
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
+	private final String TOPIC_CREATE_DAILYSUMMARY_LIST = "create.dailysummary.list";
+	
 	private final String TOPIC_ENRICH_EXCHANGE_LIST = "enrich.exchange.list";
 
 	private final String TOPIC_ENRICH_HISTORICAL_LIST = "enrich.historical.list";
@@ -100,6 +102,40 @@ public class KafkaService {
 		}
 	}
 
+	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_CREATE_DAILYSUMMARY_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	public void createDailySummaryList(List<Map<String, Object>> list) {
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_CREATE_DAILYSUMMARY_LIST, list.get(0).toString());
+
+		Map<String, Object> firstMap = list.get(0);
+
+		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+		final String date = firstMap.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
+		final String currentTopic = getCurrentTopicFromList(firstMap);
+		final String topic = getTopicFromList(firstMap);
+
+		if (!format.equals(DEFAULT_STRING_VALUE)) {
+			list = readFile(firstMap, currentTopic, date);
+		}
+
+		Map<String, Object> outMap = enrichService.createDailySummary(list);
+		if (outMap != null) {
+			if (topic != null) {
+				if (format.equals(DEFAULT_STRING_VALUE)) {
+					List<Map<String, Object>> outputList = new ArrayList<>();
+					outputList.add(outMap);
+					publish(topic, firstMap, outputList);
+				} else {
+					outputAsFile(outMap, firstMap, topic, date);
+				}
+			} else {
+				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+			}
+		} else {
+			logger.info("outMap is null");
+		}	
+	}
+	
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_ENRICH_EXCHANGE_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void processExchangeData(List<Map<String, Object>> list) {
@@ -156,11 +192,12 @@ public class KafkaService {
 		Map<String, Object> firstMap = list.get(0);
 
 		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+		final String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
 
 		if (!format.equals(DEFAULT_STRING_VALUE)) {
-			list = readFile(firstMap, currentTopic);
+			list = readFile(firstMap, currentTopic, ticker);
 		}
 		outputList = enrichService.enrichList(list, type);
 
@@ -170,7 +207,7 @@ public class KafkaService {
 				if (format.equals(DEFAULT_STRING_VALUE)) {
 					publish(topic, firstMap, outputList);
 				} else {
-					outputAsFile(outputList, firstMap, topic);
+					outputAsFile(outputList, firstMap, topic, ticker);
 				}
 			} else {
 				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
@@ -180,8 +217,7 @@ public class KafkaService {
 		}	
 	}
 	
-	private List<Map<String, Object>> readFile(Map<String, Object> firstMap, String currentTopic) {
-		final String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
+	private List<Map<String, Object>> readFile(Map<String, Object> firstMap, String currentTopic, String fileName) {
 
 		List<Map<String, Object>> mapperList = null;
 		try {
@@ -193,7 +229,7 @@ public class KafkaService {
 				topicType = topicBreakDown[1];
 			}
 			File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator
-					+ topicType + File.separator + ticker + FILE_EXTENSION);
+					+ topicType + File.separator + fileName + FILE_EXTENSION);
 
 			mapperList = objectMapper.readValue(new FileInputStream(file),
 					new TypeReference<List<Map<String, Object>>>() {
@@ -207,11 +243,9 @@ public class KafkaService {
 		return mapperList;
 	}
 
-	private void outputAsFile(List<Map<String, Object>> outputList, Map<String, Object> map, String topic) {
+	private void outputAsFile(List<Map<String, Object>> outputList, Map<String, Object> map, String topic, String fileName) {
 
 		try {
-			final String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
-
 			String[] topicBreakDown = topic.split(TOPIC_DELIMITER);
 			String topicAction = DEFAULT_TOPIC_ACTION;
 			String topicType = DEFAULT_TOPIC_TYPE;
@@ -220,12 +254,12 @@ public class KafkaService {
 				topicType = topicBreakDown[1];
 			}
 			File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator
-					+ topicType + File.separator + ticker + FILE_EXTENSION);
+					+ topicType + File.separator + fileName + FILE_EXTENSION);
 			objectMapper.writeValue(file, outputList);
 
 			Map<String, Object> newMap = map.entrySet().stream()
 					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-			newMap.put(mapKey.getTicker(), ticker);
+//			newMap.put(mapKey.getTicker(), ticker);
 			newMap.put(mapKey.getTotal(), outputList.size());
 
 			if (file != null) {
@@ -241,6 +275,37 @@ public class KafkaService {
 		}
 	}
 
+	private void outputAsFile(Map<String, Object> outMap, Map<String, Object> map, String topic, String fileName) {
+
+		try {
+			String[] topicBreakDown = topic.split(TOPIC_DELIMITER);
+			String topicAction = DEFAULT_TOPIC_ACTION;
+			String topicType = DEFAULT_TOPIC_TYPE;
+			if (topicBreakDown.length >= 2) {
+				topicAction = topicBreakDown[0];
+				topicType = topicBreakDown[1];
+			}
+			File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator
+					+ topicType + File.separator + fileName + FILE_EXTENSION);
+			objectMapper.writeValue(file, outMap);
+
+			Map<String, Object> newMap = map.entrySet().stream()
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+//			newMap.put(mapKey.getTicker(), ticker);
+			newMap.put(mapKey.getTotal(), 1);
+
+			if (file != null) {
+				newMap.put(mapKey.getLength(), file.length());
+			}
+			List<Map<String, Object>> outList = new ArrayList<>();
+
+			outList.add(0, newMap);
+			publish(topic, outList);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	private String getCurrentTopicFromList(Map<String, Object> map) {
 		Object objNext = map.get(mapKey.getNext());
 		int next = Integer.valueOf(objNext.toString());

@@ -17,11 +17,13 @@ import org.springframework.stereotype.Component;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.mapper.DataMapper;
 import com.thinkbox.md.model.Analysis;
+import com.thinkbox.md.model.DailySummary;
 import com.thinkbox.md.model.Historical;
 import com.thinkbox.md.model.HistoricalSummary;
 import com.thinkbox.md.model.Instrument;
 import com.thinkbox.md.model.TradeDate;
 import com.thinkbox.md.repository.AnalysisRepository;
+import com.thinkbox.md.repository.DailySummaryRepository;
 import com.thinkbox.md.repository.HistoricalRepository;
 import com.thinkbox.md.repository.InstrumentRepository;
 import com.thinkbox.md.repository.TradeDateRepository;
@@ -34,6 +36,9 @@ public class StoreService {
 	private final static String DEFAULT_STRING_VALUE = "-";
 	
 	private final static Double DEFAULT_DOUBLE_VALUE = 0d;
+
+	@Autowired
+	private DailySummaryRepository dailySummaryRepository;
 
 	@Autowired
 	private TradeDateRepository tradeDateRepository;
@@ -53,6 +58,14 @@ public class StoreService {
 	@Autowired
 	private MapKeyParameter mapKey;
 
+	public void saveDailySummary(Map<String, Object> map) {
+
+		DailySummary dailySummary = mapper.convertMapToDailySummary(map);
+
+		dailySummaryRepository.save(dailySummary);
+
+	}
+	
 	public void saveTradeDateList(List<Map<String, Object>> list) {
 
 		List<TradeDate> convertedList = list.stream().skip(1).map(mapper::convertMapToTradeDate)
@@ -103,6 +116,22 @@ public class StoreService {
 
 	}
 
+	public void saveAnalysis(Map<String, Object> map) {
+
+		Analysis analysis = mapper.convertMapToAnalysis(map);
+
+		analysisRepository.save(analysis);
+
+	}
+	
+	public void saveTradeDate(Map<String, Object> map) {
+
+		TradeDate tradeDate = mapper.convertMapToTradeDate(map);
+
+		tradeDateRepository.save(tradeDate);
+
+	}
+	
 	public void saveInstrument(Map<String, Object> map) {
 
 		Instrument instrument = mapper.convertMapToInstrument(map);
@@ -264,9 +293,13 @@ public class StoreService {
 	}
 
 	public List<Map<String, Object>> getTradeDateList(String date) {
-		
-		List<TradeDate> List = tradeDateRepository.findByDate(date);
+		Long start = System.currentTimeMillis();
+		logger.info("Start to get tradedate list");
 
+		List<TradeDate> List = tradeDateRepository.findByDate(date);
+		
+		Long end = System.currentTimeMillis();
+		logger.info("Total time for getting tradedate list:" + (end - start));
 		return List.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
 
@@ -279,8 +312,13 @@ public class StoreService {
 	}
 
 	public List<Map<String, Object>> getAnalysisListByDate(String date) {
-		
+		Long start = System.currentTimeMillis();
+		logger.info("Start to get analysis list by trade date");
+
 		List<Analysis> list = analysisRepository.findByDate(date);
+
+		Long end = System.currentTimeMillis();
+		logger.info("Total time for getting analysis list by trade date:" + (end - start));
 
 		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
 	}
@@ -291,6 +329,7 @@ public class StoreService {
 
 	public List<Map<String, Object>> getDates() {
 		Long start = System.currentTimeMillis();
+		logger.info("Start to get dates");
 		List<TradeDate> list = analysisRepository.getDates();
 		Long end = System.currentTimeMillis();
 		logger.info("Total time for getting summary:" + (end - start));
