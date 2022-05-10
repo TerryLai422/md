@@ -2,7 +2,7 @@
 
 Technical Components
 - Microservices
-- Java
+- Java (8 & 11)
 - Spring Boot
 - RESTful API
 - Kafka
