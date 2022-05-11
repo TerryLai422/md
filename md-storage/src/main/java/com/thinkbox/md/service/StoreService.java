@@ -57,7 +57,7 @@ public class StoreService {
 
 	@Autowired
 	private MapKeyParameter mapKey;
-
+	
 	public void saveDailySummary(Map<String, Object> map) {
 
 		DailySummary dailySummary = mapper.convertMapToDailySummary(map);
@@ -292,15 +292,38 @@ public class StoreService {
 		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
 	}
 
+	public List<Map<String, Object>> getTradeDateList() {
+		Long start = System.currentTimeMillis();
+		logger.info("Start to get tradedate list");
+
+		List<TradeDate> list = tradeDateRepository.findAll();
+		System.out.println("Size:" + list.size());
+		Long end = System.currentTimeMillis();
+		logger.info("Total time for getting tradedate list:" + (end - start));
+		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
+	}
+
+	public List<Map<String, Object>> getTradeDateGreaterThanList(String date) {
+		Long start = System.currentTimeMillis();
+		logger.info("Start to get tradedate list");
+
+		List<TradeDate> list = tradeDateRepository.findByDateGreaterThan(date);
+		
+		Long end = System.currentTimeMillis();
+		logger.info("Total time for getting tradedate list:" + (end - start));
+		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
+	}
+
+	
 	public List<Map<String, Object>> getTradeDateList(String date) {
 		Long start = System.currentTimeMillis();
 		logger.info("Start to get tradedate list");
 
-		List<TradeDate> List = tradeDateRepository.findByDate(date);
+		List<TradeDate> list = tradeDateRepository.findByDate(date);
 		
 		Long end = System.currentTimeMillis();
 		logger.info("Total time for getting tradedate list:" + (end - start));
-		return List.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
+		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
 
 	

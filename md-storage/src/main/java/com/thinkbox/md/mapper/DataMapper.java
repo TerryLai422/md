@@ -2,6 +2,7 @@ package com.thinkbox.md.mapper;
 
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -203,20 +204,21 @@ public class DataMapper {
 		TradeDate tradeDate = new TradeDate();;
 
 		tradeDate.setDate((String) map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE));
-		tradeDate.setTotal(Integer.valueOf(map.getOrDefault(mapKey.getDate(), DEFAULT_INTEGER_VALUE).toString()));
+		tradeDate.setTotal(Integer.valueOf(map.getOrDefault(mapKey.getTotal(), DEFAULT_INTEGER_VALUE).toString()));
 
 		return tradeDate;
 
 	}
-	
+
 	public DailySummary convertMapToDailySummary(Map<String, Object> map) {
 
-		DailySummary dailySummary = new DailySummary();;
+		System.out.println("MAP:" + map.toString());
+		DailySummary dailySummary = new DailySummary();
 
-		dailySummary.setDate((String) map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE));
+		dailySummary.setDate(map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString());
 		dailySummary.setMap(map);
-
 		return dailySummary;
 
 	}
+
 }

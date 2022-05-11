@@ -80,7 +80,11 @@ public class KafkaService {
 
 	private final static String TOPIC_DBGET_TRADEDATE_SINGLE = "dbget.tradedate.single";
 
+	private final static String TOPIC_DBGET_TRADEDATE_LIST = "dbget.tradedate.list";
+
 	private final static String TOPIC_DBGET_ANALYSIS_TRADEDATE = "dbget.analysis.tradedate";
+
+	private final static String TOPIC_DBGET_DAILYSUMMARY_SINGLE = "dbget.dailysummary.single";
 
 	private final static String TOPIC_DBUPDATE_HISTORICAL_ALL = "dbupdate.historical.all";
 
@@ -454,9 +458,9 @@ public class KafkaService {
 		final String topic = getTopicFromList(map);
 
 		List<Map<String, Object>> outputList = null;
-		
+
 		if (date.equals(DEFAULT_STRING_VALUE)) {
-		outputList = storeService.getDates();
+			outputList = storeService.getDates();
 		} else {
 			outputList = storeService.getDates(date);
 		}
@@ -479,8 +483,50 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_DBGET_TRADEDATE_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = TOPIC_DBGET_TRADEDATE_LIST, containerFactory = CONTAINER_FACTORY_MAP)
 	public void getTradeDateList(Map<String, Object> map) {
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_TRADEDATE_LIST, map.toString());
+
+		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
+		List<Map<String, Object>> list = null;
+		if (date.equals(DEFAULT_STRING_VALUE)) {
+			list = storeService.getTradeDateList();
+		} else {
+			list = storeService.getTradeDateGreaterThanList(date);
+		}
+
+		if (list.size() > 0) {
+			list.stream()
+					.sorted((i, j) -> i.get(mapKey.getDate()).toString().compareTo(j.get(mapKey.getDate()).toString()))
+					.forEach(x -> {
+						String mDate = x.get(mapKey.getDate()).toString();
+
+						Map<String, Object> newMap = map.entrySet().stream()
+								.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+						newMap.put(mapKey.getDate(), mDate);
+
+						getData(newMap, OBJECT_TYPE_TRADEDATE, mDate);
+					});
+		}
+	}
+
+	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_DBGET_DAILYSUMMARY_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
+	public void getDailySummarySingle(Map<String, Object> map) {
+		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_DAILYSUMMARY_SINGLE, map.toString());
+
+		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
+		List<Map<String, Object>> list = storeService.getTradeDateList(date);
+
+		if (list.size() > 0) {
+			getData(map, OBJECT_TYPE_TRADEDATE, date);
+		}
+	}
+
+	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = TOPIC_DBGET_TRADEDATE_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
+	public void getTradeDateSingle(Map<String, Object> map) {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_TRADEDATE_SINGLE, map.toString());
 
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();

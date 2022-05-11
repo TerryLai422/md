@@ -1,27 +1,18 @@
 package com.thinkbox.md.repository;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.MongoExpression;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.aggregation.MatchOperation;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.aggregation.AggregationExpression;
 
 import com.mongodb.DBObject;
-import com.mongodb.client.DistinctIterable;
-import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoIterable;
 import com.mongodb.client.result.UpdateResult;
-import com.mongodb.internal.operation.CountOperation;
 import com.thinkbox.md.model.Analysis;
 
 public class AnalysisRepositoryImpl implements AnalysisRepositoryCustom {
@@ -52,10 +43,10 @@ public class AnalysisRepositoryImpl implements AnalysisRepositoryCustom {
 //	@Query(value="{_id: { $regex: '.*@20220504-000000' }, $where: ?0}", fields= "{ _id: 1}")
 
 	public int countByCriterion(String date, String criterion) {
-		Query query = new Query(Criteria.where("id").regex(".*@20220504-000000"));
+//		Query query = new Query(Criteria.where("id").regex(".*@20220504-000000"));
 //	       
 //		return 0;
-		GroupOperation group = Aggregation.group("date");
+//		GroupOperation group = Aggregation.group("date");
 //		AggregationExpression aggregationExpression = AggregationExpression.from(MongoExpression.create("$expr: { $gt: ['$ind.sma50','$ind.sma200'] }"));
 		AggregationExpression aggregationExpression = AggregationExpression
 				.from(MongoExpression.create(" date: '20220504', $expr: { $gt: ['ind.sma50','ind.sma200'] }"));

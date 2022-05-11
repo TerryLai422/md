@@ -96,3 +96,6 @@ rest-parameter:
       - steps
       - next
       - date
+    dbget.tradedate.list:
+      - steps
+      - next    
