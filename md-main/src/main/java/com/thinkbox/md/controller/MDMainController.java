@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.thinkbox.md.config.RestParameterProperties;
 import com.thinkbox.md.service.KafkaService;
+import com.thinkbox.md.service.MainService;
 
 @RestController
 @RequestMapping("")
@@ -26,6 +27,9 @@ public class MDMainController {
 
 	@Autowired
 	private KafkaService kafKaService;
+
+	@Autowired
+	private MainService mainService;
 
 	private static final String APPLICATION_JSON_TYPE = "application/json";
 
@@ -51,33 +55,38 @@ public class MDMainController {
 		List<String> stepList = (List<String>) objStep;
 		if (stepList.size() == 0) {
 			logger.info("Empty Step -> {}", map.toString());
-			return ResponseEntity.badRequest().body("Empty Step");			
+			return ResponseEntity.badRequest().body("Empty Step");
 		}
 
 		String topic = stepList.get(next).toString();
 
 		if (topic != null) {
-			List<String> parameterList = restParameterProperties.getTopic().get(topic);
-
-			if (parameterList == null) {
-				logger.info("Cannot find matched topic configuration -> {}", topic);
-				return ResponseEntity.badRequest().body("Cannot find matched topic configuration: " + topic);
+			if (topic.equals("delete.files")) {
+				System.out.println("delete files");
+				mainService.cleanupFolders();
 			} else {
-				String missing = "";
+				List<String> parameterList = restParameterProperties.getTopic().get(topic);
 
-				for (String parameter : parameterList) {
-					if (!map.containsKey(parameter)) {
-						missing += parameter + ";";
+				if (parameterList == null) {
+					logger.info("Cannot find matched topic configuration -> {}", topic);
+					return ResponseEntity.badRequest().body("Cannot find matched topic configuration: " + topic);
+				} else {
+					String missing = "";
+
+					for (String parameter : parameterList) {
+						if (!map.containsKey(parameter)) {
+							missing += parameter + ";";
+						}
 					}
+
+					if (!missing.equals("")) {
+						logger.info("Missing Parameter -> {}", missing);
+						return ResponseEntity.badRequest().body("Missing Parameter: " + missing);
+
+					}
+
+					kafKaService.publish(topic, map);
 				}
-
-				if (!missing.equals("")) {
-					logger.info("Missing Parameter -> {}", missing);
-					return ResponseEntity.badRequest().body("Missing Parameter: " + missing);
-
-				}
-
-				kafKaService.publish(topic, map);
 			}
 		} else {
 			logger.info("Incorrect Step -> {}", map.toString());
