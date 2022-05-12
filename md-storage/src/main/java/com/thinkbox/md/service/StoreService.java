@@ -19,12 +19,14 @@ import com.thinkbox.md.mapper.DataMapper;
 import com.thinkbox.md.model.Analysis;
 import com.thinkbox.md.model.AnalysisETF;
 import com.thinkbox.md.model.DailySummary;
+import com.thinkbox.md.model.DailySummaryETF;
 import com.thinkbox.md.model.Historical;
 import com.thinkbox.md.model.HistoricalSummary;
 import com.thinkbox.md.model.Instrument;
 import com.thinkbox.md.model.TradeDate;
 import com.thinkbox.md.repository.AnalysisETFRepository;
 import com.thinkbox.md.repository.AnalysisRepository;
+import com.thinkbox.md.repository.DailySummaryETFRepository;
 import com.thinkbox.md.repository.DailySummaryRepository;
 import com.thinkbox.md.repository.HistoricalRepository;
 import com.thinkbox.md.repository.InstrumentRepository;
@@ -41,6 +43,9 @@ public class StoreService {
 
 	@Autowired
 	private DailySummaryRepository dailySummaryRepository;
+
+	@Autowired
+	private DailySummaryETFRepository dailySummaryETFRepository;
 
 	@Autowired
 	private TradeDateRepository tradeDateRepository;
@@ -63,6 +68,14 @@ public class StoreService {
 	@Autowired
 	private MapKeyParameter mapKey;
 
+	public void saveDailySummaryETF(Map<String, Object> map) {
+
+		DailySummaryETF dailySummary = mapper.convertMapToDailySummaryETF(map);
+
+		dailySummaryETFRepository.save(dailySummary);
+
+	}
+	
 	public void saveDailySummary(Map<String, Object> map) {
 
 		DailySummary dailySummary = mapper.convertMapToDailySummary(map);
@@ -129,6 +142,13 @@ public class StoreService {
 
 	}
 
+	public void saveAnalysisETF(Map<String, Object> map) {
+
+		AnalysisETF analysis = mapper.convertMapToAnalysisETF(map);
+
+		analysisETFRepository.save(analysis);
+
+	}
 	public void saveAnalysis(Map<String, Object> map) {
 
 		Analysis analysis = mapper.convertMapToAnalysis(map);

@@ -11,6 +11,7 @@ import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.model.Analysis;
 import com.thinkbox.md.model.AnalysisETF;
 import com.thinkbox.md.model.DailySummary;
+import com.thinkbox.md.model.DailySummaryETF;
 import com.thinkbox.md.model.Historical;
 import com.thinkbox.md.model.HistoricalSummary;
 import com.thinkbox.md.model.Instrument;
@@ -234,4 +235,14 @@ public class DataMapper {
 
 	}
 
+	public DailySummaryETF convertMapToDailySummaryETF(Map<String, Object> map) {
+
+		System.out.println("MAP:" + map.toString());
+		DailySummaryETF dailySummary = new DailySummaryETF();
+
+		dailySummary.setDate(map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString());
+		dailySummary.setMap(map);
+		return dailySummary;
+
+	}
 }

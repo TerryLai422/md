@@ -218,8 +218,9 @@ public class KafkaService {
 
 		final Map<String, Object> firstMap = list.get(0);
 		final String date = firstMap.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
+		final String type = firstMap.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
 
-		saveMap(firstMap, OBJECT_TYPE_DAILYSUMMARY, date);
+		saveMap(firstMap, OBJECT_TYPE_DAILYSUMMARY, type, date);
 	}
 
 	@Async(ASYNC_EXECUTOR)
@@ -299,7 +300,7 @@ public class KafkaService {
 
 	}
 
-	private void saveMap(Map<String, Object> firstMap, int objType, String fileName) {
+	private void saveMap(Map<String, Object> firstMap, int objType, String type, String fileName) {
 		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
@@ -313,9 +314,17 @@ public class KafkaService {
 		} else if (objType == OBJECT_TYPE_TRADEDATE) {
 			storeService.saveTradeDate(map);
 		} else if (objType == OBJECT_TYPE_DAILYSUMMARY) {
-			storeService.saveDailySummary(map);
+			if (type.equals("ETF")) {
+				storeService.saveDailySummaryETF(map);
+			} else {
+				storeService.saveDailySummary(map);
+			}
 		} else if (objType == OBJECT_TYPE_ANALYSIS) {
-			storeService.saveAnalysis(map);
+			if (type.equals("ETF")) {
+				storeService.saveAnalysisETF(map);
+			} else {
+				storeService.saveAnalysis(map);
+			}
 		}
 		if (map != null) {
 			if (topic != null) {
@@ -488,6 +497,8 @@ public class KafkaService {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_TRADEDATE_LIST, map.toString());
 
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
+		final String type = map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
+
 		List<Map<String, Object>> list = null;
 		if (date.equals(DEFAULT_STRING_VALUE)) {
 			list = storeService.getTradeDateList();
@@ -506,7 +517,7 @@ public class KafkaService {
 
 						newMap.put(mapKey.getDate(), mDate);
 
-						getData(newMap, OBJECT_TYPE_TRADEDATE, null, mDate);
+						getData(newMap, OBJECT_TYPE_TRADEDATE, type, mDate);
 					});
 		}
 	}
@@ -517,10 +528,11 @@ public class KafkaService {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_DAILYSUMMARY_SINGLE, map.toString());
 
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
+		final String type = map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
 		List<Map<String, Object>> list = storeService.getTradeDateList(date);
 
 		if (list.size() > 0) {
-			getData(map, OBJECT_TYPE_TRADEDATE, null, date);
+			getData(map, OBJECT_TYPE_TRADEDATE, type, date);
 		}
 	}
 
@@ -530,10 +542,12 @@ public class KafkaService {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_TRADEDATE_SINGLE, map.toString());
 
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
+		final String type = map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
+
 		List<Map<String, Object>> list = storeService.getTradeDateList(date);
 
 		if (list.size() > 0) {
-			getData(map, OBJECT_TYPE_TRADEDATE, null, date);
+			getData(map, OBJECT_TYPE_TRADEDATE, type, date);
 		}
 	}
 
@@ -600,9 +614,18 @@ public class KafkaService {
 			if (objType == OBJECT_TYPE_HISTORICAL) {
 				outputList = storeService.getHistoricalList(criterion, formattedDate);
 			} else if (objType == OBJECT_TYPE_ANALYSIS) {
-				outputList = storeService.getAnalysisList(criterion, formattedDate);
+				if (type.equals("ETF")) {
+					outputList = storeService.getAnalysisETFList(criterion, formattedDate);
+				} else {
+					outputList = storeService.getAnalysisList(criterion, formattedDate);
+				}
 			} else {
-				outputList = storeService.getAnalysisListByDate(criterion);
+				if (type.equals("ETF")) {
+					System.out.println("GET ETF else");
+					outputList = storeService.getAnalysisETFListByDate(criterion);
+				} else {
+					outputList = storeService.getAnalysisListByDate(criterion);
+				}
 			}
 		} else {
 			if (objType == OBJECT_TYPE_HISTORICAL) {
