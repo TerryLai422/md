@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.model.Analysis;
+import com.thinkbox.md.model.AnalysisETF;
 import com.thinkbox.md.model.DailySummary;
 import com.thinkbox.md.model.Historical;
 import com.thinkbox.md.model.HistoricalSummary;
@@ -65,6 +66,19 @@ public class DataMapper {
 
 		return map;
 	}
+
+	@SuppressWarnings("unchecked")
+	public AnalysisETF convertMapToAnalysisETF(Map<String, Object> map) {
+
+		Map<String, Object> inst = (Map<String, Object>) map.remove(mapKey.getInst());
+		Map<String, Object> ind = (Map<String, Object>) map.remove(mapKey.getInd());
+		map.remove(mapKey.getSave());
+		AnalysisETF analysis = (AnalysisETF) convertMapToHistorical(map, new AnalysisETF());						
+		analysis.setInd(ind);
+		analysis.setInst(inst);
+		return analysis;
+
+	}
 	
 	@SuppressWarnings("unchecked")
 	public Analysis convertMapToAnalysis(Map<String, Object> map) {
@@ -72,8 +86,7 @@ public class DataMapper {
 		Map<String, Object> inst = (Map<String, Object>) map.remove(mapKey.getInst());
 		Map<String, Object> ind = (Map<String, Object>) map.remove(mapKey.getInd());
 		map.remove(mapKey.getSave());
-		Analysis analysis = (Analysis) convertMapToHistorical(map, new Analysis());
-//		analysis.setOthers(null);
+		Analysis analysis = (Analysis) convertMapToHistorical(map, new Analysis());			
 		analysis.setInd(ind);
 		analysis.setInst(inst);
 		return analysis;

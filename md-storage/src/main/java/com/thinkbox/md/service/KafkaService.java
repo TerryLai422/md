@@ -268,7 +268,7 @@ public class KafkaService {
 	}
 
 	private void saveList(List<Map<String, Object>> list, int objType, String fileName) {
-		Map<String, Object> firstMap = list.get(0);
+		final Map<String, Object> firstMap = list.get(0);
 		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
@@ -506,7 +506,7 @@ public class KafkaService {
 
 						newMap.put(mapKey.getDate(), mDate);
 
-						getData(newMap, OBJECT_TYPE_TRADEDATE, mDate);
+						getData(newMap, OBJECT_TYPE_TRADEDATE, null, mDate);
 					});
 		}
 	}
@@ -520,7 +520,7 @@ public class KafkaService {
 		List<Map<String, Object>> list = storeService.getTradeDateList(date);
 
 		if (list.size() > 0) {
-			getData(map, OBJECT_TYPE_TRADEDATE, date);
+			getData(map, OBJECT_TYPE_TRADEDATE, null, date);
 		}
 	}
 
@@ -533,7 +533,7 @@ public class KafkaService {
 		List<Map<String, Object>> list = storeService.getTradeDateList(date);
 
 		if (list.size() > 0) {
-			getData(map, OBJECT_TYPE_TRADEDATE, date);
+			getData(map, OBJECT_TYPE_TRADEDATE, null, date);
 		}
 	}
 
@@ -541,16 +541,20 @@ public class KafkaService {
 	@KafkaListener(topics = TOPIC_DBGET_ANALYSIS_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void getAnalysisList(List<Map<String, Object>> list) {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_ANALYSIS_LIST, list.get(0).toString());
+		final Map<String, Object> firstMap = list.get(0);
+		final String type = firstMap.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
 
-		getDataList(list, OBJECT_TYPE_ANALYSIS);
+		getDataList(list, OBJECT_TYPE_ANALYSIS, type);
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void getHistoricalList(List<Map<String, Object>> list) {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_HISTORICAL_LIST, list.get(0).toString());
+		final Map<String, Object> firstMap = list.get(0);
+		final String type = firstMap.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
 
-		getDataList(list, OBJECT_TYPE_HISTORICAL);
+		getDataList(list, OBJECT_TYPE_HISTORICAL, type);
 	}
 
 	@Async(ASYNC_EXECUTOR)
@@ -559,9 +563,13 @@ public class KafkaService {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_ANALYSIS_SINGLE, map.toString());
 
 		final String ticker = map.get(mapKey.getTicker()).toString();
+		Map<String, Object> instrument = storeService.getInstrument(ticker);
 
-		getData(map, OBJECT_TYPE_ANALYSIS, ticker);
+		if (instrument != null) {
+			String type = instrument.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
 
+			getData(map, OBJECT_TYPE_ANALYSIS, type, ticker);
+		}
 	}
 
 	@Async(ASYNC_EXECUTOR)
@@ -571,11 +579,11 @@ public class KafkaService {
 
 		final String ticker = map.get(mapKey.getTicker()).toString();
 
-		getData(map, OBJECT_TYPE_HISTORICAL, ticker);
+		getData(map, OBJECT_TYPE_HISTORICAL, null, ticker);
 
 	}
 
-	private void getData(Map<String, Object> map, int objType, String criterion) {
+	private void getData(Map<String, Object> map, int objType, String type, String criterion) {
 
 		final String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
@@ -600,9 +608,17 @@ public class KafkaService {
 			if (objType == OBJECT_TYPE_HISTORICAL) {
 				outputList = storeService.getHistoricalList(criterion);
 			} else if (objType == OBJECT_TYPE_ANALYSIS) {
-				outputList = storeService.getAnalysisList(criterion);
+				if (type.equals("ETF")) {
+					outputList = storeService.getAnalysisETFList(criterion);
+				} else {
+					outputList = storeService.getAnalysisList(criterion);
+				}
 			} else {
-				outputList = storeService.getAnalysisListByDate(criterion);
+				if (type.equals("ETF")) {
+					outputList = storeService.getAnalysisETFListByDate(criterion);
+				} else {
+					outputList = storeService.getAnalysisListByDate(criterion);
+				}
 			}
 		}
 
@@ -623,7 +639,7 @@ public class KafkaService {
 		}
 	}
 
-	private void getDataList(List<Map<String, Object>> list, int objType) {
+	private void getDataList(List<Map<String, Object>> list, int objType, String type) {
 		final Map<String, Object> firstMap = list.get(0);
 
 		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
@@ -640,7 +656,7 @@ public class KafkaService {
 
 			String ticker = x.get(mapKey.getTicker()).toString();
 			newMap.put(mapKey.getTicker(), ticker);
-			getData(newMap, objType, ticker);
+			getData(newMap, objType, type, ticker);
 
 		});
 	}

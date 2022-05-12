@@ -17,11 +17,13 @@ import org.springframework.stereotype.Component;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.mapper.DataMapper;
 import com.thinkbox.md.model.Analysis;
+import com.thinkbox.md.model.AnalysisETF;
 import com.thinkbox.md.model.DailySummary;
 import com.thinkbox.md.model.Historical;
 import com.thinkbox.md.model.HistoricalSummary;
 import com.thinkbox.md.model.Instrument;
 import com.thinkbox.md.model.TradeDate;
+import com.thinkbox.md.repository.AnalysisETFRepository;
 import com.thinkbox.md.repository.AnalysisRepository;
 import com.thinkbox.md.repository.DailySummaryRepository;
 import com.thinkbox.md.repository.HistoricalRepository;
@@ -34,7 +36,7 @@ public class StoreService {
 	private final Logger logger = LoggerFactory.getLogger(StoreService.class);
 
 	private final static String DEFAULT_STRING_VALUE = "-";
-	
+
 	private final static Double DEFAULT_DOUBLE_VALUE = 0d;
 
 	@Autowired
@@ -47,6 +49,9 @@ public class StoreService {
 	private AnalysisRepository analysisRepository;
 
 	@Autowired
+	private AnalysisETFRepository analysisETFRepository;
+
+	@Autowired
 	private HistoricalRepository historicalRepository;
 
 	@Autowired
@@ -57,7 +62,7 @@ public class StoreService {
 
 	@Autowired
 	private MapKeyParameter mapKey;
-	
+
 	public void saveDailySummary(Map<String, Object> map) {
 
 		DailySummary dailySummary = mapper.convertMapToDailySummary(map);
@@ -65,7 +70,7 @@ public class StoreService {
 		dailySummaryRepository.save(dailySummary);
 
 	}
-	
+
 	public void saveTradeDateList(List<Map<String, Object>> list) {
 
 		List<TradeDate> convertedList = list.stream().skip(1).map(mapper::convertMapToTradeDate)
@@ -74,20 +79,28 @@ public class StoreService {
 		tradeDateRepository.saveAll(convertedList);
 
 	}
-	
+
 	public void saveAnalysisList(List<Map<String, Object>> list) {
 
 		final Map<String, Object> firstMap = list.get(0);
 		final String ticker = firstMap.get(mapKey.getTicker()).toString();
 		final Map<String, Object> inst = getInstrument(ticker);
 
-		List<Analysis> convertedList = list.stream().skip(1).map(x -> {
-			x.put(mapKey.getInst(), inst);
-			return mapper.convertMapToAnalysis(x);
-		}).collect(Collectors.toList());
+		String type = inst.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
+		if (type.equals("EQUITY")) {
 
-		analysisRepository.saveAll(convertedList);
-
+			List<Analysis> convertedList = list.stream().skip(1).map(x -> {
+				x.put(mapKey.getInst(), inst);
+				return mapper.convertMapToAnalysis(x);
+			}).collect(Collectors.toList());
+			analysisRepository.saveAll(convertedList);
+		} else {
+			List<AnalysisETF> convertedList = list.stream().skip(1).map(x -> {
+				x.put(mapKey.getInst(), inst);
+				return mapper.convertMapToAnalysisETF(x);
+			}).collect(Collectors.toList());
+			analysisETFRepository.saveAll(convertedList);
+		}
 	}
 
 	public void saveHistoricalList(List<Map<String, Object>> list) {
@@ -123,7 +136,7 @@ public class StoreService {
 		analysisRepository.save(analysis);
 
 	}
-	
+
 	public void saveTradeDate(Map<String, Object> map) {
 
 		TradeDate tradeDate = mapper.convertMapToTradeDate(map);
@@ -131,7 +144,7 @@ public class StoreService {
 		tradeDateRepository.save(tradeDate);
 
 	}
-	
+
 	public void saveInstrument(Map<String, Object> map) {
 
 		Instrument instrument = mapper.convertMapToInstrument(map);
@@ -249,7 +262,7 @@ public class StoreService {
 			x.put(mapKey.getHLastD(), DEFAULT_STRING_VALUE);
 			x.put(mapKey.getLastP(), DEFAULT_DOUBLE_VALUE);
 		}
-		
+
 		Optional<Historical> oHighest = list.stream().max(Comparator.comparing(Historical::getClose));
 		if (oHighest != null && oHighest.isPresent()) {
 			Historical hHigh = oHighest.get();
@@ -265,13 +278,13 @@ public class StoreService {
 		}
 		return x;
 	}
-	
+
 	public Long getHistoricalsTotal(final String ticker) {
 
 		return historicalRepository.countByTicker(ticker);
 
 	}
-	
+
 	public String getHistoricalDate(final String ticker, Double close) {
 
 		List<Historical> historicals = Arrays.asList();
@@ -286,12 +299,19 @@ public class StoreService {
 	}
 
 	public List<Map<String, Object>> getAnalysisList(String ticker) {
-	
+
 		List<Analysis> list = analysisRepository.findByTicker(ticker);
 
 		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
 	}
 
+	public List<Map<String, Object>> getAnalysisETFList(String ticker) {
+
+		List<AnalysisETF> list = analysisETFRepository.findByTicker(ticker);
+
+		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
+	}
+	
 	public List<Map<String, Object>> getTradeDateList() {
 		Long start = System.currentTimeMillis();
 		logger.info("Start to get tradedate list");
@@ -308,32 +328,49 @@ public class StoreService {
 		logger.info("Start to get tradedate list");
 
 		List<TradeDate> list = tradeDateRepository.findByDateGreaterThan(date);
-		
+
 		Long end = System.currentTimeMillis();
 		logger.info("Total time for getting tradedate list:" + (end - start));
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
 
-	
 	public List<Map<String, Object>> getTradeDateList(String date) {
 		Long start = System.currentTimeMillis();
 		logger.info("Start to get tradedate list");
 
 		List<TradeDate> list = tradeDateRepository.findByDate(date);
-		
+
 		Long end = System.currentTimeMillis();
 		logger.info("Total time for getting tradedate list:" + (end - start));
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
 
-	
-	public List<Map<String, Object>> getAnalysisList(String ticker, String date) {
-		
-		List<Analysis> list = analysisRepository.findByTickerAndDate(ticker, date);
+	public List<Map<String, Object>> getAnalysisETFList(String ticker, String date) {
+
+		List<AnalysisETF> list = analysisETFRepository.findByTickerAndDate(ticker, date);
 
 		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
 	}
 
+	public List<Map<String, Object>> getAnalysisList(String ticker, String date) {
+
+		List<Analysis> list = analysisRepository.findByTickerAndDate(ticker, date);
+
+		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
+	}
+	
+	public List<Map<String, Object>> getAnalysisETFListByDate(String date) {
+		Long start = System.currentTimeMillis();
+		logger.info("Start to get analysis list by trade date");
+
+		List<AnalysisETF> list = analysisETFRepository.findByDate(date);
+
+		Long end = System.currentTimeMillis();
+		logger.info("Total time for getting analysis list by trade date:" + (end - start));
+
+		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
+	}
+	
 	public List<Map<String, Object>> getAnalysisListByDate(String date) {
 		Long start = System.currentTimeMillis();
 		logger.info("Start to get analysis list by trade date");
@@ -345,7 +382,7 @@ public class StoreService {
 
 		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
 	}
-	
+
 	public long updateAnalysisField(String ticker, String date, String name, Object value) {
 		return analysisRepository.countByCriterion(date, name);
 	}
@@ -358,7 +395,7 @@ public class StoreService {
 		logger.info("Total time for getting summary:" + (end - start));
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
-	
+
 	public List<Map<String, Object>> getDates(String date) {
 		Long start = System.currentTimeMillis();
 		logger.info("Start to get dates:" + date);
@@ -367,7 +404,7 @@ public class StoreService {
 		logger.info("Total time for getting summary:" + (end - start));
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
-	
+
 	public int countByCriterion(String criterion) {
 
 		List<Analysis> list = analysisRepository.countByCriterion(criterion);
