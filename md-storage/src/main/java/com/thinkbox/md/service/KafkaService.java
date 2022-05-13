@@ -162,7 +162,7 @@ public class KafkaService {
 	@KafkaListener(topics = TOPIC_SAVE_EXCHANGE_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveExchangeList(List<Map<String, Object>> list) {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_EXCHANGE_LIST, list.toString());
-		storeService.saveInstrumentList(list);
+		storeService.saveMapList(OBJECT_TYPE_INSTRUMENT, list);
 	}
 
 	private Map<String, Object> readFile(Map<String, Object> firstMap, String currentTopic, String fileName) {
@@ -257,7 +257,7 @@ public class KafkaService {
 	public void saveHistoricalList(List<Map<String, Object>> list) {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_HISTORICAL_LIST, list.get(0).toString());
 
-		storeService.saveHistoricalList(list);
+		storeService.saveMapList(OBJECT_TYPE_HISTORICAL, list);
 
 		Map<String, Object> firstMap = list.get(0);
 		String topic = getTopicFromList(firstMap);
@@ -277,13 +277,7 @@ public class KafkaService {
 		if (!format.equals(DEFAULT_STRING_VALUE)) {
 			list = readFileList(firstMap, currentTopic, fileName);
 		}
-		if (objType == OBJECT_TYPE_INSTRUMENT) {
-			storeService.saveInstrumentList(list);
-		} else if (objType == OBJECT_TYPE_TRADEDATE) {
-			storeService.saveTradeDateList(list);
-		} else {
-			storeService.saveAnalysisList(list);
-		}
+		storeService.saveMapList(objType, list);
 		if (list.size() > 0) {
 			if (topic != null) {
 				if (format.equals(DEFAULT_STRING_VALUE)) {
@@ -314,17 +308,9 @@ public class KafkaService {
 		} else if (objType == OBJECT_TYPE_TRADEDATE) {
 			storeService.saveTradeDate(map);
 		} else if (objType == OBJECT_TYPE_DAILYSUMMARY) {
-			if (type.equals("ETF")) {
-				storeService.saveDailySummaryETF(map);
-			} else {
-				storeService.saveDailySummary(map);
-			}
+			storeService.saveDailySummary(type, map);
 		} else if (objType == OBJECT_TYPE_ANALYSIS) {
-			if (type.equals("ETF")) {
-				storeService.saveAnalysisETF(map);
-			} else {
-				storeService.saveAnalysis(map);
-			}
+			storeService.saveAnalysis(type, map);
 		}
 		if (map != null) {
 			if (topic != null) {
@@ -614,34 +600,17 @@ public class KafkaService {
 			if (objType == OBJECT_TYPE_HISTORICAL) {
 				outputList = storeService.getHistoricalList(criterion, formattedDate);
 			} else if (objType == OBJECT_TYPE_ANALYSIS) {
-				if (type.equals("ETF")) {
-					outputList = storeService.getAnalysisETFList(criterion, formattedDate);
-				} else {
-					outputList = storeService.getAnalysisList(criterion, formattedDate);
-				}
+				outputList = storeService.getAnalysisListByTickerAndDate(type, criterion, formattedDate);
 			} else {
-				if (type.equals("ETF")) {
-					System.out.println("GET ETF else");
-					outputList = storeService.getAnalysisETFListByDate(criterion);
-				} else {
-					outputList = storeService.getAnalysisListByDate(criterion);
-				}
+				outputList = storeService.getAnalysisListByDate(type, criterion);
 			}
 		} else {
 			if (objType == OBJECT_TYPE_HISTORICAL) {
 				outputList = storeService.getHistoricalList(criterion);
 			} else if (objType == OBJECT_TYPE_ANALYSIS) {
-				if (type.equals("ETF")) {
-					outputList = storeService.getAnalysisETFList(criterion);
-				} else {
-					outputList = storeService.getAnalysisList(criterion);
-				}
+				outputList = storeService.getAnalysisListByTicker(type, criterion);
 			} else {
-				if (type.equals("ETF")) {
-					outputList = storeService.getAnalysisETFListByDate(criterion);
-				} else {
-					outputList = storeService.getAnalysisListByDate(criterion);
-				}
+				outputList = storeService.getAnalysisListByDate(type, criterion);
 			}
 		}
 
