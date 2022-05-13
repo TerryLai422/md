@@ -455,11 +455,7 @@ public class KafkaService {
 
 		List<Map<String, Object>> outputList = null;
 
-		if (date.equals(DEFAULT_STRING_VALUE)) {
-			outputList = storeService.getDates();
-		} else {
-			outputList = storeService.getDates(date);
-		}
+			outputList = storeService.getDateMapList(date);
 
 		int size = outputList.size();
 		if (size > 0) {
@@ -608,8 +604,10 @@ public class KafkaService {
 			outputList = storeService.getHistoricalMapList(criterion, formattedDate);
 		} else if (objType == OBJECT_TYPE_ANALYSIS) {
 			outputList = storeService.getAnalysisMapListByTickerAndDate(type, criterion, formattedDate);
-		} else {
+		} else if (objType == OBJECT_TYPE_TRADEDATE) {
 			outputList = storeService.getAnalysisMapListByTickerAndDate(type, DEFAULT_STRING_VALUE, criterion);
+		} else {
+			
 		}
 
 		int size = outputList.size();
