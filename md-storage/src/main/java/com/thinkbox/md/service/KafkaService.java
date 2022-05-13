@@ -600,7 +600,7 @@ public class KafkaService {
 			calendar.add(Calendar.DATE, -day);
 			final String formattedDate = String.format(OUTPUT_DATE_FORMAT, calendar);
 			if (objType == OBJECT_TYPE_HISTORICAL) {
-				outputList = storeService.getHistoricalList(criterion, formattedDate);
+				outputList = storeService.getHistoricalMapList(criterion, formattedDate);
 			} else if (objType == OBJECT_TYPE_ANALYSIS) {
 				outputList = storeService.getAnalysisListByTickerAndDate(type, criterion, formattedDate);
 			} else {
@@ -608,7 +608,7 @@ public class KafkaService {
 			}
 		} else {
 			if (objType == OBJECT_TYPE_HISTORICAL) {
-				outputList = storeService.getHistoricalList(criterion);
+				outputList = storeService.getHistoricalMapList(criterion, DEFAULT_STRING_VALUE);
 			} else if (objType == OBJECT_TYPE_ANALYSIS) {
 				outputList = storeService.getAnalysisListByTicker(type, criterion);
 			} else {

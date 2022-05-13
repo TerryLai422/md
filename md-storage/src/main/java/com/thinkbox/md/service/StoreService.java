@@ -40,7 +40,7 @@ public class StoreService {
 	private final static String DEFAULT_STRING_VALUE = "-";
 
 	private final static Double DEFAULT_DOUBLE_VALUE = 0d;
-	
+
 	private final static String INSTRUMENT_TYPE_ETF = "ETF";
 
 	private final static int OBJECT_TYPE_INSTRUMENT = 1;
@@ -79,7 +79,7 @@ public class StoreService {
 
 	@Autowired
 	private MapKeyParameter mapKey;
-	
+
 	private void saveDailySummary(String type, Map<String, Object> map) {
 		if (type.equals(INSTRUMENT_TYPE_ETF)) {
 			saveDailySummaryETF(map);
@@ -95,7 +95,7 @@ public class StoreService {
 		dailySummaryETFRepository.save(dailySummary);
 
 	}
-	
+
 	private void saveDailySummary(Map<String, Object> map) {
 
 		DailySummary dailySummary = mapper.convertMapToDailySummary(map);
@@ -112,7 +112,7 @@ public class StoreService {
 		tradeDateRepository.saveAll(convertedList);
 
 	}
-	
+
 	public void saveMapList(int objType, List<Map<String, Object>> list) {
 		if (objType == OBJECT_TYPE_INSTRUMENT) {
 			saveInstrumentList(list);
@@ -120,7 +120,7 @@ public class StoreService {
 			saveHistoricalList(list);
 		} else if (objType == OBJECT_TYPE_TRADEDATE) {
 			saveTradeDateList(list);
-		} else if (objType == OBJECT_TYPE_ANALYSIS){
+		} else if (objType == OBJECT_TYPE_ANALYSIS) {
 			saveAnalysisList(list);
 		} else {
 			logger.info("Cannot find the corresponding object type");
@@ -183,7 +183,7 @@ public class StoreService {
 			saveAnalysis(map);
 		}
 	}
-	
+
 	private void saveAnalysisETF(Map<String, Object> map) {
 
 		AnalysisETF analysis = mapper.convertMapToAnalysisETF(map);
@@ -191,6 +191,7 @@ public class StoreService {
 		analysisETFRepository.save(analysis);
 
 	}
+
 	private void saveAnalysis(Map<String, Object> map) {
 
 		Analysis analysis = mapper.convertMapToAnalysis(map);
@@ -222,15 +223,15 @@ public class StoreService {
 			saveHistorical(map);
 		} else if (objType == OBJECT_TYPE_TRADEDATE) {
 			saveTradeDate(map);
-		} else if (objType == OBJECT_TYPE_ANALYSIS){
+		} else if (objType == OBJECT_TYPE_ANALYSIS) {
 			saveAnalysis(type, map);
 		} else if (objType == OBJECT_TYPE_DAILYSUMMARY) {
-			saveDailySummary(type, map);			
+			saveDailySummary(type, map);
 		} else {
 			logger.info("Cannot find the corresponding object type");
 		}
 	}
-	
+
 	public Map<String, Object> getInstrument(final String ticker) {
 
 		List<Instrument> instruments = instrumentRepository.findByTicker(ticker);
@@ -264,7 +265,8 @@ public class StoreService {
 
 	}
 
-	public List<Map<String, Object>> getInstrumentMapList(final String subExch, final String type, final String ticker) {
+	public List<Map<String, Object>> getInstrumentMapList(final String subExch, final String type,
+			final String ticker) {
 		List<Map<String, Object>> list = null;
 		if (!subExch.equals(DEFAULT_STRING_VALUE)) {
 			if (!type.equals(DEFAULT_STRING_VALUE)) {
@@ -276,10 +278,10 @@ public class StoreService {
 			} else {
 				list = getInstrumentList(subExch);
 			}
-		}	
+		}
 		return list;
 	}
-	
+
 	public List<Map<String, Object>> getHistoricalTotalFromInstrument(final String subExch, int limit) {
 
 		List<Instrument> list = instrumentRepository.findBySubExchAndTotal(subExch, limit);
@@ -290,6 +292,31 @@ public class StoreService {
 
 	}
 
+	public List<Map<String, Object>> getHistoricalMapList(final String ticker, final String date) {
+		List<Map<String, Object>> list = null;
+		if (date.equals(DEFAULT_STRING_VALUE)) {
+			list = getHistoricalList(ticker); 
+		} else {
+			list = getHistoricalList(ticker, date); 
+		}
+		return list;
+	}
+	
+	private List<Map<String, Object>> getHistoricalList(final String ticker) {
+
+		List<Historical> list = historicalRepository.findByTicker(ticker);
+
+		return list.stream().map(x -> x.getOthers()).collect(Collectors.toList());
+
+	}
+
+	private List<Map<String, Object>> getHistoricalList(final String ticker, String date) {
+
+		List<Historical> list = historicalRepository.findByTickerAndDate(ticker, date);
+
+		return list.stream().map(x -> x.getOthers()).collect(Collectors.toList());
+	}
+	
 	public List<Map<String, Object>> getHistoricalList(int page) {
 
 		PageRequest pageRequest = PageRequest.of(page, 2000);
@@ -299,23 +326,7 @@ public class StoreService {
 		return historicals.stream().limit(2000).map(x -> x.getOthers()).collect(Collectors.toList());
 
 	}
-
-	public List<Map<String, Object>> getHistoricalList(final String ticker) {
-
-		List<Historical> list = historicalRepository.findByTicker(ticker);
-
-		return list.stream().map(x -> x.getOthers()).collect(Collectors.toList());
-
-	}
-
-	public List<Map<String, Object>> getHistoricalList(final String ticker, String date) {
-
-		List<Historical> list = historicalRepository.findByTickerAndDate(ticker, date);
-
-		return list.stream().map(x -> x.getOthers()).collect(Collectors.toList());
-	}
-
-	public List<Map<String, Object>> getHistoricalList(final String ticker, long limit) {
+	private List<Map<String, Object>> getHistoricalList(final String ticker, long limit) {
 
 		List<Historical> list = Arrays.asList();
 
@@ -326,7 +337,7 @@ public class StoreService {
 		return list.stream().sorted((i, j) -> i.getDate().toString().compareTo(j.getDate().toString()))
 				.map(x -> x.getOthers()).collect(Collectors.toList());
 	}
-
+	
 	public Map<String, Object> getHistoricalSummary(final String ticker) {
 
 		HistoricalSummary summary = null;
@@ -418,7 +429,7 @@ public class StoreService {
 
 		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
 	}
-	
+
 	public List<Map<String, Object>> getTradeDateList() {
 		Long start = System.currentTimeMillis();
 		logger.info("Start to get tradedate list");
@@ -461,7 +472,7 @@ public class StoreService {
 		}
 		return list;
 	}
-	
+
 	public List<Map<String, Object>> getAnalysisETFListByTickerAndDate(String ticker, String date) {
 
 		List<AnalysisETF> list = analysisETFRepository.findByTickerAndDate(ticker, date);
@@ -475,6 +486,7 @@ public class StoreService {
 
 		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
 	}
+
 	public List<Map<String, Object>> getAnalysisListByDate(String type, String date) {
 		Long start = System.currentTimeMillis();
 		logger.info("Start to get analysis list by trade date");
@@ -491,14 +503,14 @@ public class StoreService {
 
 		return list;
 	}
-	
+
 	public List<Map<String, Object>> getAnalysisETFListByDate(String date) {
 
 		List<AnalysisETF> list = analysisETFRepository.findByDate(date);
 
 		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
 	}
-	
+
 	public List<Map<String, Object>> getAnalysisListByDate(String date) {
 
 		List<Analysis> list = analysisRepository.findByDate(date);
@@ -513,24 +525,24 @@ public class StoreService {
 	public List<Map<String, Object>> getDates() {
 		Long start = System.currentTimeMillis();
 		logger.info("Start to get dates");
-		
+
 		List<TradeDate> list = analysisRepository.getDates();
-		
+
 		Long end = System.currentTimeMillis();
 		logger.info("Total time for getting summary:" + (end - start));
-		
+
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
 
 	public List<Map<String, Object>> getDates(String date) {
 		Long start = System.currentTimeMillis();
 		logger.info("Start to get dates:" + date);
-		
+
 		List<TradeDate> list = analysisRepository.getDates(date);
-		
+
 		Long end = System.currentTimeMillis();
 		logger.info("Total time for getting summary:" + (end - start));
-		
+
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
 
