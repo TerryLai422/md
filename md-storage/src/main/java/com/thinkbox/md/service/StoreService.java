@@ -80,7 +80,7 @@ public class StoreService {
 	@Autowired
 	private MapKeyParameter mapKey;
 	
-	public void saveDailySummary(String type, Map<String, Object> map) {
+	private void saveDailySummary(String type, Map<String, Object> map) {
 		if (type.equals(INSTRUMENT_TYPE_ETF)) {
 			saveDailySummaryETF(map);
 		} else {
@@ -96,7 +96,7 @@ public class StoreService {
 
 	}
 	
-	public void saveDailySummary(Map<String, Object> map) {
+	private void saveDailySummary(Map<String, Object> map) {
 
 		DailySummary dailySummary = mapper.convertMapToDailySummary(map);
 
@@ -159,7 +159,7 @@ public class StoreService {
 
 	}
 
-	public void saveHistorical(Map<String, Object> map) {
+	private void saveHistorical(Map<String, Object> map) {
 
 		Historical historical = mapper.convertMapToHistorical(map);
 
@@ -176,7 +176,7 @@ public class StoreService {
 
 	}
 
-	public void saveAnalysis(String type, Map<String, Object> map) {
+	private void saveAnalysis(String type, Map<String, Object> map) {
 		if (type.equals(INSTRUMENT_TYPE_ETF)) {
 			saveAnalysisETF(map);
 		} else {
@@ -199,7 +199,7 @@ public class StoreService {
 
 	}
 
-	public void saveTradeDate(Map<String, Object> map) {
+	private void saveTradeDate(Map<String, Object> map) {
 
 		TradeDate tradeDate = mapper.convertMapToTradeDate(map);
 
@@ -207,7 +207,7 @@ public class StoreService {
 
 	}
 
-	public void saveInstrument(Map<String, Object> map) {
+	private void saveInstrument(Map<String, Object> map) {
 
 		Instrument instrument = mapper.convertMapToInstrument(map);
 
@@ -215,6 +215,22 @@ public class StoreService {
 
 	}
 
+	public void saveMap(int objType, String type, Map<String, Object> map) {
+		if (objType == OBJECT_TYPE_INSTRUMENT) {
+			saveInstrument(map);
+		} else if (objType == OBJECT_TYPE_HISTORICAL) {
+			saveHistorical(map);
+		} else if (objType == OBJECT_TYPE_TRADEDATE) {
+			saveTradeDate(map);
+		} else if (objType == OBJECT_TYPE_ANALYSIS){
+			saveAnalysis(type, map);
+		} else if (objType == OBJECT_TYPE_DAILYSUMMARY) {
+			saveDailySummary(type, map);			
+		} else {
+			logger.info("Cannot find the corresponding object type");
+		}
+	}
+	
 	public Map<String, Object> getInstrument(final String ticker) {
 
 		List<Instrument> instruments = instrumentRepository.findByTicker(ticker);
@@ -224,7 +240,7 @@ public class StoreService {
 		return null;
 	}
 
-	public List<Map<String, Object>> getInstrumentList(final String subExch) {
+	private List<Map<String, Object>> getInstrumentList(final String subExch) {
 
 		List<Instrument> list = instrumentRepository.findBySubExch(subExch);
 
@@ -232,7 +248,7 @@ public class StoreService {
 
 	}
 
-	public List<Map<String, Object>> getInstrumentList(final String subExch, final String type) {
+	private List<Map<String, Object>> getInstrumentList(final String subExch, final String type) {
 
 		List<Instrument> list = instrumentRepository.findBySubExchAndType(subExch, type);
 
@@ -240,7 +256,7 @@ public class StoreService {
 
 	}
 
-	public List<Map<String, Object>> getInstrumentList(final String subExch, final String type, final String ticker) {
+	private List<Map<String, Object>> getInstrumentList(final String subExch, final String type, final String ticker) {
 
 		List<Instrument> list = instrumentRepository.findBySubExchAndTypeAndTicker(subExch, type, ticker);
 
@@ -248,6 +264,22 @@ public class StoreService {
 
 	}
 
+	public List<Map<String, Object>> getInstrumentMapList(final String subExch, final String type, final String ticker) {
+		List<Map<String, Object>> list = null;
+		if (!subExch.equals(DEFAULT_STRING_VALUE)) {
+			if (!type.equals(DEFAULT_STRING_VALUE)) {
+				if (!ticker.equals(DEFAULT_STRING_VALUE)) {
+					list = getInstrumentList(subExch, type, ticker);
+				} else {
+					list = getInstrumentList(subExch, type);
+				}
+			} else {
+				list = getInstrumentList(subExch);
+			}
+		}	
+		return list;
+	}
+	
 	public List<Map<String, Object>> getHistoricalTotalFromInstrument(final String subExch, int limit) {
 
 		List<Instrument> list = instrumentRepository.findBySubExchAndTotal(subExch, limit);

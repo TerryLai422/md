@@ -302,15 +302,16 @@ public class KafkaService {
 		if (!format.equals(DEFAULT_STRING_VALUE)) {
 			map = readFile(firstMap, currentTopic, fileName);
 		}
-		if (objType == OBJECT_TYPE_INSTRUMENT) {
-			storeService.saveInstrument(map);
-		} else if (objType == OBJECT_TYPE_TRADEDATE) {
-			storeService.saveTradeDate(map);
-		} else if (objType == OBJECT_TYPE_DAILYSUMMARY) {
-			storeService.saveDailySummary(type, map);
-		} else if (objType == OBJECT_TYPE_ANALYSIS) {
-			storeService.saveAnalysis(type, map);
-		}
+//		if (objType == OBJECT_TYPE_INSTRUMENT) {
+//			storeService.saveInstrument(map);
+//		} else if (objType == OBJECT_TYPE_TRADEDATE) {
+//			storeService.saveTradeDate(map);
+//		} else if (objType == OBJECT_TYPE_DAILYSUMMARY) {
+//			storeService.saveDailySummary(type, map);
+//		} else if (objType == OBJECT_TYPE_ANALYSIS) {
+//			storeService.saveAnalysis(type, map);
+//		}
+		storeService.saveMap(objType, type, map);
 		if (map != null) {
 			if (topic != null) {
 				List<Map<String, Object>> list = new ArrayList<>();
@@ -336,7 +337,7 @@ public class KafkaService {
 
 		Map<String, Object> secondMap = list.get(1);
 
-		storeService.saveInstrument(secondMap);
+		storeService.saveMap(OBJECT_TYPE_INSTRUMENT, null, secondMap);
 
 		Map<String, Object> firstMap = list.get(0);
 		String topic = getTopicFromList(firstMap);
@@ -403,17 +404,18 @@ public class KafkaService {
 
 		int max = Integer.valueOf(map.getOrDefault("max", 0).toString());
 
-		if (!subExch.equals(DEFAULT_STRING_VALUE)) {
-			if (!type.equals(DEFAULT_STRING_VALUE)) {
-				if (!ticker.equals(DEFAULT_STRING_VALUE)) {
-					outputList = storeService.getInstrumentList(subExch, type, ticker);
-				} else {
-					outputList = storeService.getInstrumentList(subExch, type);
-				}
-			} else {
-				outputList = storeService.getInstrumentList(subExch);
-			}
-		}
+//		if (!subExch.equals(DEFAULT_STRING_VALUE)) {
+//			if (!type.equals(DEFAULT_STRING_VALUE)) {
+//				if (!ticker.equals(DEFAULT_STRING_VALUE)) {
+//					outputList = storeService.getInstrumentList(subExch, type, ticker);
+//				} else {
+//					outputList = storeService.getInstrumentList(subExch, type);
+//				}
+//			} else {
+//				outputList = storeService.getInstrumentList(subExch);
+//			}
+//		}
+		outputList = storeService.getInstrumentMapList(subExch, type, ticker);
 		logger.info("list size: " + outputList.size());
 		if (max != 0) {
 			outList = outputList.stream().limit(max).collect(Collectors.toList());
