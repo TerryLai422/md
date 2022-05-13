@@ -181,7 +181,7 @@ public class KafkaService {
 			});
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			logger.info("Exception: " + e.toString());
 			e.printStackTrace();
 		}
 		return map;
@@ -205,7 +205,7 @@ public class KafkaService {
 			mapperList.add(0, firstMap);
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			logger.info("Exception: " + e.toString());
 			e.printStackTrace();
 		}
 		return mapperList;
@@ -228,7 +228,6 @@ public class KafkaService {
 	public void saveTradeDateList(List<Map<String, Object>> list) {
 		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_TRADEDATE_LIST, list.get(0).toString());
 
-		Map<String, Object> firstMap = list.get(0);
 		saveList(list, OBJECT_TYPE_TRADEDATE, "tradedates");
 	}
 
@@ -515,10 +514,11 @@ public class KafkaService {
 
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		final String type = map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
+		
 		List<Map<String, Object>> list = storeService.getTradeDateList(date);
 
 		if (list.size() > 0) {
-			getData(map, OBJECT_TYPE_TRADEDATE, type, date);
+			getData(map, OBJECT_TYPE_DAILYSUMMARY, type, date);
 		}
 	}
 
@@ -661,7 +661,7 @@ public class KafkaService {
 
 			publishAfterOutputAsFile(map, file, topic, 1);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			logger.info("Exception: " + e.toString());
 			e.printStackTrace();
 		}
 	}
@@ -675,7 +675,7 @@ public class KafkaService {
 
 			publishAfterOutputAsFile(map, file, topic, outputList.size());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			logger.info("Exception: " + e.toString());
 			e.printStackTrace();
 		}
 	}

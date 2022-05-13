@@ -104,7 +104,7 @@ public class StoreService {
 
 	}
 
-	public void saveTradeDateList(List<Map<String, Object>> list) {
+	private void saveTradeDateList(List<Map<String, Object>> list) {
 
 		List<TradeDate> convertedList = list.stream().skip(1).map(mapper::convertMapToTradeDate)
 				.collect(Collectors.toList());
@@ -120,8 +120,10 @@ public class StoreService {
 			saveHistoricalList(list);
 		} else if (objType == OBJECT_TYPE_TRADEDATE) {
 			saveTradeDateList(list);
-		} else {
+		} else if (objType == OBJECT_TYPE_ANALYSIS){
 			saveAnalysisList(list);
+		} else {
+			logger.info("Cannot find the corresponding object type");
 		}
 	}
 
@@ -182,14 +184,14 @@ public class StoreService {
 		}
 	}
 	
-	public void saveAnalysisETF(Map<String, Object> map) {
+	private void saveAnalysisETF(Map<String, Object> map) {
 
 		AnalysisETF analysis = mapper.convertMapToAnalysisETF(map);
 
 		analysisETFRepository.save(analysis);
 
 	}
-	public void saveAnalysis(Map<String, Object> map) {
+	private void saveAnalysis(Map<String, Object> map) {
 
 		Analysis analysis = mapper.convertMapToAnalysis(map);
 
