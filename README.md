@@ -1,4 +1,4 @@
-# Market Data Technical/Quantitative Analysis
+# Market Data Technical Analysis
 
 Technical Components
 - Microservices
