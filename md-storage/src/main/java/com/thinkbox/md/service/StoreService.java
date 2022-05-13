@@ -403,7 +403,7 @@ public class StoreService {
 		return DEFAULT_STRING_VALUE;
 	}
 
-	public List<Map<String, Object>> getAnalysisListByTicker(String type, String ticker) {
+	private List<Map<String, Object>> getAnalysisListByTicker(String type, String ticker) {
 
 		List<Map<String, Object>> list = null;
 
@@ -416,14 +416,14 @@ public class StoreService {
 		return list;
 	}
 
-	public List<Map<String, Object>> getAnalysisListByTicker(String ticker) {
+	private List<Map<String, Object>> getAnalysisListByTicker(String ticker) {
 
 		List<Analysis> list = analysisRepository.findByTicker(ticker);
 
 		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
 	}
 
-	public List<Map<String, Object>> getAnalysisETFListByTicker(String ticker) {
+	private List<Map<String, Object>> getAnalysisETFListByTicker(String ticker) {
 
 		List<AnalysisETF> list = analysisETFRepository.findByTicker(ticker);
 
@@ -462,8 +462,23 @@ public class StoreService {
 		logger.info("Total time for getting tradedate list:" + (end - start));
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
+	
+	public List<Map<String, Object>> getAnalysisMapListByTickerAndDate(String type, String ticker, String date) {
+		List<Map<String, Object>> list = null;
+		if (ticker.equals(DEFAULT_STRING_VALUE)) {
+			list = getAnalysisListByDate(type, date);
+		} else {
+			if (date.equals(DEFAULT_STRING_VALUE)) {
+				list = getAnalysisListByTicker(type, ticker);
+				
+			} else {
+			list = getAnalysisListByTickerAndDate(type, ticker, date);
+			}
+		}
+		return list;
+	}
 
-	public List<Map<String, Object>> getAnalysisListByTickerAndDate(String type, String ticker, String date) {
+	private List<Map<String, Object>> getAnalysisListByTickerAndDate(String type, String ticker, String date) {
 		List<Map<String, Object>> list = null;
 		if (type.equals(INSTRUMENT_TYPE_ETF)) {
 			list = getAnalysisETFListByTickerAndDate(ticker, date);
@@ -473,21 +488,21 @@ public class StoreService {
 		return list;
 	}
 
-	public List<Map<String, Object>> getAnalysisETFListByTickerAndDate(String ticker, String date) {
+	private List<Map<String, Object>> getAnalysisETFListByTickerAndDate(String ticker, String date) {
 
 		List<AnalysisETF> list = analysisETFRepository.findByTickerAndDate(ticker, date);
 
 		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
 	}
 
-	public List<Map<String, Object>> getAnalysisListByTickerAndDate(String ticker, String date) {
+	private List<Map<String, Object>> getAnalysisListByTickerAndDate(String ticker, String date) {
 
 		List<Analysis> list = analysisRepository.findByTickerAndDate(ticker, date);
 
 		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
 	}
 
-	public List<Map<String, Object>> getAnalysisListByDate(String type, String date) {
+	private List<Map<String, Object>> getAnalysisListByDate(String type, String date) {
 		Long start = System.currentTimeMillis();
 		logger.info("Start to get analysis list by trade date");
 
@@ -504,14 +519,14 @@ public class StoreService {
 		return list;
 	}
 
-	public List<Map<String, Object>> getAnalysisETFListByDate(String date) {
+	private List<Map<String, Object>> getAnalysisETFListByDate(String date) {
 
 		List<AnalysisETF> list = analysisETFRepository.findByDate(date);
 
 		return list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
 	}
 
-	public List<Map<String, Object>> getAnalysisListByDate(String date) {
+	private List<Map<String, Object>> getAnalysisListByDate(String date) {
 
 		List<Analysis> list = analysisRepository.findByDate(date);
 

@@ -516,7 +516,7 @@ public class KafkaService {
 
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		final String type = map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
-		
+
 		List<Map<String, Object>> list = storeService.getTradeDateList(date);
 
 		if (list.size() > 0) {
@@ -596,24 +596,20 @@ public class KafkaService {
 
 		Calendar calendar = getCalendar(DATE_FORMAT, date);
 
+		String formattedDate = null;
 		if (calendar != null) {
 			calendar.add(Calendar.DATE, -day);
-			final String formattedDate = String.format(OUTPUT_DATE_FORMAT, calendar);
-			if (objType == OBJECT_TYPE_HISTORICAL) {
-				outputList = storeService.getHistoricalMapList(criterion, formattedDate);
-			} else if (objType == OBJECT_TYPE_ANALYSIS) {
-				outputList = storeService.getAnalysisListByTickerAndDate(type, criterion, formattedDate);
-			} else {
-				outputList = storeService.getAnalysisListByDate(type, criterion);
-			}
+			formattedDate = String.format(OUTPUT_DATE_FORMAT, calendar);
 		} else {
-			if (objType == OBJECT_TYPE_HISTORICAL) {
-				outputList = storeService.getHistoricalMapList(criterion, DEFAULT_STRING_VALUE);
-			} else if (objType == OBJECT_TYPE_ANALYSIS) {
-				outputList = storeService.getAnalysisListByTicker(type, criterion);
-			} else {
-				outputList = storeService.getAnalysisListByDate(type, criterion);
-			}
+			formattedDate = DEFAULT_STRING_VALUE;
+		}
+		
+		if (objType == OBJECT_TYPE_HISTORICAL) {
+			outputList = storeService.getHistoricalMapList(criterion, formattedDate);
+		} else if (objType == OBJECT_TYPE_ANALYSIS) {
+			outputList = storeService.getAnalysisMapListByTickerAndDate(type, criterion, formattedDate);
+		} else {
+			outputList = storeService.getAnalysisMapListByTickerAndDate(type, DEFAULT_STRING_VALUE, criterion);
 		}
 
 		int size = outputList.size();
