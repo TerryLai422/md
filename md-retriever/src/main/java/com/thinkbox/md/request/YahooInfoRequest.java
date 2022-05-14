@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
@@ -16,60 +17,62 @@ import java.util.Map;
 
 public class YahooInfoRequest extends YahooRequest {
 
-    private static final Logger log = LoggerFactory.getLogger(YahooInfoRequest.class);
-    
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+	private static final Logger log = LoggerFactory.getLogger(YahooInfoRequest.class);
 
-    protected final String symbols;
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public YahooInfoRequest(String symbols) {
-        this.symbols = symbols;
-    }
+	protected final String symbols;
 
-    public String getSymbols() {
-        return symbols;
-    }
+	public YahooInfoRequest(String symbols) {
+		this.symbols = symbols;
+	}
 
-    public void get() throws IOException {
+	public String getSymbols() {
+		return symbols;
+	}
 
-        Map<String, String> params = new LinkedHashMap<String, String>();
-        params.put("symbols", this.symbols);
+	public void get() throws IOException {
 
-        String url = QUOTES_QUERY1V7_BASE_URL + "?" + getURLParameters(params);
+		Map<String, String> params = new LinkedHashMap<String, String>();
+		params.put("symbols", this.symbols);
 
-        // Get JSON from Yahoo
-        log.info("Sending request: " + url);
+		String url = QUOTES_QUERY1V7_BASE_URL + "?" + getURLParameters(params);
 
-        URL request = new URL(url);
-        RedirectableRequest redirectableRequest = new RedirectableRequest(request, 5);
-        redirectableRequest.setConnectTimeout(CONNECTION_TIMEOUT);
-        redirectableRequest.setReadTimeout(CONNECTION_TIMEOUT);
-        URLConnection connection = redirectableRequest.openConnection();
+		// Get JSON from Yahoo
+		log.info("Sending request: " + url);
 
-        InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
-        JsonNode node = objectMapper.readTree(inputStreamReader);
+		URL request = new URL(url);
+		RedirectableRequest redirectableRequest = new RedirectableRequest(request, 5);
+		redirectableRequest.setConnectTimeout(CONNECTION_TIMEOUT);
+		redirectableRequest.setReadTimeout(CONNECTION_TIMEOUT);
+		URLConnection connection = redirectableRequest.openConnection();
+
+		try (InputStream inputStream = connection.getInputStream();
+				InputStreamReader inputStreamReader = new InputStreamReader(inputStream)) {
+			JsonNode node = objectMapper.readTree(inputStreamReader);
 //        log.info("Node: {}", node.toPrettyString());
-        if(node.has("quoteResponse") && node.get("quoteResponse").has("result")) {
-            node = node.get("quoteResponse").get("result");
-            if (node.size() > 0) {
-            	for(int i = 0; i < node.size(); i++) {
-            		saveAsFile(node.get(i));
-            	}
-            } else {
-            	throw new IOException("Can't find info for symbols: [ " + symbols + " ]");
-            }
-        } else {
-            throw new IOException("Invalid response");
-        }
-    }
-    
-    private void saveAsFile(JsonNode node) throws IOException {
-    	String symbol = node.get("symbol").asText();
+			if (node.has("quoteResponse") && node.get("quoteResponse").has("result")) {
+				node = node.get("quoteResponse").get("result");
+				if (node.size() > 0) {
+					for (int i = 0; i < node.size(); i++) {
+						saveAsFile(node.get(i));
+					}
+				} else {
+					throw new IOException("Can't find info for symbols: [ " + symbols + " ]");
+				}
+			} else {
+				throw new IOException("Invalid response");
+			}
+		}
+	}
+
+	private void saveAsFile(JsonNode node) throws IOException {
+		String symbol = node.get("symbol").asText();
 		String homeDirectory = System.getProperty(USER_HOME);
 		String fullFilePath = homeDirectory + File.separator + "info" + File.separator + symbol + INFO_FILE_EXTENSION;
 
-        FileWriter file = new FileWriter(fullFilePath);
-        file.write(node.toPrettyString());
-        file.close();
-    }
+		try (FileWriter fileWriter = new FileWriter(fullFilePath)) {
+			fileWriter.write(node.toPrettyString());
+		}
+	}
 }

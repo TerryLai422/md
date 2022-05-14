@@ -51,11 +51,11 @@ public class YahooHistoricalRequest extends YahooRequest {
 	public YahooHistoricalRequest(String symbol, Calendar from) {
 		this(symbol, DEFAULT_INTERVAL, from, DEFAULT_TO, false);
 	}
-	
+
 	public YahooHistoricalRequest(String symbol, String interval) {
 		this(symbol, interval, DEFAULT_FROM, DEFAULT_TO, false);
 	}
-	
+
 	public YahooHistoricalRequest(String symbol, String interval, Calendar from) {
 		this(symbol, interval, from, DEFAULT_TO, false);
 	}
@@ -65,7 +65,8 @@ public class YahooHistoricalRequest extends YahooRequest {
 	}
 
 	public YahooHistoricalRequest(String symbol, String interval, Calendar from, Calendar to, boolean displayOnly) {
-		if (interval!= null && (interval.equals(INTERVAL_DAILY) || interval.equals(INTERVAL_WEEKLY) || interval.equals(INTERVAL_MONTHLY))) {
+		if (interval != null && (interval.equals(INTERVAL_DAILY) || interval.equals(INTERVAL_WEEKLY)
+				|| interval.equals(INTERVAL_MONTHLY))) {
 			this.interval = interval;
 		} else {
 			this.interval = INTERVAL_DAILY;
@@ -110,7 +111,8 @@ public class YahooHistoricalRequest extends YahooRequest {
 		params.put("interval", this.interval);
 		params.put("crumb", CrumbManager.getCrumb());
 
-		String url = HISTQUOTES2_BASE_URL + URLEncoder.encode(this.symbol, UTF8_ENCODING) + "?" + getURLParameters(params);
+		String url = HISTQUOTES2_BASE_URL + URLEncoder.encode(this.symbol, UTF8_ENCODING) + "?"
+				+ getURLParameters(params);
 
 		logger.info("Sending request: " + url);
 
@@ -122,11 +124,13 @@ public class YahooHistoricalRequest extends YahooRequest {
 		requestProperties.put("Cookie", CrumbManager.getCookie());
 		URLConnection connection = redirectableRequest.openConnection(requestProperties);
 
-		if (displayOnly) {
-			display(connection.getInputStream());
-			throw new IOException("Display only for symbol: [ " + symbol + " ]");
-		} else {
-			saveAsFile(connection.getInputStream(), symbol, HISTORICAL_FILE_EXTENSION);
+		try (InputStream inputStream = connection.getInputStream()) {
+			if (displayOnly) {
+				display(inputStream);
+				throw new IOException("Display only for symbol: [ " + symbol + " ]");
+			} else {
+				saveAsFile(inputStream, symbol, HISTORICAL_FILE_EXTENSION);
+			}
 		}
 	}
 
@@ -134,9 +138,10 @@ public class YahooHistoricalRequest extends YahooRequest {
 		String homeDirectory = System.getProperty(USER_HOME);
 		String fileFullPath = null;
 		if (interval.equals(INTERVAL_DAILY)) {
-			fileFullPath = homeDirectory + File.separator + "historical"  + File.separator + fileName + "-d" + fileExtension;
+			fileFullPath = homeDirectory + File.separator + "historical" + File.separator + fileName + "-d"
+					+ fileExtension;
 		} else {
-			fileFullPath = homeDirectory + File.separator + "historical"  + File.separator + fileName  + fileExtension;
+			fileFullPath = homeDirectory + File.separator + "historical" + File.separator + fileName + fileExtension;
 		}
 		File targetFile = new File(fileFullPath);
 
@@ -144,11 +149,11 @@ public class YahooHistoricalRequest extends YahooRequest {
 	}
 
 	private void display(InputStream inputStream) throws IOException {
-		InputStreamReader is = new InputStreamReader(inputStream);
-		BufferedReader br = new BufferedReader(is);
-		br.readLine(); // skip the first line
-		for (String line = br.readLine(); line != null; line = br.readLine()) {
-			logger.info("Parsing CSV line: " + unescape(line));
+		try (InputStreamReader is = new InputStreamReader(inputStream); BufferedReader br = new BufferedReader(is)) {
+			br.readLine(); // skip the first line
+			for (String line = br.readLine(); line != null; line = br.readLine()) {
+				logger.info("Parsing CSV line: " + unescape(line));
+			}
 		}
 	}
 
