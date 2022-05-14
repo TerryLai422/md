@@ -191,30 +191,31 @@ public class FileParseService {
 		final String suffix = (subExch.equals(TORONTO_STOCK_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE
 				: (subExch.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE
 						: STRING_EMPTY_SPACE;
-		final String market = (subExch.equals(TORONTO_STOCK_EXCHANGE)
-				|| subExch.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? MARKET_CANADA : MARKET_UNITED_STATE;
+		final String market = (subExch.equals(TORONTO_STOCK_EXCHANGE) || subExch.equals(TORONTO_STOCK_VENTURE_EXCHANGE))
+				? MARKET_CANADA
+				: MARKET_UNITED_STATE;
 
-		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExch
-				+ File.separator + symbol + DETAIL_FILE_SUFFIX + FILE_EXTENSION;
+		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExch + File.separator
+				+ symbol + DETAIL_FILE_SUFFIX + FILE_EXTENSION;
 
 		logger.info(fileName);
 
 		File file = new File(fileName);
-
-		InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file));
-		JsonNode node = objectMapper.readTree(inputStreamReader);
-
 		Map<String, Object> map = new TreeMap<>();
-		jsonProperties.getProperty().forEach((x, y) -> {
-			Object object = getNodeValue(node, y);
-			if (object != null) {
-				map.put(x, object);
-			}
-		});
-		map.put(mapKey.getSymbol(), symbol.replaceAll(suffix, STRING_EMPTY_SPACE));
-		map.put(mapKey.getSubExch(), subExch);
-		map.put(mapKey.getMarket(), market);
+		try (FileInputStream fileInputStream = new FileInputStream(file);
+				InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream)) {
+			JsonNode node = objectMapper.readTree(inputStreamReader);
 
+			jsonProperties.getProperty().forEach((x, y) -> {
+				Object object = getNodeValue(node, y);
+				if (object != null) {
+					map.put(x, object);
+				}
+			});
+			map.put(mapKey.getSymbol(), symbol.replaceAll(suffix, STRING_EMPTY_SPACE));
+			map.put(mapKey.getSubExch(), subExch);
+			map.put(mapKey.getMarket(), market);
+		}
 		return map;
 	}
 

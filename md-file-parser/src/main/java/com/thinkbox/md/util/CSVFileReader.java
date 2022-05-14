@@ -23,22 +23,20 @@ public class CSVFileReader {
 
 		List<String[]> list = new ArrayList<>();
 
-		FileReader fileReader = new FileReader(fileName);
-		Reader reader = new BufferedReader(fileReader);
+		try (FileReader fileReader = new FileReader(fileName); Reader reader = new BufferedReader(fileReader)) {
 
-		CSVParserBuilder builder = new CSVParserBuilder();
-		if (separator != null) {
-			builder.withSeparator(separator);
+			CSVParserBuilder builder = new CSVParserBuilder();
+			if (separator != null) {
+				builder.withSeparator(separator);
+			}
+			if (quote != null) {
+				builder.withQuoteChar(quote);
+			}
+			CSVParser parser = builder.build();
+			try (CSVReader csvReader = new CSVReaderBuilder(reader).withSkipLines(1).withCSVParser(parser).build()) {
+				list = csvReader.readAll();
+			}
 		}
-		if (quote != null) {
-			builder.withQuoteChar(quote);
-		}
-		CSVParser parser = builder.build();
-		CSVReader csvReader = new CSVReaderBuilder(reader).withSkipLines(1).withCSVParser(parser).build();
-
-		list = csvReader.readAll();
-		reader.close();
-		csvReader.close();
 		return list;
 	}
 

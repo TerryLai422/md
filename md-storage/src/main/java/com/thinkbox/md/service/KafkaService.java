@@ -176,8 +176,9 @@ public class KafkaService {
 		File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
 				+ File.separator + fileName + FILE_EXTENSION);
 		Map<String, Object> map = null;
-		try {
-			map = objectMapper.readValue(new FileInputStream(file), new TypeReference<Map<String, Object>>() {
+		try (FileInputStream fileInputStream = new FileInputStream(file)) {
+			
+			map = objectMapper.readValue(fileInputStream, new TypeReference<Map<String, Object>>() {
 			});
 
 		} catch (IOException e) {
@@ -198,10 +199,11 @@ public class KafkaService {
 		File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
 				+ File.separator + fileName + FILE_EXTENSION);
 		List<Map<String, Object>> mapperList = null;
-		try {
-			mapperList = objectMapper.readValue(new FileInputStream(file),
-					new TypeReference<List<Map<String, Object>>>() {
-					});
+
+		try (FileInputStream fileInputStream = new FileInputStream(file)) {
+
+			mapperList = objectMapper.readValue(fileInputStream, new TypeReference<List<Map<String, Object>>>() {
+			});
 			mapperList.add(0, firstMap);
 
 		} catch (IOException e) {
