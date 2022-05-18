@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,16 +20,18 @@ import com.thinkbox.md.component.AverageVolume;
 import com.thinkbox.md.config.IndicatorProperties;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.MapValueParameter;
+
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.function.Function;
 
 @Component
+@Slf4j
 public class EnrichService {
 
 	public final static int OBJECT_TYPE_HISTORICAL = 1;
 
 	public final static int OBJECT_TYPE_ANALYSIS = 2;
-
-	private final Logger logger = LoggerFactory.getLogger(EnrichService.class);
 
 	private final static String TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE = ".TO";
 
@@ -104,10 +104,10 @@ public class EnrichService {
 
 			try {
 				if (x.get(mapKey.getDate()).toString().compareTo(date) > 0) {
-//						logger.info("x:" + x.get(mapKey.getDate()).toString() + "  -  " + date + ":true");
+//						log.info("x:" + x.get(mapKey.getDate()).toString() + "  -  " + date + ":true");
 					x.put(mapKey.getSave(), true);
 				} else {
-//						logger.info("x:" + x.get(mapKey.getDate()).toString() + "  -  " + date + ":false");
+//						log.info("x:" + x.get(mapKey.getDate()).toString() + "  -  " + date + ":false");
 					x.put(mapKey.getSave(), false);
 				}
 
@@ -226,7 +226,7 @@ public class EnrichService {
 
 		Map<String, Object> firstMap = list.remove(0);
 
-		System.out.println("FirstMap:" + firstMap);
+//		log.info("FirstMap:" + firstMap);
 
 		final String date = firstMap.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 
@@ -238,7 +238,7 @@ public class EnrichService {
 		
 		outMap.put("sma50-sma200", getMaps(getFilterList(list, "sma50", "sma200")));
 		
-		System.out.println("OUTMAP: " + outMap.toString());
+		log.info("OUTMAP: " + outMap.toString());
 		
 		return outMap;
 	}

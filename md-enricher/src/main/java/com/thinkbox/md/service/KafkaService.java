@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -21,10 +19,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.MapValueParameter;
 
-@Service
-public class KafkaService {
+import lombok.extern.slf4j.Slf4j;
 
-	private final Logger logger = LoggerFactory.getLogger(KafkaService.class);
+@Service
+@Slf4j
+public class KafkaService {
 
 	@Autowired
 	private KafkaTemplate<String, List<Map<String, Object>>> kafkaTemplateList;
@@ -79,7 +78,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, List<Map<String, Object>> list) {
-//		logger.info(STRING_LOGGER_SENT_MESSAGE, topic, list.toString());
+//		log.info(STRING_LOGGER_SENT_MESSAGE, topic, list.toString());
 
 		kafkaTemplateList.send(topic, list);
 	}
@@ -105,7 +104,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_CREATE_DAILYSUMMARY_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void createDailySummaryList(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_CREATE_DAILYSUMMARY_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_CREATE_DAILYSUMMARY_LIST, list.get(0).toString());
 
 		Map<String, Object> firstMap = list.get(0);
 
@@ -129,17 +128,17 @@ public class KafkaService {
 					outputAsFile(outMap, firstMap, topic, date);
 				}
 			} else {
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
 		} else {
-			logger.info("outMap is null");
+			log.info("outMap is null");
 		}	
 	}
 	
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_ENRICH_EXCHANGE_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void processExchangeData(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_EXCHANGE_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_EXCHANGE_LIST, list.get(0).toString());
 
 		List<Map<String, Object>> outputList = enrichService.enrichExchange(list);
 
@@ -158,14 +157,14 @@ public class KafkaService {
 			publish(topic, outputList);
 		} else {
 //			outputList.forEach(System.out::println);
-			logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+			log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 		}
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_ENRICH_ANALYSIS_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void enrichAnalysisList(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_ANALYSIS_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_ANALYSIS_LIST, list.get(0).toString());
 
 		enrichList(list, enrichService.OBJECT_TYPE_ANALYSIS);
 
@@ -174,7 +173,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_ENRICH_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void enrichHistericalList(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_HISTORICAL_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_HISTORICAL_LIST, list.get(0).toString());
 
 //		List<Map<String, Object>> weeklyList = enrichService.consolidate(mapValue.getWeekly(), list);
 //		weeklyList.forEach(System.out::println);
@@ -210,10 +209,10 @@ public class KafkaService {
 					outputAsFile(outputList, firstMap, topic, ticker);
 				}
 			} else {
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
 		} else {
-			logger.info("outputList size is zero");
+			log.info("outputList size is zero");
 		}	
 	}
 	
