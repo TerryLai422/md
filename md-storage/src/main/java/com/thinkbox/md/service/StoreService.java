@@ -8,8 +8,6 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -32,10 +30,11 @@ import com.thinkbox.md.repository.HistoricalRepository;
 import com.thinkbox.md.repository.InstrumentRepository;
 import com.thinkbox.md.repository.TradeDateRepository;
 
-@Component
-public class StoreService {
+import lombok.extern.slf4j.Slf4j;
 
-	private final Logger logger = LoggerFactory.getLogger(StoreService.class);
+@Component
+@Slf4j
+public class StoreService {
 
 	private final static String DEFAULT_STRING_VALUE = "-";
 
@@ -114,7 +113,7 @@ public class StoreService {
 		} else if (objType == OBJECT_TYPE_ANALYSIS) {
 			saveAnalysisList(list);
 		} else {
-			logger.info("Cannot find the corresponding object type");
+			log.info("Cannot find the corresponding object type");
 		}
 	}
 
@@ -176,7 +175,7 @@ public class StoreService {
 			saveDailySummary(type, map);
 			
 		} else {
-			logger.info("Cannot find the corresponding object type");
+			log.info("Cannot find the corresponding object type");
 		}
 	}
 
@@ -338,34 +337,34 @@ public class StoreService {
 
 	public List<Map<String, Object>> getTradeDateList() {
 		Long start = System.currentTimeMillis();
-		logger.info("Start to get tradedate list");
+		log.info("Start to get tradedate list");
 
 		List<TradeDate> list = tradeDateRepository.findAll();
 		System.out.println("Size:" + list.size());
 		Long end = System.currentTimeMillis();
-		logger.info("Total time for getting tradedate list:" + (end - start));
+		log.info("Total time for getting tradedate list:" + (end - start));
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
 
 	public List<Map<String, Object>> getTradeDateGreaterThanList(String date) {
 		Long start = System.currentTimeMillis();
-		logger.info("Start to get tradedate list");
+		log.info("Start to get tradedate list");
 
 		List<TradeDate> list = tradeDateRepository.findByDateGreaterThan(date);
 
 		Long end = System.currentTimeMillis();
-		logger.info("Total time for getting tradedate list:" + (end - start));
+		log.info("Total time for getting tradedate list:" + (end - start));
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
 
 	public List<Map<String, Object>> getTradeDateList(String date) {
 		Long start = System.currentTimeMillis();
-		logger.info("Start to get tradedate list");
+		log.info("Start to get tradedate list");
 
 		List<TradeDate> list = tradeDateRepository.findByDate(date);
 
 		Long end = System.currentTimeMillis();
-		logger.info("Total time for getting tradedate list:" + (end - start));
+		log.info("Total time for getting tradedate list:" + (end - start));
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
 	
@@ -416,7 +415,7 @@ public class StoreService {
 
 	private List<Map<String, Object>> getAnalysisListByDate(String type, String date) {
 		Long start = System.currentTimeMillis();
-		logger.info("Start to get analysis list by trade date");
+		log.info("Start to get analysis list by trade date");
 
 		List<Map<String, Object>> outList = null;
 		
@@ -429,7 +428,7 @@ public class StoreService {
 		}
 
 		Long end = System.currentTimeMillis();
-		logger.info("Total time for getting analysis list by trade date:" + (end - start));
+		log.info("Total time for getting analysis list by trade date:" + (end - start));
 
 		return outList;
 	}
@@ -440,7 +439,7 @@ public class StoreService {
 
 	public List<Map<String, Object>> getDateMapList(String date) {
 		Long start = System.currentTimeMillis();
-		logger.info("Start to get dates");
+		log.info("Start to get dates");
 
 		List<Map<String, Object>> outList = null;
 		List<TradeDate> list = null;
@@ -453,7 +452,7 @@ public class StoreService {
 		outList = list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 		
 		Long end = System.currentTimeMillis();
-		logger.info("Total time for getting summary:" + (end - start));
+		log.info("Total time for getting summary:" + (end - start));
 
 		return outList;
 	}

@@ -1,9 +1,6 @@
 package com.thinkbox.md.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.config.AnsiOutputApplicationListener;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
@@ -12,6 +9,8 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbox.md.config.MapKeyParameter;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,9 +26,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
+@Slf4j
 public class KafkaService {
-
-	private final Logger logger = LoggerFactory.getLogger(KafkaService.class);
 
 	@Autowired
 	private KafkaTemplate<String, List<Map<String, Object>>> kafkaTemplateList;
@@ -129,13 +127,13 @@ public class KafkaService {
 	private final static int OBJECT_TYPE_DAILYSUMMARY = 5;
 
 	public void publish(String topic, Map<String, Object> map) {
-		logger.info(STRING_LOGGER_SENT_MESSAGE, topic, map.toString());
+		log.info(STRING_LOGGER_SENT_MESSAGE, topic, map.toString());
 		kafkaTemplateMap.send(topic, map);
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_SENT_MESSAGE, topic, list.get(0).toString());
+		log.info(STRING_LOGGER_SENT_MESSAGE, topic, list.get(0).toString());
 
 		kafkaTemplateList.send(topic, list);
 	}
@@ -161,7 +159,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_EXCHANGE_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveExchangeList(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_EXCHANGE_LIST, list.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_EXCHANGE_LIST, list.toString());
 		storeService.saveMapList(OBJECT_TYPE_INSTRUMENT, list);
 	}
 
@@ -182,7 +180,7 @@ public class KafkaService {
 			});
 
 		} catch (IOException e) {
-			logger.info("Exception: " + e.toString());
+			log.info("Exception: " + e.toString());
 			e.printStackTrace();
 		}
 		return map;
@@ -207,7 +205,7 @@ public class KafkaService {
 			mapperList.add(0, firstMap);
 
 		} catch (IOException e) {
-			logger.info("Exception: " + e.toString());
+			log.info("Exception: " + e.toString());
 			e.printStackTrace();
 		}
 		return mapperList;
@@ -216,7 +214,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_DAILYSUMMARY_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveDailySummaryList(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_DAILYSUMMARY_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_DAILYSUMMARY_LIST, list.get(0).toString());
 
 		final Map<String, Object> firstMap = list.get(0);
 		final String date = firstMap.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
@@ -228,7 +226,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_TRADEDATE_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveTradeDateList(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_TRADEDATE_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_TRADEDATE_LIST, list.get(0).toString());
 
 		saveList(list, OBJECT_TYPE_TRADEDATE, "tradedates");
 	}
@@ -236,7 +234,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_INSTRUMENT_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveInstrumentList(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_INSTRUMENT_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_INSTRUMENT_LIST, list.get(0).toString());
 
 		Map<String, Object> firstMap = list.get(0);
 		final String subExch = firstMap.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
@@ -246,7 +244,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_ANALYSIS_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveAnalysisList(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_ANALYSIS_LIST, list.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_ANALYSIS_LIST, list.toString());
 
 		Map<String, Object> firstMap = list.get(0);
 		final String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
@@ -256,7 +254,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveHistoricalList(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_HISTORICAL_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_HISTORICAL_LIST, list.get(0).toString());
 
 		storeService.saveMapList(OBJECT_TYPE_HISTORICAL, list);
 
@@ -265,7 +263,7 @@ public class KafkaService {
 		if (topic != null) {
 			publish(topic, list.remove(0), list);
 		} else {
-			logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+			log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 		}
 	}
 
@@ -287,10 +285,10 @@ public class KafkaService {
 					outputAsFileList(list, firstMap, topic, fileName);
 				}
 			} else {
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
 		} else {
-			logger.info("outputList size is zero");
+			log.info("outputList size is zero");
 		}
 
 	}
@@ -324,10 +322,10 @@ public class KafkaService {
 					outputAsFile(map, firstMap, topic, fileName);
 				}
 			} else {
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
 		} else {
-			logger.info("map is null");
+			log.info("map is null");
 		}
 
 	}
@@ -335,7 +333,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_SAVE_INSTRUMENT_SINGLE, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveInstrument(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_INSTRUMENT_SINGLE, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_INSTRUMENT_SINGLE, list.get(0).toString());
 
 		Map<String, Object> secondMap = list.get(1);
 
@@ -350,14 +348,14 @@ public class KafkaService {
 
 			publish(topic, outputList);
 		} else {
-			logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+			log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 		}
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_TOTAL_FROM_INSTRUMENT, containerFactory = CONTAINER_FACTORY_MAP)
 	public void getHistoricalTotalFromInstruments(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_TOTAL_FROM_INSTRUMENT, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_TOTAL_FROM_INSTRUMENT, map.toString());
 
 		List<Map<String, Object>> outputList = null;
 
@@ -377,23 +375,23 @@ public class KafkaService {
 			if (outputList != null) {
 				printList(outputList);
 			}
-			logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+			log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 		}
 	}
 
 	private void printList(List<Map<String, Object>> outputList) {
 		outputList.forEach(x -> {
-			logger.info("Ticker: " + x.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString() + " - "
+			log.info("Ticker: " + x.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString() + " - "
 					+ x.getOrDefault(mapKey.getHTotal(), 0).toString() + " -- "
 					+ x.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString());
 		});
-		logger.info("Total: " + outputList.size());
+		log.info("Total: " + outputList.size());
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_EXCHANGE_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void getInstruments(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_EXCHANGE_DATA, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_EXCHANGE_DATA, map.toString());
 
 		List<Map<String, Object>> outputList = null;
 		List<Map<String, Object>> outList = null;
@@ -418,13 +416,13 @@ public class KafkaService {
 //			}
 //		}
 		outputList = storeService.getInstrumentMapList(subExch, type, ticker);
-		logger.info("list size: " + outputList.size());
+		log.info("list size: " + outputList.size());
 		if (max != 0) {
 			outList = outputList.stream().limit(max).collect(Collectors.toList());
 		} else {
 			outList = outputList;
 		}
-		logger.info("Limited list size: " + outList.size());
+		log.info("Limited list size: " + outList.size());
 
 		int size = outList.size();
 		if (size > 0) {
@@ -436,10 +434,10 @@ public class KafkaService {
 				}
 			} else {
 				printList(outList);
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 		} else {
-			logger.info("outList size is zero");
+			log.info("outList size is zero");
 		}
 //		System.out.println(storeService.updateAnalysisField("RFP", "20220502", "ind.obv", 21));
 //		System.out.println("50 > 200 Counter:" + storeService.countByCriterion("this.ind.sma50>this.ind.sma200"));
@@ -450,7 +448,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_ANALYSIS_TRADEDATE, containerFactory = CONTAINER_FACTORY_LIST)
 	public void getAnalysisDate(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_ANALYSIS_TRADEDATE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_ANALYSIS_TRADEDATE, map.toString());
 		final String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		final String topic = getTopicFromList(map);
@@ -468,18 +466,18 @@ public class KafkaService {
 					outputAsFileList(outputList, map, topic, "tradedates");
 				}
 			} else {
-				logger.info("Size: " + size);
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+				log.info("Size: " + size);
+				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 		} else {
-			logger.info("outputList size is zero");
+			log.info("outputList size is zero");
 		}
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_TRADEDATE_LIST, containerFactory = CONTAINER_FACTORY_MAP)
 	public void getTradeDateList(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_TRADEDATE_LIST, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_TRADEDATE_LIST, map.toString());
 
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		final String type = map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
@@ -510,7 +508,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_DAILYSUMMARY_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void getDailySummarySingle(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_DAILYSUMMARY_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_DAILYSUMMARY_SINGLE, map.toString());
 
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		final String type = map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
@@ -525,7 +523,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_TRADEDATE_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void getTradeDateSingle(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_TRADEDATE_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_TRADEDATE_SINGLE, map.toString());
 
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		final String type = map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
@@ -540,7 +538,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_ANALYSIS_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void getAnalysisList(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_ANALYSIS_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_ANALYSIS_LIST, list.get(0).toString());
 		final Map<String, Object> firstMap = list.get(0);
 		final String type = firstMap.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
 
@@ -550,7 +548,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void getHistoricalList(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_HISTORICAL_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_HISTORICAL_LIST, list.get(0).toString());
 		final Map<String, Object> firstMap = list.get(0);
 		final String type = firstMap.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
 
@@ -560,7 +558,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_ANALYSIS_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void getAnalysis(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_ANALYSIS_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_ANALYSIS_SINGLE, map.toString());
 
 		final String ticker = map.get(mapKey.getTicker()).toString();
 		Map<String, Object> instrument = storeService.getInstrument(ticker);
@@ -575,7 +573,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_HISTORICAL_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void getHistorical(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_HISTORICAL_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_HISTORICAL_SINGLE, map.toString());
 
 		final String ticker = map.get(mapKey.getTicker()).toString();
 
@@ -621,11 +619,11 @@ public class KafkaService {
 					outputAsFileList(outputList, map, topic, criterion);
 				}
 			} else {
-				logger.info("Size: " + size);
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+				log.info("Size: " + size);
+				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 		} else {
-			logger.info("outputList size is zero");
+			log.info("outputList size is zero");
 		}
 	}
 
@@ -659,7 +657,7 @@ public class KafkaService {
 
 			publishAfterOutputAsFile(map, file, topic, 1);
 		} catch (IOException e) {
-			logger.info("Exception: " + e.toString());
+			log.info("Exception: " + e.toString());
 			e.printStackTrace();
 		}
 	}
@@ -673,7 +671,7 @@ public class KafkaService {
 
 			publishAfterOutputAsFile(map, file, topic, outputList.size());
 		} catch (IOException e) {
-			logger.info("Exception: " + e.toString());
+			log.info("Exception: " + e.toString());
 			e.printStackTrace();
 		}
 	}
@@ -713,7 +711,7 @@ public class KafkaService {
 		if (topic != null) {
 			if (size < limit) {
 
-				logger.info("Send without processing: " + ticker);
+				log.info("Send without processing: " + ticker);
 				Map<String, Object> newMap = map.entrySet().stream()
 						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 				newMap.put(mapKey.getTicker(), ticker);
@@ -723,7 +721,7 @@ public class KafkaService {
 
 			} else {
 
-				logger.info("Processing before sending: " + ticker);
+				log.info("Processing before sending: " + ticker);
 				int skip = 0;
 				int count = 0;
 				String oDate = date;
@@ -757,8 +755,8 @@ public class KafkaService {
 
 		} else {
 
-			logger.info("outputList size: " + outputList.size());
-			logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+			log.info("outputList size: " + outputList.size());
+			log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 
 		}
 	}
@@ -775,7 +773,7 @@ public class KafkaService {
 			calendar.set(Calendar.MINUTE, 0);
 			calendar.set(Calendar.HOUR, 0);
 		} catch (ParseException e) {
-			logger.debug(e.toString());
+			log.debug(e.toString());
 		}
 		return calendar;
 	}
@@ -783,7 +781,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_SUMMARY_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void getHistoricalSummaryList(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_SUMMARY_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_SUMMARY_LIST, list.get(0).toString());
 
 		final Map<String, Object> firstMap = list.get(0);
 		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
@@ -809,7 +807,7 @@ public class KafkaService {
 		});
 
 		Long end = System.currentTimeMillis();
-		logger.info("Total time for getting summary:" + (end - start));
+		log.info("Total time for getting summary:" + (end - start));
 		if (list.size() > 0) {
 			if (topic != null) {
 				if (format.equals(DEFAULT_STRING_VALUE)) {
@@ -818,10 +816,10 @@ public class KafkaService {
 					outputAsFileList(list, firstMap, topic, subExch);
 				}
 			} else {
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
 		} else {
-			logger.info("outputList size is zero");
+			log.info("outputList size is zero");
 		}
 
 	}
@@ -887,7 +885,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_SUMMARY_SINGLE, containerFactory = CONTAINER_FACTORY_LIST)
 	public void getHistoricalSummary(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_SUMMARY_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_SUMMARY_SINGLE, map.toString());
 
 		final String topic = getTopicFromList(map);
 
@@ -908,14 +906,14 @@ public class KafkaService {
 
 			publish(topic, outputList);
 		} else {
-			logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+			log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 		}
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBUPDATE_HISTORICAL_ALL, containerFactory = CONTAINER_FACTORY_MAP)
 	public void updateHistoricalAll(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBUPDATE_HISTORICAL_ALL, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBUPDATE_HISTORICAL_ALL, map.toString());
 
 		final String topic = getTopicFromList(map);
 
@@ -933,7 +931,7 @@ public class KafkaService {
 
 				publish(topic, outputList);
 			} else {
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 
 		});
