@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -17,10 +15,11 @@ import org.springframework.stereotype.Service;
 
 import com.thinkbox.md.config.MapKeyParameter;
 
-@Service
-public class KafkaService {
+import lombok.extern.slf4j.Slf4j;
 
-	private final Logger logger = LoggerFactory.getLogger(KafkaService.class);
+@Service
+@Slf4j
+public class KafkaService {
 
 	@Autowired
 	private KafkaTemplate<String, List<Map<String, Object>>> kafkaTemplateList;
@@ -66,14 +65,14 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_SENT_MESSAGE, topic, list.toString());
+		log.info(STRING_LOGGER_SENT_MESSAGE, topic, list.toString());
 
 		kafkaTemplateList.send(topic, list);
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, Map<String, Object> map) {
-		logger.info(STRING_LOGGER_SENT_MESSAGE, topic, map.toString());
+		log.info(STRING_LOGGER_SENT_MESSAGE, topic, map.toString());
 
 		kafkaTemplateMap.send(topic, map);
 	}
@@ -81,7 +80,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_EXCHANGE_DATA, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseExchange(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_EXCHANGE_DATA, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_EXCHANGE_DATA, map.toString());
 
 		try {
 			String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
@@ -102,17 +101,17 @@ public class KafkaService {
 
 				publish(topic, outputList);
 			} else {
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 		} catch (IOException e) {
-			logger.info(e.toString());
+			log.info(e.toString());
 		}
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_DETAIL_LIST, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDetailList(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DETAIL_LIST, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DETAIL_LIST, map.toString());
 
 		try {
 			final String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
@@ -136,24 +135,24 @@ public class KafkaService {
 
 						publish(topic, outputList);
 					} else {
-						logger.info(outputMap.toString());
-						logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+						log.info(outputMap.toString());
+						log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 					}
 				} catch (IOException e) {
-					logger.info(e.toString());
+					log.info(e.toString());
 				}
 			});
 		} catch (
 
 		IOException e) {
-			logger.info(e.toString());
+			log.info(e.toString());
 		}
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_DETAIL_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDetail(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DETAIL_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DETAIL_SINGLE, map.toString());
 
 		try {
 			String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
@@ -170,18 +169,18 @@ public class KafkaService {
 				outputList.add(1, outputMap);
 				publish(topic, outputList);
 			} else {
-				logger.info(outputMap.toString());
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+				log.info(outputMap.toString());
+				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 		} catch (IOException e) {
-			logger.info(e.toString());
+			log.info(e.toString());
 		}
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseHistoricalList(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_HISTORICAL_LIST, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_HISTORICAL_LIST, map.toString());
 
 		try {
 			final String directory = map.getOrDefault(mapKey.getDirectory(), DEFAULT_STRING_VALUE).toString();
@@ -199,14 +198,14 @@ public class KafkaService {
 			});
 
 		} catch (IOException e) {
-			logger.info(e.toString());
+			log.info(e.toString());
 		}
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseHisterical(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_HISTORICAL_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_HISTORICAL_SINGLE, map.toString());
 
 		parseHistericalData(map);
 	}
@@ -225,7 +224,7 @@ public class KafkaService {
 					ticker);
 
 			if (topic != null) {
-				logger.info("Number of records:" + outputList.size());
+				log.info("Number of records:" + outputList.size());
 				if (outputList.size() >= 2) {
 					final Map<String, Object> firstMap = outputList.remove(0);
 					map.forEach((i, j) -> {
@@ -249,19 +248,19 @@ public class KafkaService {
 					}
 				}
 			} else {
-				logger.info(outputList.toString());
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+				log.info(outputList.toString());
+				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 
 		} catch (IOException e) {
-			logger.info(e.toString());
+			log.info(e.toString());
 		}
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_DAILY_LIST, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDailyList(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DAILY_LIST, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DAILY_LIST, map.toString());
 
 		try {
 			final String directory = map.getOrDefault(mapKey.getDirectory(), DEFAULT_STRING_VALUE).toString();
@@ -279,7 +278,7 @@ public class KafkaService {
 			});
 
 		} catch (IOException e) {
-			logger.info(e.toString());
+			log.info(e.toString());
 		}
 
 	}
@@ -287,7 +286,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_DAILY_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDaily(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DAILY_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DAILY_SINGLE, map.toString());
 
 		parseDailyData(map);
 
@@ -304,7 +303,7 @@ public class KafkaService {
 			List<Map<String, Object>> outputList = fileParseService.parseDailyFile(directory, fileName, dataSource);
 
 			if (topic != null) {
-				logger.info("Number of records:" + outputList.size());
+				log.info("Number of records:" + outputList.size());
 				if (outputList.size() >= 2) {
 					final Map<String, Object> firstMap = outputList.remove(0);
 					map.forEach((i, j) -> {
@@ -328,19 +327,19 @@ public class KafkaService {
 					}
 				}
 			} else {
-				logger.info(outputList.toString());
-				logger.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+				log.info(outputList.toString());
+				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 			}
 
 		} catch (IOException e) {
-			logger.info(e.toString());
+			log.info(e.toString());
 		}
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_PARSE_INFO_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseInfo(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_INFO_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_INFO_SINGLE, map.toString());
 
 		try {
 			String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
@@ -349,7 +348,7 @@ public class KafkaService {
 //			list.forEach(System.out::println);
 //			publish(TOPIC_PROCESS_INFO_DATA, outMap);
 		} catch (IOException e) {
-			logger.info(e.toString());
+			log.info(e.toString());
 		}
 	}
 

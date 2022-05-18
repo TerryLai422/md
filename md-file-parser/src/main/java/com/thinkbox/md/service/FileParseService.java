@@ -3,7 +3,6 @@ package com.thinkbox.md.service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -18,8 +17,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -32,10 +29,11 @@ import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.MapValueParameter;
 import com.thinkbox.md.util.CSVFileReader;
 
-@Component
-public class FileParseService {
+import lombok.extern.slf4j.Slf4j;
 
-	private final Logger logger = LoggerFactory.getLogger(FileParseService.class);
+@Component
+@Slf4j
+public class FileParseService {
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -130,7 +128,7 @@ public class FileParseService {
 			directory += File.separator + subDirectory;
 		}
 
-		logger.info(directory);
+		log.info(directory);
 		File directoryPath = new File(directory);
 
 		return Stream.of(directoryPath.listFiles()).filter(x -> !x.isDirectory() && !x.isHidden())
@@ -161,7 +159,7 @@ public class FileParseService {
 			directory += File.separator + subDirectory;
 		}
 
-		logger.info(directory);
+		log.info(directory);
 		File directoryPath = new File(directory);
 
 		return Stream.of(directoryPath.listFiles()).filter(x -> !x.isDirectory() && !x.isHidden())
@@ -175,7 +173,7 @@ public class FileParseService {
 
 		String directory = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExch;
 
-		logger.info(directory);
+		log.info(directory);
 		File directoryPath = new File(directory);
 
 		return Stream.of(directoryPath.listFiles()).filter(x -> !x.isDirectory() && !x.isHidden())
@@ -198,7 +196,7 @@ public class FileParseService {
 		String fileName = dataDirectory + File.separator + DETAIL_DIRECTORY + File.separator + subExch + File.separator
 				+ symbol + DETAIL_FILE_SUFFIX + FILE_EXTENSION;
 
-		logger.info(fileName);
+		log.info(fileName);
 
 		File file = new File(fileName);
 		Map<String, Object> map = new TreeMap<>();
@@ -364,7 +362,7 @@ public class FileParseService {
 		final int intervalPosition = getIntervalPosition(dataSource);
 		final int timePosition = getTimePosition(dataSource);
 		final String fullFileName = getFullFileName(directory, subDirectory, fileName, dataSource, symbol, ticker);
-		logger.info(fullFileName);
+		log.info(fullFileName);
 
 		CSVFileReader csvFileReader = new CSVFileReader();
 
@@ -451,7 +449,7 @@ public class FileParseService {
 			calendar.set(Calendar.MINUTE, 0);
 			calendar.set(Calendar.HOUR, 0);
 		} catch (ParseException e) {
-			logger.info(e.toString());
+			log.info(e.toString());
 		}
 		return calendar;
 	}
@@ -461,7 +459,7 @@ public class FileParseService {
 		String fileName = dataDirectory + File.separator + EXCHANGE_DIRECTORY + File.separator + exchange
 				+ FILE_EXTENSION;
 
-		logger.info(fileName);
+		log.info(fileName);
 
 		final String suffix = (exchange.equals(TORONTO_STOCK_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE
 				: (exchange.equals(TORONTO_STOCK_VENTURE_EXCHANGE)) ? TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE
