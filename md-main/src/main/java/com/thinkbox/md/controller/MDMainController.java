@@ -3,8 +3,6 @@ package com.thinkbox.md.controller;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,11 +14,12 @@ import com.thinkbox.md.config.RestParameterProperties;
 import com.thinkbox.md.service.KafkaService;
 import com.thinkbox.md.service.MainService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestController
 @RequestMapping("")
+@Slf4j
 public class MDMainController {
-
-	private static final Logger logger = LoggerFactory.getLogger(KafkaService.class);
 
 	@Autowired
 	private RestParameterProperties restParameterProperties;
@@ -35,7 +34,7 @@ public class MDMainController {
 
 	@PostMapping(consumes = APPLICATION_JSON_TYPE, produces = APPLICATION_JSON_TYPE)
 	public ResponseEntity<Object> process(@RequestBody Map<String, Object> map) {
-		logger.info("Received map: {}", map.toString());
+		log.info("Received map: {}", map.toString());
 
 		Object objNext = map.get("next");
 		int next = 0;
@@ -47,14 +46,14 @@ public class MDMainController {
 
 		Object objStep = map.get("steps");
 		if (objStep == null) {
-			logger.info("Missing Steps -> {}", map.toString());
+			log.info("Missing Steps -> {}", map.toString());
 			return ResponseEntity.badRequest().body("Missing Steps");
 		}
 
 		@SuppressWarnings("unchecked")
 		List<String> stepList = (List<String>) objStep;
 		if (stepList.size() == 0) {
-			logger.info("Empty Step -> {}", map.toString());
+			log.info("Empty Step -> {}", map.toString());
 			return ResponseEntity.badRequest().body("Empty Step");
 		}
 
@@ -62,13 +61,12 @@ public class MDMainController {
 
 		if (topic != null) {
 			if (topic.equals("delete.files")) {
-				System.out.println("delete files");
 				mainService.cleanupFolders();
 			} else {
 				List<String> parameterList = restParameterProperties.getTopic().get(topic);
 
 				if (parameterList == null) {
-					logger.info("Cannot find matched topic configuration -> {}", topic);
+					log.info("Cannot find matched topic configuration -> {}", topic);
 					return ResponseEntity.badRequest().body("Cannot find matched topic configuration: " + topic);
 				} else {
 					String missing = "";
@@ -80,7 +78,7 @@ public class MDMainController {
 					}
 
 					if (!missing.equals("")) {
-						logger.info("Missing Parameter -> {}", missing);
+						log.info("Missing Parameter -> {}", missing);
 						return ResponseEntity.badRequest().body("Missing Parameter: " + missing);
 
 					}
@@ -89,7 +87,7 @@ public class MDMainController {
 				}
 			}
 		} else {
-			logger.info("Incorrect Step -> {}", map.toString());
+			log.info("Incorrect Step -> {}", map.toString());
 			return ResponseEntity.badRequest().body("Incorrect Step");
 		}
 

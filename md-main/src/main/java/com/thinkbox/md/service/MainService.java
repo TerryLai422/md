@@ -2,15 +2,14 @@ package com.thinkbox.md.service;
 
 import java.io.File;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-@Service
-public class MainService {
+import lombok.extern.slf4j.Slf4j;
 
-	private static final Logger logger = LoggerFactory.getLogger(MainService.class);
+@Service
+@Slf4j
+public class MainService {
 
 	private final static String USER_HOME = "user.home";
 	
@@ -18,7 +17,7 @@ public class MainService {
 
 	@Async(ASYNC_EXECUTOR)
 	public void cleanupFolders() {
-		
+		log.info("Start deleting files");	
 		File file = new File(System.getProperty(USER_HOME) + File.separator + "save");
 		deleteFiles(file);
 		File file1 = new File(System.getProperty(USER_HOME) + File.separator + "create");
@@ -27,6 +26,7 @@ public class MainService {
 		deleteFiles(file2);
 		File file3 = new File(System.getProperty(USER_HOME) + File.separator + "dbget");
 		deleteFiles(file3);
+		log.info("Finished deleting files");
 
 	}
 

@@ -2,18 +2,17 @@ package com.thinkbox.md.service;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class KafkaService {
 	
-	private static final Logger logger = LoggerFactory.getLogger(KafkaService.class);
-
 	@Autowired
 	private KafkaTemplate<String, Map<String, Object>> kafkaTemplate;
 
@@ -23,7 +22,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, Map<String, Object> map) {
-		logger.info(STRING_LOGGER_SENT_MESSAGE, topic, map.toString());
+		log.info(STRING_LOGGER_SENT_MESSAGE, topic, map.toString());
 		kafkaTemplate.send(topic, map);
 	}
 
