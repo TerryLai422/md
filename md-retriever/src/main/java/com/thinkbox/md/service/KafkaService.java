@@ -1,7 +1,5 @@
 package com.thinkbox.md.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -10,13 +8,14 @@ import org.springframework.stereotype.Service;
 
 import com.thinkbox.md.config.MapKeyParameter;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class KafkaService {
-
-	private final Logger logger = LoggerFactory.getLogger(KafkaService.class);
 
 	@Autowired
 	private KafkaTemplate<String, List<Map<String, Object>>> kafkaTemplateList;
@@ -48,14 +47,14 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, Map<String, Object> map) {
-		logger.info(STRING_LOGGER_SENT_MESSAGE, topic, map);
+		log.info(STRING_LOGGER_SENT_MESSAGE, topic, map);
 		
 		kafkaTemplateMap.send(topic, map);
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	public void publish(String topic, List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_SENT_MESSAGE, topic, list.toString());
+		log.info(STRING_LOGGER_SENT_MESSAGE, topic, list.toString());
 
 		kafkaTemplateList.send(topic, list);
 	}
@@ -63,7 +62,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_RETRIEVE_YAHOO_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
 	public void retreiveYahoo(Map<String, Object> map) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_RETRIEVE_YAHOO_SINGLE, map);
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_RETRIEVE_YAHOO_SINGLE, map);
 		
 		retrieveService.retrieveYahoo(map);
 	}
@@ -71,7 +70,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_RETRIEVE_YAHOO_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void retrieveYahooList(List<Map<String, Object>> list) {
-		logger.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_RETRIEVE_YAHOO_LIST, list.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_RETRIEVE_YAHOO_LIST, list.toString());
 
 		Map<String, Object> firstMap = list.get(0);
 		
@@ -95,7 +94,7 @@ public class KafkaService {
 
 		} else {
 			outputList.forEach(System.out::println);
-			logger.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+			log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 		}
 	}
 	

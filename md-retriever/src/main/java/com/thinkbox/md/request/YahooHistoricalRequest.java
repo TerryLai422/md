@@ -11,9 +11,9 @@ import java.net.URLEncoder;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class YahooHistoricalRequest extends YahooRequest {
 
 	public static final String INTERVAL_DAILY = "1d";
@@ -31,8 +31,6 @@ public class YahooHistoricalRequest extends YahooRequest {
 	static {
 		DEFAULT_FROM.add(Calendar.YEAR, -1);
 	}
-
-	private static final Logger logger = LoggerFactory.getLogger(YahooHistoricalRequest.class);
 
 	private final String symbol;
 
@@ -100,7 +98,7 @@ public class YahooHistoricalRequest extends YahooRequest {
 	public void get() throws IOException {
 
 		if (this.from.after(this.to)) {
-			logger.warn("Unable to retrieve historical quotes. " + "From-date should not be after to-date. From: "
+			log.warn("Unable to retrieve historical quotes. " + "From-date should not be after to-date. From: "
 					+ this.from.getTime() + ", to: " + this.to.getTime());
 			return;
 		}
@@ -114,7 +112,7 @@ public class YahooHistoricalRequest extends YahooRequest {
 		String url = HISTQUOTES2_BASE_URL + URLEncoder.encode(this.symbol, UTF8_ENCODING) + "?"
 				+ getURLParameters(params);
 
-		logger.info("Sending request: " + url);
+		log.info("Sending request: " + url);
 
 		URL request = new URL(url);
 		RedirectableRequest redirectableRequest = new RedirectableRequest(request, 5);
@@ -152,7 +150,7 @@ public class YahooHistoricalRequest extends YahooRequest {
 		try (InputStreamReader is = new InputStreamReader(inputStream); BufferedReader br = new BufferedReader(is)) {
 			br.readLine(); // skip the first line
 			for (String line = br.readLine(); line != null; line = br.readLine()) {
-				logger.info("Parsing CSV line: " + unescape(line));
+				log.info("Parsing CSV line: " + unescape(line));
 			}
 		}
 	}

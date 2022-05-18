@@ -6,9 +6,9 @@ import java.net.URLEncoder;
 import java.util.*;
 import java.util.Map.Entry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public abstract class YahooRequest {
 
 	protected static final String USER_HOME = "user.home";
@@ -31,8 +31,6 @@ public abstract class YahooRequest {
 
 	protected static final String UTF8_ENCODING = "UTF-8";
 	
-	private static final Logger log = LoggerFactory.getLogger(YahooRequest.class);
-
 	protected String getURLParameters(Map<String, String> params) {
 		StringBuilder sb = new StringBuilder();
 

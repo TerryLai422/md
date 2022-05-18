@@ -18,9 +18,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class CrumbManager {
 
 	public static final String HISTQUOTES2_SCRAPE_URL = System.getProperty("yahoofinance.scrapeurl.histquotes2",
@@ -43,8 +43,6 @@ public class CrumbManager {
 	public static final String QUOTES_CSV_DELIMITER = ",";
 	public static final int CONNECTION_TIMEOUT = Integer
 			.parseInt(System.getProperty("yahoofinance.connection.timeout", "10000"));
-
-	private static final Logger log = LoggerFactory.getLogger(CrumbManager.class);
 
 	private static String crumb = "";
 	private static String cookie = "";

@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,10 +21,11 @@ import com.thinkbox.md.request.YahooHistoricalRequest;
 import com.thinkbox.md.request.YahooInfoRequest;
 import com.thinkbox.md.request.YahooRequest;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class RetrieveService {
-
-	private final Logger logger = LoggerFactory.getLogger(RetrieveService.class);
 
 	private final static String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
 
@@ -45,12 +44,12 @@ public class RetrieveService {
 		String dataType = map.getOrDefault(mapKey.getDataType(), DEFAULT_STRING_VALUE).toString();
 
 		if (dataType.equals(DEFAULT_STRING_VALUE)) {
-			logger.info("Request missing yahooType");
+			log.info("Request missing yahooType");
 			return yahooRequest;
 
 		}
 		if (ticker.equals(DEFAULT_STRING_VALUE)) {
-			logger.info("Request missing ticker");
+			log.info("Request missing ticker");
 			return yahooRequest;
 		}
 
@@ -70,7 +69,7 @@ public class RetrieveService {
 					startDate = Calendar.getInstance();
 					startDate.setTime(sDate);
 				} catch (ParseException e) {
-					logger.info(e.toString());
+					log.info(e.toString());
 				}
 			}
 			if (startDate != null) {
@@ -90,12 +89,12 @@ public class RetrieveService {
 		if (yahooRequest != null) {
 			try {
 				yahooRequest.get();
-				logger.info("Finished retrieve historical data - map: {}", map);
+				log.info("Finished retrieve historical data - map: {}", map);
 			} catch (IOException e) {
-				logger.info(e.toString());
+				log.info(e.toString());
 			}
 		} else {
-			logger.info("Cannot create YahooRquest: {}", map.toString());
+			log.info("Cannot create YahooRquest: {}", map.toString());
 		}
 	}
 
@@ -110,7 +109,7 @@ public class RetrieveService {
 				: (dataType.equals(mapValue.getDetail())) ? "retrieveDetail" : (dataType.equals(mapValue.getInfo())) ? "retrieveInfo" : DEFAULT_STRING_VALUE;
 
 		if (key.equals(DEFAULT_STRING_VALUE)) {
-			logger.info("Skip retrieve Yahoo data (missing/incorrect yahooType parameter");
+			log.info("Skip retrieve Yahoo data (missing/incorrect yahooType parameter");
 		} else {
 			Stream<Map<String, Object>> intermedicateList = null;
 			if (from.equals(DEFAULT_STRING_VALUE)) {
@@ -123,7 +122,7 @@ public class RetrieveService {
 			}
 
 			outputList = intermedicateList.map(map -> {
-				logger.info("Start retrieve Yahoo data - map: {}", map);
+				log.info("Start retrieve Yahoo data - map: {}", map);
 
 				String ticker = map.get(mapKey.getTicker()).toString();
 				Map<String, Object> hMap = new TreeMap<>();
@@ -134,10 +133,10 @@ public class RetrieveService {
 				YahooRequest yahooRequest = getYahooRequest(hMap);
 				try {
 					yahooRequest.get();
-					logger.info("Finished retrieve info data - map: {}", map);
+					log.info("Finished retrieve info data - map: {}", map);
 					map.put(key, true);
 				} catch (IOException e) {
-					logger.info(e.toString());
+					log.info(e.toString());
 					map.put(key, false);
 				}
 
@@ -145,7 +144,7 @@ public class RetrieveService {
 					System.out.println("Sleep :" + wait);
 					Thread.sleep(wait);
 				} catch (InterruptedException e) {
-					logger.info(e.toString());
+					log.info(e.toString());
 				}
 				return map;
 			}).toList();

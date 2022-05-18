@@ -2,8 +2,8 @@ package com.thinkbox.md.request;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -19,9 +19,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class YahooDetailRequest extends YahooRequest {
-
-	private static final Logger log = LoggerFactory.getLogger(YahooDetailRequest.class);
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 
