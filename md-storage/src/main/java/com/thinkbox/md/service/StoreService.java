@@ -262,7 +262,7 @@ public class StoreService {
 
 		List<Historical> list = Arrays.asList();
 
-		if (historicalRepository.countByTicker(ticker) <= limit) {
+		if (getHistoricalsTotal(ticker) <= limit) {
 			list = historicalRepository.findByTicker(ticker);
 		}
 
@@ -273,7 +273,7 @@ public class StoreService {
 	public Map<String, Object> getHistoricalSummary(final String ticker) {
 
 		HistoricalSummary summary = null;
-		if (historicalRepository.countByTicker(ticker) > 0) {
+		if (getHistoricalsTotal(ticker) > 0) {
 			List<HistoricalSummary> list = historicalRepository.getSummary(ticker);
 			summary = list.get(0);
 		}
