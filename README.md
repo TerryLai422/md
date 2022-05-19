@@ -23,3 +23,5 @@ Microservice Components
 - md-retreiver: RESTful consumer to retrieve stock EOD prices, stock detail information from Yahoo Finance API 
 
 - md-storage: Component to access MongoDB
+
+- md-storage-reactive: Component to access MongoDB reactively
