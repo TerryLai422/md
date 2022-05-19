@@ -6,7 +6,7 @@ Technical Components
 - Spring Boot
 - RESTful API
 - Kafka
-- MongoDB
+- Reactive MongoDB 
 - Docker
 
 Microservice Components
