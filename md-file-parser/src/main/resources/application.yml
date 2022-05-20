@@ -97,6 +97,8 @@ map-key-parameter:
   yahooIndustry: y
   format: format
   length: length
+  method: method
+  dataFormat: dataFormat
   
 map-value-parameter:
   daily: D

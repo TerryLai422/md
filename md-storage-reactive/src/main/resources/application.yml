@@ -98,6 +98,7 @@ map-key-parameter:
   format: format
   length: length
   method: method
+  dataFormat: dataFormat
   
 map-value-parameter:
   daily: D

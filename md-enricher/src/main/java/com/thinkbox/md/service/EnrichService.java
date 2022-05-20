@@ -1,15 +1,25 @@
 package com.thinkbox.md.service;
 
+import java.io.BufferedWriter;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbox.md.component.AverageTrueRange;
 import com.thinkbox.md.component.Indicator;
 import com.thinkbox.md.component.OnBalanceVolume;
@@ -22,12 +32,16 @@ import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.MapValueParameter;
 
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 
 import java.util.function.Function;
+import java.nio.file.Files;
 
 @Component
 @Slf4j
 public class EnrichService {
+
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	public final static int OBJECT_TYPE_HISTORICAL = 1;
 
@@ -92,8 +106,62 @@ public class EnrichService {
 		return indicators;
 	}
 
+	public Flux<Map<String, Object>> enrichFlux(int type, final String date, String inFullFileName) {
+
+		log.info("Flux Flow");
+		final List<Indicator> indicators = getIndicators(type);
+
+		Path path = Paths.get(inFullFileName);
+
+		return Flux.using(() -> Files.lines(path), Flux::fromStream, BaseStream::close).map(x -> {
+			String y = x.replace("[", STRING_EMPTY_SPACE).replace("]", STRING_EMPTY_SPACE);
+			if (y.length() <= 2) {
+				return STRING_EMPTY_SPACE;
+			} else {
+				return y.substring(0, y.length() - 1);
+			}
+		}).map(y -> {
+
+			Map<String, Object> x = new TreeMap<>();
+			try {
+				x = objectMapper.readValue(y, new TypeReference<Map<String, Object>>() {
+				});
+				if (x.containsKey(mapKey.getDate())) {
+
+					if (x.get(mapKey.getDate()).toString().compareTo(date) > 0) {
+						x.put(mapKey.getSave(), true);
+					} else {
+						x.put(mapKey.getSave(), false);
+					}
+
+					if (!x.containsKey(mapKey.getInd())) {
+						x.put(mapKey.getInd(), new TreeMap<>());
+					}
+
+					for (Indicator indicator : indicators) {
+						indicator.process(x);
+					}
+				} else {
+					x.put(mapKey.getSave(), false);
+				}
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+				log.info("Y (can't parse):" + y);
+				x.put(mapKey.getSave(), false);
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+				log.info("X:" + x.toString());
+				x.put(mapKey.getSave(), false);
+			}
+			return x;
+
+		}).filter(x -> Boolean.valueOf(x.getOrDefault(mapKey.getSave(), false).toString()));
+
+	}
+
 	public List<Map<String, Object>> enrichList(List<Map<String, Object>> list, int type) {
 
+		log.info("List Flow");
 		Map<String, Object> firstMap = list.get(0);
 
 		final String date = firstMap.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
@@ -103,20 +171,22 @@ public class EnrichService {
 		return list.stream().skip(1).map(x -> {
 
 			try {
-				if (x.get(mapKey.getDate()).toString().compareTo(date) > 0) {
-//						log.info("x:" + x.get(mapKey.getDate()).toString() + "  -  " + date + ":true");
-					x.put(mapKey.getSave(), true);
+				if (x.containsKey(mapKey.getDate())) {
+					if (x.get(mapKey.getDate()).toString().compareTo(date) > 0) {
+						x.put(mapKey.getSave(), true);
+					} else {
+						x.put(mapKey.getSave(), false);
+					}
+
+					if (!x.containsKey(mapKey.getInd())) {
+						x.put(mapKey.getInd(), new TreeMap<>());
+					}
+
+					for (Indicator indicator : indicators) {
+						indicator.process(x);
+					}
 				} else {
-//						log.info("x:" + x.get(mapKey.getDate()).toString() + "  -  " + date + ":false");
 					x.put(mapKey.getSave(), false);
-				}
-
-				if (!x.containsKey(mapKey.getInd())) {
-					x.put(mapKey.getInd(), new TreeMap<>());
-				}
-
-				for (Indicator indicator : indicators) {
-					indicator.process(x);
 				}
 			} catch (RuntimeException e) {
 				e.printStackTrace();
@@ -226,8 +296,6 @@ public class EnrichService {
 
 		Map<String, Object> firstMap = list.remove(0);
 
-//		log.info("FirstMap:" + firstMap);
-
 		final String date = firstMap.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 
 		Map<String, Object> outMap = new TreeMap<>();
@@ -235,11 +303,11 @@ public class EnrichService {
 		outMap.put(mapKey.getDate(), date);
 
 		outMap.put("all", getMaps(list));
-		
+
 		outMap.put("sma50-sma200", getMaps(getFilterList(list, "sma50", "sma200")));
-		
+
 		log.info("OUTMAP: " + outMap.toString());
-		
+
 		return outMap;
 	}
 
@@ -249,10 +317,10 @@ public class EnrichService {
 			Map<String, Object> y = (Map<String, Object>) x.get(mapKey.getInd());
 			Double i = Double.valueOf(y.getOrDefault(key1, 0).toString());
 			Double j = Double.valueOf(y.getOrDefault(key2, 0).toString());
-			return i != 0 && j !=0 && i > j;
+			return i != 0 && j != 0 && i > j;
 		}).collect(Collectors.toList());
 	}
-	
+
 	private Map<String, Object> getMaps(List<Map<String, Object>> list) {
 		Map<String, Object> map = new TreeMap<>();
 
@@ -269,7 +337,7 @@ public class EnrichService {
 
 		return map;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private Map<String, Long> consolidate(List<Map<String, Object>> list, String key1, String key2) {
 		Map<String, Long> map = list.stream().map(x -> {

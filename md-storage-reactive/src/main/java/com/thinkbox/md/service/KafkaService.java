@@ -121,6 +121,18 @@ public class KafkaService {
 
 	private final static String DEFAULT_TOPIC_TYPE = "unknown";
 
+	private final static String OUTPUT_FORMAT_JSON = "JSON";
+
+	private final static String STRING_COMMA = ",";
+
+	private final static String STRING_EMPTY_SPACE = "";
+
+	private final static String STRING_SQUARE_OPEN_BRACKET = "[";
+	
+	private final static String STRING_SQUARE_CLOSE_BRACKET = "]";
+	
+	private final static String STRING_CURLY_BRACKET = "{}";
+
 	private final static int BATCH_LIMIT = 1500;
 
 	private final static int DEFAULT_LIMIT = 2;
@@ -313,7 +325,7 @@ public class KafkaService {
 		}
 
 		storeService.saveMap(objType, type, map);
-		
+
 		if (map != null) {
 			if (topic != null) {
 				List<Map<String, Object>> list = new ArrayList<>();
@@ -616,18 +628,21 @@ public class KafkaService {
 	private void processFlux(Flux<Map<String, Object>> flux, final Map<String, Object> map, final String topic,
 			final String fileName, final Long size) {
 
-		String outFileName = getFullFileName(topic, fileName);
+		final String outFileName = getFullFileName(topic, fileName);
+		final String dataFormat = map.getOrDefault(mapKey.getDataFormat(), DEFAULT_STRING_VALUE).toString();
 
 		Path opPath = Paths.get(outFileName);
 		BufferedWriter bw;
 		try {
 			bw = Files.newBufferedWriter(opPath, StandardOpenOption.CREATE);
-			bw.write("[");
-			flux.subscribe(s -> write(bw, s), (e) -> close(bw), // close file if error / oncomplete
-					() -> complete(bw, map, topic, size));
+			if (dataFormat.equals(OUTPUT_FORMAT_JSON)) {
+				bw.write(STRING_SQUARE_OPEN_BRACKET);
+			}
+			flux.subscribe(s -> write(dataFormat, bw, s), (e) -> close(bw), // close file if error / oncomplete
+					() -> complete(dataFormat, bw, map, topic, size));
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			log.info("Exception when processing Flux: " + e.toString());
 			e.printStackTrace();
 		}
 	}
@@ -640,21 +655,24 @@ public class KafkaService {
 		}
 	}
 
-	private void complete(BufferedWriter bw, Map<String, Object> map, String topic, long size) {
+	private void complete(String dataFormat, BufferedWriter bw, Map<String, Object> map, String topic, long size) {
 		try {
-			bw.write("{}]");
+			if (dataFormat.equals(OUTPUT_FORMAT_JSON)) {
+				bw.write(STRING_CURLY_BRACKET + STRING_SQUARE_CLOSE_BRACKET);
+			}
 			bw.close();
 			if (topic != null) {
-				publishAfterOutputAsFile(map, topic, size); 
+				publishAfterOutputAsFile(map, topic, size);
 			}
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
 	}
 
-	private void write(BufferedWriter bw, Map<String, Object> map) {
+	private void write(String dataFormat, BufferedWriter bw, Map<String, Object> map) {
 		try {
-			bw.write(objectMapper.writeValueAsString(map) + " , ");
+			bw.write(objectMapper.writeValueAsString(map)
+					+ (dataFormat.equals(OUTPUT_FORMAT_JSON) ? STRING_COMMA : STRING_EMPTY_SPACE));
 			bw.newLine();
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
@@ -715,7 +733,7 @@ public class KafkaService {
 		return new File(getFullFileName(topic, fileName));
 
 	}
-	
+
 	private String getFullFileName(String topic, String fileName) {
 		String[] topicBreakDown = topic.split(TOPIC_DELIMITER);
 		String topicAction = DEFAULT_TOPIC_ACTION;
@@ -724,7 +742,7 @@ public class KafkaService {
 			topicAction = topicBreakDown[0];
 			topicType = topicBreakDown[1];
 		}
-		
+
 		return System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
 				+ File.separator + fileName + FILE_EXTENSION;
 	}
@@ -732,7 +750,7 @@ public class KafkaService {
 	private void publishAfterOutputAsFile(Map<String, Object> map, String topic, long size) {
 		publishAfterOutputAsFile(map, null, topic, size);
 	}
-	
+
 	private void publishAfterOutputAsFile(Map<String, Object> map, File file, String topic, long size) {
 		Map<String, Object> newMap = map.entrySet().stream()
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -764,6 +782,7 @@ public class KafkaService {
 		return calendar;
 	}
 
+	// TODO rewrite in reactive style
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_SUMMARY_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void getHistoricalSummaryList(List<Map<String, Object>> list) {
@@ -771,7 +790,7 @@ public class KafkaService {
 
 		final Map<String, Object> firstMap = list.get(0);
 		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
-		final String method = firstMap.getOrDefault(mapKey.getMethod(), DEFAULT_STRING_VALUE).toString();
+//		final String method = firstMap.getOrDefault(mapKey.getMethod(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
 		final String subExch = firstMap.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
@@ -784,11 +803,11 @@ public class KafkaService {
 		list.remove(0);
 		list.stream().parallel().forEach(x -> {
 
-			if (method.equals(DEFAULT_STRING_VALUE)) {
+//			if (method.equals(DEFAULT_STRING_VALUE)) {
 				updateSummary(x);
-			} else {
-				updateSummaryFromAllRecords(x);
-			}
+//			} else {
+//				updateSummaryFromAllRecords(x);
+//			}
 
 		});
 

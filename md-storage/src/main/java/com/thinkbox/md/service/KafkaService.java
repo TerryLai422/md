@@ -785,7 +785,7 @@ public class KafkaService {
 
 		final Map<String, Object> firstMap = list.get(0);
 		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
-		final String method = firstMap.getOrDefault(mapKey.getMethod(), DEFAULT_STRING_VALUE).toString();
+//		final String method = firstMap.getOrDefault(mapKey.getMethod(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
 		final String subExch = firstMap.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
@@ -798,11 +798,11 @@ public class KafkaService {
 		list.remove(0);
 		list.stream().parallel().forEach(x -> {
 
-			if (method.equals(DEFAULT_STRING_VALUE)) {
+//			if (method.equals(DEFAULT_STRING_VALUE)) {
 				updateSummary(x);
-			} else {
-				updateSummaryFromAllRecords(x);
-			}
+//			} else {
+//				updateSummaryFromAllRecords(x);
+//			}
 
 		});
 
