@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<property name="LOG_DIRECTORY" value="/Users/admin/data/logstash/logs/in" />
+   <appender name="file" class="ch.qos.logback.core.FileAppender"> 
+        <file>${LOG_DIRECTORY}/storage-reactive.log</file> 
+         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender> 
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss:SSS} [%thread] %-5level %c{2} - %msg%n</Pattern>
+        </encoder>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="stdout"/>
+        <appender-ref ref="file"/>
+    </root>
+</configuration>
