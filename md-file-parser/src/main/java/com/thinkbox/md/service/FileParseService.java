@@ -243,22 +243,22 @@ public class FileParseService {
 		return null;
 	}
 
-	private String getDateFormat(final String dataSource) {
+	public String getDateFormat(final String dataSource) {
 
 		return (dataSource.equals(DATA_SOURCE_YAHOO)) ? DATE_FORMAT_YAHOO : DATE_FORMAT_STOOP;
 
 	}
 
-	private List<Integer> getColumnsPosition(final String dataSource) {
+	public List<Integer> getColumnsPosition(final String dataSource) {
 
 		return (dataSource.equals(DATA_SOURCE_YAHOO)) ? COLUMN_LIST_YAHOO : COLUMN_LIST_STOOP;
 
 	}
 
-	private String getFullFileName(final String directory, final String subDirectory, final String fileName,
+	public String getDailyFullFileName(final String subDirectory, final String fileName,
 			final String dataSource, final String symbol, final String ticker) {
 
-		String fullFileName = dataDirectory + File.separator + directory;
+		String fullFileName = dataDirectory + File.separator + DAILY_DIRECTORY;
 
 		if (!subDirectory.equals(DEFAULT_STRING_VALUE)) {
 			fullFileName += File.separator + subDirectory;
@@ -275,7 +275,7 @@ public class FileParseService {
 		return fullFileName;
 	}
 
-	private int getIntervalPosition(final String dataSource) {
+	public int getIntervalPosition(final String dataSource) {
 
 		if (dataSource.equals(DATA_SOURCE_STOOP)) {
 			return 1;
@@ -283,7 +283,7 @@ public class FileParseService {
 		return -1;
 	}
 
-	private int getTimePosition(final String dataSource) {
+	public int getTimePosition(final String dataSource) {
 
 		if (dataSource.equals(DATA_SOURCE_STOOP)) {
 			return 3;
@@ -361,7 +361,7 @@ public class FileParseService {
 		final String dateFormat = getDateFormat(dataSource);
 		final int intervalPosition = getIntervalPosition(dataSource);
 		final int timePosition = getTimePosition(dataSource);
-		final String fullFileName = getFullFileName(directory, subDirectory, fileName, dataSource, symbol, ticker);
+		final String fullFileName = getDailyFullFileName(subDirectory, fileName, dataSource, symbol, ticker);
 		log.info(fullFileName);
 
 		CSVFileReader csvFileReader = new CSVFileReader();
@@ -369,72 +369,81 @@ public class FileParseService {
 		List<String[]> list = csvFileReader.read(fullFileName, COMMA_SEPERATOR, null);
 
 		List<Map<String, Object>> outputList = list.stream().map(x -> {
-			Map<String, Object> map = null;
 
-			Calendar calendar = getCalendar(dateFormat, x[columns.get(0)]);
+			return parseStringArray(x, columns, dateFormat, intervalPosition, timePosition, symbol, ticker);
 
-			if (calendar != null) {
-				int year = calendar.get(Calendar.YEAR);
-				int dayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
-				int weekOfYear = calendar.get(Calendar.WEEK_OF_YEAR);
-
-				map = new TreeMap<String, Object>();
-
-				if (intervalPosition == -1) {
-					map.put(mapKey.getInterval(), new String(mapValue.getDaily()));
-				} else {
-					map.put(mapKey.getInterval(), new String(x[intervalPosition]));
-				}
-				if (symbol.equals(DEFAULT_STRING_VALUE)) {
-					String tempSymbol = x[0];
-					if (tempSymbol != null && tempSymbol.endsWith(STOOQ_TICKER_SUFFIX)) {
-						tempSymbol = tempSymbol.substring(0, tempSymbol.length() - 3);
-					}
-					map.put(mapKey.getTicker(), tempSymbol);
-					map.put(mapKey.getSymbol(), tempSymbol);
-				} else {
-					map.put(mapKey.getTicker(), new String(ticker).toUpperCase());
-					map.put(mapKey.getSymbol(), new String(symbol).toUpperCase());
-				}
-				map.put(mapKey.getDate(), new String(String.format(OUTPUT_DATE_FORMAT, calendar)));
-				if (timePosition == -1) {
-					map.put(mapKey.getTime(), DEFAULT_TIME_VALUE);
-				} else {
-					map.put(mapKey.getTime(), new String(x[timePosition]));
-				}
-				map.put(mapKey.getYear(), year);
-				map.put(mapKey.getMonth(), calendar.get(Calendar.MONTH) + 1);
-				map.put(mapKey.getDay(), calendar.get(Calendar.DATE));
-				map.put(mapKey.getDayOfYear(), dayOfYear);
-				map.put(mapKey.getWeekOfYear(), weekOfYear);
-				map.put(mapKey.getDayOfWeek(), calendar.get(Calendar.DAY_OF_WEEK));
-				if (weekOfYear == 1 && ((year % 4 != 0 && dayOfYear >= 362)
-						|| (((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) && dayOfYear >= 363))) {
-					map.put(mapKey.getYearForWeek(), year + 1);
-				} else {
-					map.put(mapKey.getYearForWeek(), year);
-				}
-				map.put(mapKey.getOpen(), Double.parseDouble(x[columns.get(1)]));
-				map.put(mapKey.getHigh(), Double.parseDouble(x[columns.get(2)]));
-				map.put(mapKey.getLow(), Double.parseDouble(x[columns.get(3)]));
-				map.put(mapKey.getClose(), Double.parseDouble(x[columns.get(4)]));
-				map.put(mapKey.getAdjClose(), Double.parseDouble(x[columns.get(5)]));
-				map.put(mapKey.getVolume(), Long.parseLong(x[columns.get(6)]));
-
-				String temp = map.get(mapKey.getTicker()).toString();
-				if (temp.endsWith(TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE)
-						|| temp.endsWith(TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE)) {
-					map.put(mapKey.getMarket(), MARKET_CANADA);
-
-				} else {
-					map.put(mapKey.getMarket(), MARKET_UNITED_STATE);
-				}
-			}
-
-			return map;
 		}).filter(x -> x != null).collect(Collectors.toList());
 
 		return outputList;
+	}
+
+	public Map<String, Object> parseStringArray(final String[] x, final List<Integer> columns, final String dateFormat,
+			final int intervalPosition, final int timePosition, final String symbol, final String ticker) {
+
+		Map<String, Object> map = null;
+
+		Calendar calendar = getCalendar(dateFormat, x[columns.get(0)]);
+
+		if (calendar != null) {
+			int year = calendar.get(Calendar.YEAR);
+			int dayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
+			int weekOfYear = calendar.get(Calendar.WEEK_OF_YEAR);
+
+			map = new TreeMap<String, Object>();
+
+			if (intervalPosition == -1) {
+				map.put(mapKey.getInterval(), new String(mapValue.getDaily()));
+			} else {
+				map.put(mapKey.getInterval(), new String(x[intervalPosition]));
+			}
+			if (symbol.equals(DEFAULT_STRING_VALUE)) {
+				String tempSymbol = x[0];
+				if (tempSymbol != null && tempSymbol.endsWith(STOOQ_TICKER_SUFFIX)) {
+					tempSymbol = tempSymbol.substring(0, tempSymbol.length() - 3);
+				}
+				map.put(mapKey.getTicker(), tempSymbol);
+				map.put(mapKey.getSymbol(), tempSymbol);
+			} else {
+				map.put(mapKey.getTicker(), new String(ticker).toUpperCase());
+				map.put(mapKey.getSymbol(), new String(symbol).toUpperCase());
+			}
+			map.put(mapKey.getDate(), new String(String.format(OUTPUT_DATE_FORMAT, calendar)));
+			if (timePosition == -1) {
+				map.put(mapKey.getTime(), DEFAULT_TIME_VALUE);
+			} else {
+				map.put(mapKey.getTime(), new String(x[timePosition]));
+			}
+			map.put(mapKey.getYear(), year);
+			map.put(mapKey.getMonth(), calendar.get(Calendar.MONTH) + 1);
+			map.put(mapKey.getDay(), calendar.get(Calendar.DATE));
+			map.put(mapKey.getDayOfYear(), dayOfYear);
+			map.put(mapKey.getWeekOfYear(), weekOfYear);
+			map.put(mapKey.getDayOfWeek(), calendar.get(Calendar.DAY_OF_WEEK));
+			if (weekOfYear == 1 && ((year % 4 != 0 && dayOfYear >= 362)
+					|| (((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) && dayOfYear >= 363))) {
+				map.put(mapKey.getYearForWeek(), year + 1);
+			} else {
+				map.put(mapKey.getYearForWeek(), year);
+			}
+			map.put(mapKey.getOpen(), Double.parseDouble(x[columns.get(1)]));
+			map.put(mapKey.getHigh(), Double.parseDouble(x[columns.get(2)]));
+			map.put(mapKey.getLow(), Double.parseDouble(x[columns.get(3)]));
+			map.put(mapKey.getClose(), Double.parseDouble(x[columns.get(4)]));
+			map.put(mapKey.getAdjClose(), Double.parseDouble(x[columns.get(5)]));
+			map.put(mapKey.getVolume(), Long.parseLong(x[columns.get(6)]));
+
+			String temp = map.get(mapKey.getTicker()).toString();
+			if (temp.endsWith(TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE)
+					|| temp.endsWith(TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE)) {
+				map.put(mapKey.getMarket(), MARKET_CANADA);
+
+			} else {
+				map.put(mapKey.getMarket(), MARKET_UNITED_STATE);
+			}
+		}
+
+		return map;
+
 	}
 
 	private Calendar getCalendar(String dateFormat, String date) {
@@ -521,4 +530,5 @@ public class FileParseService {
 
 		return map;
 	}
+
 }

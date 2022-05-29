@@ -1,10 +1,18 @@
 package com.thinkbox.md.service;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +21,11 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbox.md.config.MapKeyParameter;
 
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 
 @Service
 @Slf4j
@@ -32,6 +42,8 @@ public class KafkaService {
 
 	@Autowired
 	private FileParseService fileParseService;
+
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
@@ -54,12 +66,32 @@ public class KafkaService {
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
 	private final static String STRING_LOGGER_SENT_MESSAGE = "Sent topic: {} -> {}";
-	
+
 	private final static String STRING_LOGGER_RECEIVED_MESSAGE = "Received topic: {} -> parameter: {}";
 
 	private final static String STRING_LOGGER_FINISHED_MESSAGE = "Finish Last Step: {}";
 
-	private final static String DEFAULT_STRING_VALUE = "-"; 
+	private final static String DEFAULT_STRING_VALUE = "-";
+
+	private final static String TOPIC_DELIMITER = "[.]";
+
+	private final static String DEFAULT_TOPIC_ACTION = "unknown";
+
+	private final static String DEFAULT_TOPIC_TYPE = "unknown";
+
+	private final static String OUTPUT_FORMAT_JSON = "JSON";
+
+	private final static String USER_HOME = "user.home";
+
+	private final static String STRING_COMMA = ",";
+
+	private final static String STRING_SQUARE_OPEN_BRACKET = "[";
+
+	private final static String STRING_SQUARE_CLOSE_BRACKET = "]";
+
+	private final static String STRING_CURLY_BRACKET = "{}";
+
+	private final static String FILE_EXTENSION_JSON = ".json";
 
 	private final int BATCH_LIMIT = 2000;
 
@@ -262,6 +294,8 @@ public class KafkaService {
 	public void parseDailyList(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DAILY_LIST, map.toString());
 
+		String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+
 		try {
 			final String directory = map.getOrDefault(mapKey.getDirectory(), DEFAULT_STRING_VALUE).toString();
 
@@ -274,7 +308,11 @@ public class KafkaService {
 					fileMap.put(i, j);
 				});
 				fileMap.put(mapKey.getFileName(), x);
-				parseDailyData(fileMap);
+				if (format.equals(DEFAULT_STRING_VALUE)) {
+					parseDailyData(fileMap);
+				} else {
+					parseDailyDataAndSaveAsFile(fileMap);
+				}
 			});
 
 		} catch (IOException e) {
@@ -288,8 +326,13 @@ public class KafkaService {
 	public void parseDaily(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DAILY_SINGLE, map.toString());
 
-		parseDailyData(map);
+		String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 
+		if (format.equals(DEFAULT_STRING_VALUE)) {
+			parseDailyData(map);
+		} else {
+			parseDailyDataAndSaveAsFile(map);
+		}
 	}
 
 	private void parseDailyData(Map<String, Object> map) {
@@ -343,8 +386,7 @@ public class KafkaService {
 
 		try {
 			String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
-			Map<String, Object> outMap;
-			outMap = fileParseService.parseInfoFile(ticker);
+			Map<String, Object> outMap = fileParseService.parseInfoFile(ticker);
 //			list.forEach(System.out::println);
 //			publish(TOPIC_PROCESS_INFO_DATA, outMap);
 		} catch (IOException e) {
@@ -370,5 +412,102 @@ public class KafkaService {
 			map.put(mapKey.getNext(), next);
 		}
 		return topic;
+	}
+
+	private String getOutFullFileName(String topic, String fileName) {
+		String[] topicBreakDown = topic.split(TOPIC_DELIMITER);
+		String topicAction = DEFAULT_TOPIC_ACTION;
+		String topicType = DEFAULT_TOPIC_TYPE;
+		if (topicBreakDown.length >= 2) {
+			topicAction = topicBreakDown[0];
+			topicType = topicBreakDown[1];
+		}
+		return System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
+				+ File.separator + fileName + FILE_EXTENSION_JSON;
+	}
+
+	private void publishAfterOutputAsFile(Map<String, Object> map, String topic, long size) {
+		publishAfterOutputAsFile(map, null, topic, size);
+	}
+
+	private void publishAfterOutputAsFile(Map<String, Object> map, File file, String topic, long size) {
+		Map<String, Object> newMap = map.entrySet().stream()
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+		newMap.put(mapKey.getTotal(), size);
+		if (file != null) {
+			newMap.put(mapKey.getLength(), file.length());
+		}
+		List<Map<String, Object>> outList = new ArrayList<>();
+
+		outList.add(0, newMap);
+		publish(topic, outList);
+	}
+
+	private void parseDailyDataAndSaveAsFile(Map<String, Object> map) {
+
+		final String symbol = DEFAULT_STRING_VALUE;
+		final String ticker = DEFAULT_STRING_VALUE;
+
+		final String subDirectory = map.getOrDefault(mapKey.getDirectory(), DEFAULT_STRING_VALUE).toString();
+		final String dataSource = map.getOrDefault(mapKey.getDataSource(), DEFAULT_STRING_VALUE).toString();
+		final String fileName = map.getOrDefault(mapKey.getFileName(), DEFAULT_STRING_VALUE).toString();
+		final String dataFormat = map.getOrDefault(mapKey.getDataFormat(), DEFAULT_STRING_VALUE).toString();
+		final String topic = getTopicFromList(map);
+		final String inFilePath = fileParseService.getDailyFullFileName(subDirectory, fileName, dataSource, symbol,
+				ticker);
+		final String outFilePath = getOutFullFileName(topic, fileName);
+		final List<Integer> columns = fileParseService.getColumnsPosition(dataSource);
+		final String dateFormat = fileParseService.getDateFormat(dataSource);
+		final int intervalPosition = fileParseService.getIntervalPosition(dataSource);
+		final int timePosition = fileParseService.getTimePosition(dataSource);
+
+		final Path inPath = Paths.get(inFilePath);
+		final Path outPath = Paths.get(outFilePath);
+		
+		try {
+			BufferedWriter bw;
+			bw = Files.newBufferedWriter(outPath, StandardOpenOption.CREATE);
+			bw.write(STRING_SQUARE_OPEN_BRACKET);
+			Flux.using(() -> Files.lines(inPath), Flux::fromStream, BaseStream::close).skip(1)
+					.map(s -> fileParseService.parseStringArray(s.split(STRING_COMMA), columns, dateFormat,
+							intervalPosition, timePosition, symbol, ticker))
+					.subscribe(s -> write(bw, s), (e) -> close(bw), () -> complete(dataFormat, bw, map, topic, 0));
+
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+
+	}
+
+	private void close(BufferedWriter bw) {
+		try {
+			bw.close();
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	private void complete(String dataFormat, BufferedWriter bw, Map<String, Object> map, String topic, long size) {
+		try {
+			if (dataFormat.equals(OUTPUT_FORMAT_JSON)) {
+				bw.write(STRING_CURLY_BRACKET + STRING_SQUARE_CLOSE_BRACKET);
+			}
+			bw.close();
+			if (topic != null) {
+				publishAfterOutputAsFile(map, topic, size);
+			}
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	private void write(BufferedWriter bw, Map<String, Object> map) {
+		try {
+			bw.write(objectMapper.writeValueAsString(map) + STRING_COMMA);
+			bw.newLine();
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 }
