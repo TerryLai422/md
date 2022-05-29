@@ -181,7 +181,8 @@ public class KafkaService {
 	@KafkaListener(topics = TOPIC_SAVE_EXCHANGE_LIST, containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveExchangeList(List<Map<String, Object>> list) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_EXCHANGE_LIST, list.toString());
-		storeService.saveMapList(OBJECT_TYPE_INSTRUMENT, list);
+		storeService.saveMapList(OBJECT_TYPE_INSTRUMENT, list, () -> {
+		});
 	}
 
 	private Map<String, Object> readFile(Map<String, Object> firstMap, String currentTopic, String fileName) {
@@ -298,12 +299,31 @@ public class KafkaService {
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
 
-		if (!format.equals(DEFAULT_STRING_VALUE)) {
-			list = readFileList(firstMap, currentTopic, fileName);
-		}
+		final List<Map<String, Object>> finalList = (!format.equals(DEFAULT_STRING_VALUE))
+				? readFileList(firstMap, currentTopic, fileName)
+				: list;
+		storeService.saveMapList(objType, finalList, () -> {
+			completeActionForSaveMapList(finalList, firstMap, topic, format, fileName);
+		});
 
-		storeService.saveMapList(objType, list);
+//		if (list.size() > 0) {
+//			if (topic != null) {
+//				if (format.equals(DEFAULT_STRING_VALUE)) {
+//					publish(topic, list.remove(0), list);
+//				} else {
+//					outputAsFileList(list, firstMap, topic, fileName);
+//				}
+//			} else {
+//				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+//			}
+//		} else {
+//			log.info("outputList size is zero");
+//		}
 
+	}
+
+	private void completeActionForSaveMapList(List<Map<String, Object>> list, Map<String, Object> firstMap,
+			String topic, String format, String fileName) {
 		if (list.size() > 0) {
 			if (topic != null) {
 				if (format.equals(DEFAULT_STRING_VALUE)) {
@@ -317,7 +337,6 @@ public class KafkaService {
 		} else {
 			log.info("outputList size is zero");
 		}
-
 	}
 
 	private void saveMap(Map<String, Object> firstMap, int objType, String type, final String fileName) {
@@ -379,7 +398,9 @@ public class KafkaService {
 		final Map<String, Object> secondMap = list.get(1);
 		final Map<String, Object> firstMap = list.get(0);
 
-		storeService.saveMap(OBJECT_TYPE_INSTRUMENT, null, secondMap, () -> { completeActionForSaveInstrument(firstMap, secondMap);});
+		storeService.saveMap(OBJECT_TYPE_INSTRUMENT, null, secondMap, () -> {
+			completeActionForSaveInstrument(firstMap, secondMap);
+		});
 
 //		String topic = getTopicFromList(firstMap);
 //		if (topic != null) {
@@ -907,25 +928,25 @@ public class KafkaService {
 		}
 	}
 
-	private void updateSummaryFromAllRecords(Map<String, Object> x) {
-
-		String ticker = x.get(mapKey.getTicker()).toString();
-
-		Map<String, Object> y = storeService.getHistoricalSummaryFromAllRecords(ticker);
-
-		y.entrySet().forEach((i) -> {
-			x.put(i.getKey(), i.getValue());
-		});
-
-		Double last = Double.valueOf(y.getOrDefault(mapKey.getLastP(), DEFAULT_DOUBLE_VALUE).toString());
-		if (last != 0) {
-			Long sharesO = Long.valueOf(x.getOrDefault(mapKey.getSharesO(), 0).toString());
-			if (sharesO != 0) {
-				x.put(mapKey.getMCap(), Double.valueOf(last * sharesO).longValue());
-			}
-		}
-
-	}
+//	private void updateSummaryFromAllRecords(Map<String, Object> x) {
+//
+//		String ticker = x.get(mapKey.getTicker()).toString();
+//
+//		Map<String, Object> y = storeService.getHistoricalSummaryFromAllRecords(ticker);
+//
+//		y.entrySet().forEach((i) -> {
+//			x.put(i.getKey(), i.getValue());
+//		});
+//
+//		Double last = Double.valueOf(y.getOrDefault(mapKey.getLastP(), DEFAULT_DOUBLE_VALUE).toString());
+//		if (last != 0) {
+//			Long sharesO = Long.valueOf(x.getOrDefault(mapKey.getSharesO(), 0).toString());
+//			if (sharesO != 0) {
+//				x.put(mapKey.getMCap(), Double.valueOf(last * sharesO).longValue());
+//			}
+//		}
+//
+//	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = TOPIC_DBGET_SUMMARY_SINGLE, containerFactory = CONTAINER_FACTORY_LIST)
