@@ -113,7 +113,7 @@ public class KafkaService {
 
 	private final static Double DEFAULT_DOUBLE_VALUE = 0d;
 
-	private final static String FILE_EXTENSION = ".json";
+	private final static String FILE_EXTENSION_JSON = ".json";
 
 	private final static String TOPIC_DELIMITER = "[.]";
 
@@ -128,9 +128,9 @@ public class KafkaService {
 	private final static String STRING_EMPTY_SPACE = "";
 
 	private final static String STRING_SQUARE_OPEN_BRACKET = "[";
-	
+
 	private final static String STRING_SQUARE_CLOSE_BRACKET = "]";
-	
+
 	private final static String STRING_CURLY_BRACKET = "{}";
 
 	private final static int BATCH_LIMIT = 1500;
@@ -193,7 +193,7 @@ public class KafkaService {
 			topicType = topicBreakDown[1];
 		}
 		File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
-				+ File.separator + fileName + FILE_EXTENSION);
+				+ File.separator + fileName + FILE_EXTENSION_JSON);
 		Map<String, Object> map = null;
 		try (FileInputStream fileInputStream = new FileInputStream(file)) {
 
@@ -216,7 +216,7 @@ public class KafkaService {
 			topicType = topicBreakDown[1];
 		}
 		File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
-				+ File.separator + fileName + FILE_EXTENSION);
+				+ File.separator + fileName + FILE_EXTENSION_JSON);
 		List<Map<String, Object>> mapperList = null;
 
 		try (FileInputStream fileInputStream = new FileInputStream(file)) {
@@ -277,15 +277,19 @@ public class KafkaService {
 	public void saveHistoricalList(List<Map<String, Object>> list) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_HISTORICAL_LIST, list.get(0).toString());
 
-		storeService.saveMapList(OBJECT_TYPE_HISTORICAL, list);
-
 		Map<String, Object> firstMap = list.get(0);
-		String topic = getTopicFromList(firstMap);
-		if (topic != null) {
-			publish(topic, list.remove(0), list);
-		} else {
-			log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
-		}
+		final String fileName = firstMap.getOrDefault(mapKey.getFileName(), DEFAULT_STRING_VALUE).toString();
+		saveList(list, OBJECT_TYPE_HISTORICAL, fileName);
+
+//		storeService.saveMapList(OBJECT_TYPE_HISTORICAL, list);
+//
+//		Map<String, Object> firstMap = list.get(0);
+//		String topic = getTopicFromList(firstMap);
+//		if (topic != null) {
+//			publish(topic, list.remove(0), list);
+//		} else {
+//			log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+//		}
 	}
 
 	private void saveList(List<Map<String, Object>> list, int objType, String fileName) {
@@ -297,7 +301,9 @@ public class KafkaService {
 		if (!format.equals(DEFAULT_STRING_VALUE)) {
 			list = readFileList(firstMap, currentTopic, fileName);
 		}
+
 		storeService.saveMapList(objType, list);
+
 		if (list.size() > 0) {
 			if (topic != null) {
 				if (format.equals(DEFAULT_STRING_VALUE)) {
@@ -314,18 +320,40 @@ public class KafkaService {
 
 	}
 
-	private void saveMap(Map<String, Object> firstMap, int objType, String type, String fileName) {
+	private void saveMap(Map<String, Object> firstMap, int objType, String type, final String fileName) {
 		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
 
-		Map<String, Object> map = null;
-		if (!format.equals(DEFAULT_STRING_VALUE)) {
-			map = readFile(firstMap, currentTopic, fileName);
-		}
+		final Map<String, Object> map = readFile(firstMap, currentTopic, fileName);
+//		if (!format.equals(DEFAULT_STRING_VALUE)) {
+//			map = readFile(firstMap, currentTopic, fileName);
+//		}
 
-		storeService.saveMap(objType, type, map);
+		storeService.saveMap(objType, type, map, () -> {
+			completeActionForSaveMap(map, firstMap, topic, format, fileName);
+		});
 
+//		if (map != null) {
+//			if (topic != null) {
+//				List<Map<String, Object>> list = new ArrayList<>();
+//				list.add(map);
+//				if (format.equals(DEFAULT_STRING_VALUE)) {
+//					publish(topic, firstMap, list);
+//				} else {
+//					outputAsFile(map, firstMap, topic, fileName);
+//				}
+//			} else {
+//				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+//			}
+//		} else {
+//			log.info("map is null");
+//		}
+
+	}
+
+	private void completeActionForSaveMap(Map<String, Object> map, Map<String, Object> firstMap, String topic,
+			String format, String fileName) {
 		if (map != null) {
 			if (topic != null) {
 				List<Map<String, Object>> list = new ArrayList<>();
@@ -341,7 +369,6 @@ public class KafkaService {
 		} else {
 			log.info("map is null");
 		}
-
 	}
 
 	@Async(ASYNC_EXECUTOR)
@@ -349,11 +376,24 @@ public class KafkaService {
 	public void saveInstrument(List<Map<String, Object>> list) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_INSTRUMENT_SINGLE, list.get(0).toString());
 
-		Map<String, Object> secondMap = list.get(1);
+		final Map<String, Object> secondMap = list.get(1);
+		final Map<String, Object> firstMap = list.get(0);
 
-		storeService.saveMap(OBJECT_TYPE_INSTRUMENT, null, secondMap);
+		storeService.saveMap(OBJECT_TYPE_INSTRUMENT, null, secondMap, () -> { completeActionForSaveInstrument(firstMap, secondMap);});
 
-		Map<String, Object> firstMap = list.get(0);
+//		String topic = getTopicFromList(firstMap);
+//		if (topic != null) {
+//			List<Map<String, Object>> outputList = new ArrayList<>();
+//			outputList.add(firstMap);
+//			outputList.add(secondMap);
+//
+//			publish(topic, outputList);
+//		} else {
+//			log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+//		}
+	}
+
+	private void completeActionForSaveInstrument(Map<String, Object> firstMap, Map<String, Object> secondMap) {
 		String topic = getTopicFromList(firstMap);
 		if (topic != null) {
 			List<Map<String, Object>> outputList = new ArrayList<>();
@@ -631,9 +671,9 @@ public class KafkaService {
 		final String outFileName = getFullFileName(topic, fileName);
 		final String dataFormat = map.getOrDefault(mapKey.getDataFormat(), DEFAULT_STRING_VALUE).toString();
 
-		Path opPath = Paths.get(outFileName);
-		BufferedWriter bw;
+		final Path opPath = Paths.get(outFileName);
 		try {
+			BufferedWriter bw;
 			bw = Files.newBufferedWriter(opPath, StandardOpenOption.CREATE);
 			if (dataFormat.equals(OUTPUT_FORMAT_JSON)) {
 				bw.write(STRING_SQUARE_OPEN_BRACKET);
@@ -744,7 +784,7 @@ public class KafkaService {
 		}
 
 		return System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
-				+ File.separator + fileName + FILE_EXTENSION;
+				+ File.separator + fileName + FILE_EXTENSION_JSON;
 	}
 
 	private void publishAfterOutputAsFile(Map<String, Object> map, String topic, long size) {
@@ -804,7 +844,7 @@ public class KafkaService {
 		list.stream().parallel().forEach(x -> {
 
 //			if (method.equals(DEFAULT_STRING_VALUE)) {
-				updateSummary(x);
+			updateSummary(x);
 //			} else {
 //				updateSummaryFromAllRecords(x);
 //			}
