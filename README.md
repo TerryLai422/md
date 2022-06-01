@@ -16,7 +16,7 @@ Microservice Components
 
 - md-registry: Eureka Server
 
-- md-file-parser: Module to convert data from Yahoo CSV/JSON files into JSON objects
+- md-file-parser: Module to convert data from Yahoo CSV/JSON streams into JSON objects
 
 - md-enricher: Service to add various kinds of technical indicators (configurable) to EOD data, consolidate them based on different criterions 
 
