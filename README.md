@@ -24,4 +24,4 @@ Microservice Components
 
 - md-storage: Component to access MongoDB
 
-- md-storage-reactive: Component to access MongoDB reactively
+- md-storage-reactive: Component to access MongoDB reactively (project reactor)
