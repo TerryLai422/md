@@ -58,14 +58,6 @@ public class KafkaService {
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
-	private final String TOPIC_CREATE_DAILYSUMMARY_LIST = "create.dailysummary.list";
-
-	private final String TOPIC_ENRICH_EXCHANGE_LIST = "enrich.exchange.list";
-
-	private final String TOPIC_ENRICH_HISTORICAL_LIST = "enrich.historical.list";
-
-	private final String TOPIC_ENRICH_ANALYSIS_LIST = "enrich.analysis.list";
-
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
 	private final String CONTAINER_FACTORY_LIST = "listListener";
@@ -126,9 +118,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_CREATE_DAILYSUMMARY_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.create-dailysummary-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void createDailySummaryList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_CREATE_DAILYSUMMARY_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, "${kafka.topic.create-dailysummary-list}", list.get(0).toString());
 
 		Map<String, Object> firstMap = list.get(0);
 
@@ -161,9 +153,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_ENRICH_EXCHANGE_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.enrich-exchange-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void processExchangeData(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_EXCHANGE_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, "${kafka.topic.enrich-exchange-list}", list.get(0).toString());
 
 		List<Map<String, Object>> outputList = enrichService.enrichExchange(list);
 
@@ -187,9 +179,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_ENRICH_ANALYSIS_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.enrich-analysis-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void enrichAnalysisList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_ANALYSIS_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, "${kafka.topic.enrich-analysis-list}", list.get(0).toString());
 
 		Map<String, Object> firstMap = list.get(0);
 
@@ -203,9 +195,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_ENRICH_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.enrich-historical-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void enrichHistericalList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_ENRICH_HISTORICAL_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, "${kafka.topic.enrich-historical-list}", list.get(0).toString());
 
 		Map<String, Object> firstMap = list.get(0);
 

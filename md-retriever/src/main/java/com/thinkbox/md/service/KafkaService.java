@@ -31,9 +31,9 @@ public class KafkaService {
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
-	private final String TOPIC_RETRIEVE_YAHOO_SINGLE = "retrieve.yahoo.single";
+	private final String TOPIC_RETRIEVE_YAHOO_SINGLE = "retrieve-yahoo-single";
 	
-	private final String TOPIC_RETRIEVE_YAHOO_LIST = "retrieve.yahoo.list";
+	private final String TOPIC_RETRIEVE_YAHOO_LIST = "retrieve-yahoo-list";
 	
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 

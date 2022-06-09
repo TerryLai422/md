@@ -46,45 +46,45 @@ public class KafkaService {
 
 	private final static String ASYNC_EXECUTOR = "asyncExecutor";
 
-	private final static String TOPIC_SAVE_DAILYSUMMARY_LIST = "save.dailysummary.list";
+	private final static String TOPIC_SAVE_DAILYSUMMARY_LIST = "save-dailysummary-list";
 
-	private final static String TOPIC_SAVE_TRADEDATE_LIST = "save.tradedate.list";
+	private final static String TOPIC_SAVE_TRADEDATE_LIST = "save-tradedate-list";
 
-	private final static String TOPIC_SAVE_EXCHANGE_LIST = "save.exchange.list";
+	private final static String TOPIC_SAVE_EXCHANGE_LIST = "save-exchange-list";
 
-	private final static String TOPIC_SAVE_ANALYSIS_LIST = "save.analysis.list";
+	private final static String TOPIC_SAVE_ANALYSIS_LIST = "save-analysis-list";
 
-	private final static String TOPIC_SAVE_HISTORICAL_LIST = "save.historical.list";
+	private final static String TOPIC_SAVE_HISTORICAL_LIST = "save-historical-list";
 
-	private final static String TOPIC_SAVE_INSTRUMENT_LIST = "save.instrument.list";
+	private final static String TOPIC_SAVE_INSTRUMENT_LIST = "save-instrument-list";
 
-	private final static String TOPIC_SAVE_INSTRUMENT_SINGLE = "save.instrument.single";
+	private final static String TOPIC_SAVE_INSTRUMENT_SINGLE = "save-instrument-single";
 
-	private final static String TOPIC_DBGET_EXCHANGE_DATA = "dbget.exchange.data";
+	private final static String TOPIC_DBGET_EXCHANGE_DATA = "dbget-exchange-data";
 
-	private final static String TOPIC_DBGET_TOTAL_FROM_INSTRUMENT = "dbget.total.from.instrument";
+	private final static String TOPIC_DBGET_TOTAL_FROM_INSTRUMENT = "dbget-total-from-instrument";
 
-	private final static String TOPIC_DBGET_SUMMARY_SINGLE = "dbget.summary.single";
+	private final static String TOPIC_DBGET_SUMMARY_SINGLE = "dbget-summary-single";
 
-	private final static String TOPIC_DBGET_SUMMARY_LIST = "dbget.summary.list";
+	private final static String TOPIC_DBGET_SUMMARY_LIST = "dbget-summary-list";
 
-	private final static String TOPIC_DBGET_HISTORICAL_SINGLE = "dbget.historical.single";
+	private final static String TOPIC_DBGET_HISTORICAL_SINGLE = "dbget-historical-single";
 
-	private final static String TOPIC_DBGET_HISTORICAL_LIST = "dbget.historical.list";
+	private final static String TOPIC_DBGET_HISTORICAL_LIST = "dbget-historical-list";
 
-	private final static String TOPIC_DBGET_ANALYSIS_SINGLE = "dbget.analysis.single";
+	private final static String TOPIC_DBGET_ANALYSIS_SINGLE = "dbget-analysis-single";
 
-	private final static String TOPIC_DBGET_ANALYSIS_LIST = "dbget.analysis.list";
+	private final static String TOPIC_DBGET_ANALYSIS_LIST = "dbget-analysis-list";
 
-	private final static String TOPIC_DBGET_TRADEDATE_SINGLE = "dbget.tradedate.single";
+	private final static String TOPIC_DBGET_TRADEDATE_SINGLE = "dbget-tradedate-single";
 
-	private final static String TOPIC_DBGET_TRADEDATE_LIST = "dbget.tradedate.list";
+	private final static String TOPIC_DBGET_TRADEDATE_LIST = "dbget-tradedate-list";
 
-	private final static String TOPIC_DBGET_ANALYSIS_TRADEDATE = "dbget.analysis.tradedate";
+	private final static String TOPIC_DBGET_ANALYSIS_TRADEDATE = "dbget-analysis-tradedate";
 
-	private final static String TOPIC_DBGET_DAILYSUMMARY_SINGLE = "dbget.dailysummary.single";
+	private final static String TOPIC_DBGET_DAILYSUMMARY_SINGLE = "dbget-dailysummary-single";
 
-	private final static String TOPIC_DBUPDATE_HISTORICAL_ALL = "dbupdate.historical.all";
+	private final static String TOPIC_DBUPDATE_HISTORICAL_ALL = "dbupdate-historical-all";
 
 	private final static String CONTAINER_FACTORY_LIST = "listListener";
 

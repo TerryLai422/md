@@ -47,21 +47,21 @@ public class KafkaService {
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
-	private final String TOPIC_PARSE_DAILY_LIST = "parse.daily.list";
+	private final String TOPIC_PARSE_DAILY_LIST = "parse-daily-list";
 
-	private final String TOPIC_PARSE_DAILY_SINGLE = "parse.daily.single";
+	private final String TOPIC_PARSE_DAILY_SINGLE = "parse-daily-single";
 
-	private final String TOPIC_PARSE_HISTORICAL_LIST = "parse.historical.list";
+	private final String TOPIC_PARSE_HISTORICAL_LIST = "parse-historical-list";
 
-	private final String TOPIC_PARSE_DETAIL_LIST = "parse.detail.list";
+	private final String TOPIC_PARSE_DETAIL_LIST = "parse-detail-list";
 
-	private final String TOPIC_PARSE_DETAIL_SINGLE = "parse.detail.single";
+	private final String TOPIC_PARSE_DETAIL_SINGLE = "parse-detail-single";
 
-	private final String TOPIC_PARSE_INFO_SINGLE = "parse.info.single";
+	private final String TOPIC_PARSE_INFO_SINGLE = "parse-info-single";
 
-	private final String TOPIC_PARSE_EXCHANGE_DATA = "parse.exchange.data";
+	private final String TOPIC_PARSE_EXCHANGE_DATA = "parse-exchange-data";
 
-	private final String TOPIC_PARSE_HISTORICAL_SINGLE = "parse.historical.single";
+	private final String TOPIC_PARSE_HISTORICAL_SINGLE = "parse-historical-single";
 
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 

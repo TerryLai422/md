@@ -18,6 +18,13 @@ tpd:
   topic-name: advice-topic
   messages-per-request: 10    
 
+kafka:
+  topic:
+    create-dailysummary-list: create-dailysummary-list
+    enrich-exchange-list: enrich-exchange-list
+    enrich-historical-list: enrich-historical-list
+    enrich-analysis-list: enrich-analysis-list
+
 map-key-parameter:
   wait: wait
   steps: steps

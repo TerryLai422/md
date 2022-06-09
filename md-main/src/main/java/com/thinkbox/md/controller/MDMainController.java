@@ -60,7 +60,7 @@ public class MDMainController {
 		String topic = stepList.get(next).toString();
 
 		if (topic != null) {
-			if (topic.equals("delete.files")) {
+			if (topic.equals("delete-files")) {
 				mainService.cleanupFolders();
 			} else {
 				List<String> parameterList = restParameterProperties.getTopic().get(topic);
