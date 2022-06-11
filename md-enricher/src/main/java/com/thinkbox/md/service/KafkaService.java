@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
@@ -27,7 +28,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbox.md.config.MapKeyParameter;
-import com.thinkbox.md.config.MapValueParameter;
+//import com.thinkbox.md.config.MapValueParameter;
 
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
@@ -40,8 +41,8 @@ public class KafkaService {
 	@Autowired
 	private KafkaTemplate<String, List<Map<String, Object>>> kafkaTemplateList;
 
-	@Autowired
-	private KafkaTemplate<String, Map<String, Object>> kafkaTemplateMap;
+//	@Autowired
+//	private KafkaTemplate<String, Map<String, Object>> kafkaTemplateMap;
 
 	@Autowired
 	private EnrichService enrichService;
@@ -49,8 +50,20 @@ public class KafkaService {
 	@Autowired
 	private MapKeyParameter mapKey;
 
-	@Autowired
-	private MapValueParameter mapValue;
+	@Value("${kafka.topic.create-dailysummary-list}")
+	private String topicCreateDailySummaryList;
+
+	@Value("${kafka.topic.enrich-exchange-list}")
+	private String topicEnrichExchangeList;
+
+	@Value("${kafka.topic.enrich-analysis-list}")
+	private String topicEnrichAnalysisList;
+
+	@Value("${kafka.topic.enrich-historical-list}")
+	private String topicEnrichHistoricalList;
+
+//	@Autowired
+//	private MapValueParameter mapValue;
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -58,7 +71,7 @@ public class KafkaService {
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
 
-	private final String CONTAINER_FACTORY_MAP = "mapListener";
+//	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
 	private final String CONTAINER_FACTORY_LIST = "listListener";
 
@@ -72,7 +85,7 @@ public class KafkaService {
 
 	private final static String FILE_EXTENSION = ".json";
 
-	private final static String TOPIC_DELIMITER = "[.]";
+	private final static String TOPIC_DELIMITER = "[-]";
 
 	private final static String STRING_EMPTY_SPACE = "";
 
@@ -120,11 +133,11 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.create-dailysummary-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void createDailySummaryList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, "${kafka.topic.create-dailysummary-list}", list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicCreateDailySummaryList, list.get(0).toString());
 
 		Map<String, Object> firstMap = list.get(0);
 
-		final String dataFormat = firstMap.getOrDefault(mapKey.getDataFormat(), DEFAULT_STRING_VALUE).toString();
+//		final String dataFormat = firstMap.getOrDefault(mapKey.getDataFormat(), DEFAULT_STRING_VALUE).toString();
 		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String date = firstMap.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
@@ -155,7 +168,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.enrich-exchange-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void processExchangeData(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, "${kafka.topic.enrich-exchange-list}", list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicEnrichExchangeList, list.get(0).toString());
 
 		List<Map<String, Object>> outputList = enrichService.enrichExchange(list);
 
@@ -181,7 +194,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.enrich-analysis-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void enrichAnalysisList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, "${kafka.topic.enrich-analysis-list}", list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicEnrichAnalysisList, list.get(0).toString());
 
 		Map<String, Object> firstMap = list.get(0);
 
@@ -197,7 +210,7 @@ public class KafkaService {
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.enrich-historical-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void enrichHistericalList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, "${kafka.topic.enrich-historical-list}", list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicEnrichHistoricalList, list.get(0).toString());
 
 		Map<String, Object> firstMap = list.get(0);
 

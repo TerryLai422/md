@@ -16,6 +16,7 @@ import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
@@ -43,25 +44,33 @@ public class KafkaService {
 	@Autowired
 	private FileParseService fileParseService;
 
+	@Value("${kafka.topic.parse-daily-list}")
+	private String topicParseDailyList;
+
+	@Value("${kafka.topic.parse-daily-single}")
+	private String topicParseDailySingle;
+
+	@Value("${kafka.topic.parse-historical-list}")
+	private String topicParseHistoricalList;
+
+	@Value("${kafka.topic.parse-detail-list}")
+	private String topicParseDetailList;
+
+	@Value("${kafka.topic.parse-detail-single}")
+	private String topicParseDetailSingle;
+
+	@Value("${kafka.topic.parse-info-single}")
+	private String topicParseInfoSingle;
+
+	@Value("${kafka.topic.parse-exchange-data}")
+	private String topicParseExchangeData;
+
+	@Value("${kafka.topic.parse-historical-single}")
+	private String topicParseHistoricalSingle;
+
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
-
-	private final String TOPIC_PARSE_DAILY_LIST = "parse-daily-list";
-
-	private final String TOPIC_PARSE_DAILY_SINGLE = "parse-daily-single";
-
-	private final String TOPIC_PARSE_HISTORICAL_LIST = "parse-historical-list";
-
-	private final String TOPIC_PARSE_DETAIL_LIST = "parse-detail-list";
-
-	private final String TOPIC_PARSE_DETAIL_SINGLE = "parse-detail-single";
-
-	private final String TOPIC_PARSE_INFO_SINGLE = "parse-info-single";
-
-	private final String TOPIC_PARSE_EXCHANGE_DATA = "parse-exchange-data";
-
-	private final String TOPIC_PARSE_HISTORICAL_SINGLE = "parse-historical-single";
 
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
@@ -73,7 +82,7 @@ public class KafkaService {
 
 	private final static String DEFAULT_STRING_VALUE = "-";
 
-	private final static String TOPIC_DELIMITER = "[.]";
+	private final static String TOPIC_DELIMITER = "[-]";
 
 	private final static String DEFAULT_TOPIC_ACTION = "unknown";
 
@@ -110,9 +119,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PARSE_EXCHANGE_DATA, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = "${kafka.topic.parse-exchange-data}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseExchange(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_EXCHANGE_DATA, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseExchangeData, map.toString());
 
 		try {
 			String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
@@ -141,9 +150,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PARSE_DETAIL_LIST, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = "${kafka.topic.parse-detail-list}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDetailList(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DETAIL_LIST, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseDetailList, map.toString());
 
 		try {
 			final String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
@@ -182,9 +191,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PARSE_DETAIL_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = "${kafka.topic.parse-detail-single}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDetail(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DETAIL_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseDetailSingle, map.toString());
 
 		try {
 			String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
@@ -210,9 +219,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = "${kafka.topic.parse-historical-list}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseHistoricalList(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_HISTORICAL_LIST, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseHistoricalList, map.toString());
 
 		try {
 			final String directory = map.getOrDefault(mapKey.getDirectory(), DEFAULT_STRING_VALUE).toString();
@@ -235,9 +244,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PARSE_HISTORICAL_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = "${kafka.topic.parse-historical-single}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseHisterical(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_HISTORICAL_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseHistoricalSingle, map.toString());
 
 		parseHistericalData(map);
 	}
@@ -290,9 +299,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PARSE_DAILY_LIST, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = "${kafka.topic.parse-daily-list}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDailyList(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DAILY_LIST, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseDailyList, map.toString());
 
 		String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 
@@ -322,9 +331,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PARSE_DAILY_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = "${kafka.topic.parse-daily-single}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDaily(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_DAILY_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseDailySingle, map.toString());
 
 		String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 
@@ -380,9 +389,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_PARSE_INFO_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = "${kafka.topic.parse-info-single}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseInfo(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_PARSE_INFO_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseInfoSingle, map.toString());
 
 		try {
 			String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
