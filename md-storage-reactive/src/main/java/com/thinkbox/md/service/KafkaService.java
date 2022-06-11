@@ -115,7 +115,7 @@ public class KafkaService {
 
 	private final static String FILE_EXTENSION_JSON = ".json";
 
-	private final static String TOPIC_DELIMITER = "[.]";
+	private final static String TOPIC_DELIMITER = "[-]";
 
 	private final static String DEFAULT_TOPIC_ACTION = "unknown";
 
