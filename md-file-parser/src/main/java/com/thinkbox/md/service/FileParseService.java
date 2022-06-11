@@ -255,8 +255,8 @@ public class FileParseService {
 
 	}
 
-	public String getDailyFullFileName(final String subDirectory, final String fileName,
-			final String dataSource, final String symbol, final String ticker) {
+	public String getDailyFullFileName(final String subDirectory, final String fileName, final String dataSource,
+			final String symbol, final String ticker) {
 
 		String fullFileName = dataDirectory + File.separator + DAILY_DIRECTORY;
 
@@ -385,60 +385,70 @@ public class FileParseService {
 		Calendar calendar = getCalendar(dateFormat, x[columns.get(0)]);
 
 		if (calendar != null) {
-			int year = calendar.get(Calendar.YEAR);
-			int dayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
-			int weekOfYear = calendar.get(Calendar.WEEK_OF_YEAR);
+			try {
+				int year = calendar.get(Calendar.YEAR);
+				int dayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
+				int weekOfYear = calendar.get(Calendar.WEEK_OF_YEAR);
 
-			map = new TreeMap<String, Object>();
+				map = new TreeMap<String, Object>();
 
-			if (intervalPosition == -1) {
-				map.put(mapKey.getInterval(), new String(mapValue.getDaily()));
-			} else {
-				map.put(mapKey.getInterval(), new String(x[intervalPosition]));
-			}
-			if (symbol.equals(DEFAULT_STRING_VALUE)) {
-				String tempSymbol = x[0];
-				if (tempSymbol != null && tempSymbol.endsWith(STOOQ_TICKER_SUFFIX)) {
-					tempSymbol = tempSymbol.substring(0, tempSymbol.length() - 3);
+				if (intervalPosition == -1) {
+					map.put(mapKey.getInterval(), new String(mapValue.getDaily()));
+				} else {
+					map.put(mapKey.getInterval(), new String(x[intervalPosition]));
 				}
-				map.put(mapKey.getTicker(), tempSymbol);
-				map.put(mapKey.getSymbol(), tempSymbol);
-			} else {
-				map.put(mapKey.getTicker(), new String(ticker).toUpperCase());
-				map.put(mapKey.getSymbol(), new String(symbol).toUpperCase());
-			}
-			map.put(mapKey.getDate(), new String(String.format(OUTPUT_DATE_FORMAT, calendar)));
-			if (timePosition == -1) {
-				map.put(mapKey.getTime(), DEFAULT_TIME_VALUE);
-			} else {
-				map.put(mapKey.getTime(), new String(x[timePosition]));
-			}
-			map.put(mapKey.getYear(), year);
-			map.put(mapKey.getMonth(), calendar.get(Calendar.MONTH) + 1);
-			map.put(mapKey.getDay(), calendar.get(Calendar.DATE));
-			map.put(mapKey.getDayOfYear(), dayOfYear);
-			map.put(mapKey.getWeekOfYear(), weekOfYear);
-			map.put(mapKey.getDayOfWeek(), calendar.get(Calendar.DAY_OF_WEEK));
-			if (weekOfYear == 1 && ((year % 4 != 0 && dayOfYear >= 362)
-					|| (((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) && dayOfYear >= 363))) {
-				map.put(mapKey.getYearForWeek(), year + 1);
-			} else {
-				map.put(mapKey.getYearForWeek(), year);
-			}
-			map.put(mapKey.getOpen(), Double.parseDouble(x[columns.get(1)]));
-			map.put(mapKey.getHigh(), Double.parseDouble(x[columns.get(2)]));
-			map.put(mapKey.getLow(), Double.parseDouble(x[columns.get(3)]));
-			map.put(mapKey.getClose(), Double.parseDouble(x[columns.get(4)]));
-			map.put(mapKey.getAdjClose(), Double.parseDouble(x[columns.get(5)]));
-			map.put(mapKey.getVolume(), Long.parseLong(x[columns.get(6)]));
+				if (symbol.equals(DEFAULT_STRING_VALUE)) {
+					String tempSymbol = x[0];
+					if (tempSymbol != null && tempSymbol.endsWith(STOOQ_TICKER_SUFFIX)) {
+						tempSymbol = tempSymbol.substring(0, tempSymbol.length() - 3);
+					}
+					map.put(mapKey.getTicker(), tempSymbol);
+					map.put(mapKey.getSymbol(), tempSymbol);
+				} else {
+					map.put(mapKey.getTicker(), new String(ticker).toUpperCase());
+					map.put(mapKey.getSymbol(), new String(symbol).toUpperCase());
+				}
+				map.put(mapKey.getDate(), new String(String.format(OUTPUT_DATE_FORMAT, calendar)));
+				if (timePosition == -1) {
+					map.put(mapKey.getTime(), DEFAULT_TIME_VALUE);
+				} else {
+					map.put(mapKey.getTime(), new String(x[timePosition]));
+				}
+				map.put(mapKey.getYear(), year);
+				map.put(mapKey.getMonth(), calendar.get(Calendar.MONTH) + 1);
+				map.put(mapKey.getDay(), calendar.get(Calendar.DATE));
+				map.put(mapKey.getDayOfYear(), dayOfYear);
+				map.put(mapKey.getWeekOfYear(), weekOfYear);
+				map.put(mapKey.getDayOfWeek(), calendar.get(Calendar.DAY_OF_WEEK));
+				if (weekOfYear == 1 && ((year % 4 != 0 && dayOfYear >= 362)
+						|| (((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) && dayOfYear >= 363))) {
+					map.put(mapKey.getYearForWeek(), year + 1);
+				} else {
+					map.put(mapKey.getYearForWeek(), year);
+				}
+				map.put(mapKey.getOpen(), Double.parseDouble(x[columns.get(1)]));
+				map.put(mapKey.getHigh(), Double.parseDouble(x[columns.get(2)]));
+				map.put(mapKey.getLow(), Double.parseDouble(x[columns.get(3)]));
+				map.put(mapKey.getClose(), Double.parseDouble(x[columns.get(4)]));
+				map.put(mapKey.getAdjClose(), Double.parseDouble(x[columns.get(5)]));
+				map.put(mapKey.getVolume(), Long.parseLong(x[columns.get(6)]));
 
-			String temp = map.get(mapKey.getTicker()).toString();
-			if (temp.endsWith(TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE)
-					|| temp.endsWith(TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE)) {
-				map.put(mapKey.getMarket(), MARKET_CANADA);
+				String temp = map.get(mapKey.getTicker()).toString();
+				if (temp.endsWith(TICKER_SUFFIX_TORONTO_STOCK_EXCHANGE)
+						|| temp.endsWith(TICKER_SUFFIX_TORONTO_STOCK_VENTURE_EXCHANGE)) {
+					map.put(mapKey.getMarket(), MARKET_CANADA);
 
-			} else {
-				map.put(mapKey.getMarket(), MARKET_UNITED_STATE);
+				} else {
+					map.put(mapKey.getMarket(), MARKET_UNITED_STATE);
+				}
+			} catch (Exception e) {
+				
+				String tmp = "";
+				for (int i = 0; i< x.length; i++) {
+					tmp += x[i] + ", "; 
+				}
+				log.info(tmp);
+				log.info("Exception: " + e);
 			}
 		}
 
