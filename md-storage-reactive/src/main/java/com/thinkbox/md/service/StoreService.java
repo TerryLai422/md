@@ -82,15 +82,17 @@ public class StoreService {
 	private void saveDailySummary(String type, Map<String, Object> map, Runnable completeConsumer) {
 
 		if (type.equals(INSTRUMENT_TYPE_ETF)) {
-			DailySummaryETF dailySummary = mapper.convertMapToDailySummaryETF(map);
-			dailySummaryETFRepository.save(dailySummary).subscribe(s -> {
+			
+			dailySummaryETFRepository.save(mapper.convertMapToDailySummaryETF(map)).subscribe(s -> {
 			}, (e) -> {
 			}, completeConsumer);
+			
 		} else {
-			DailySummary dailySummary = mapper.convertMapToDailySummary(map);
-			dailySummaryRepository.save(dailySummary).subscribe(s -> {
+			
+			dailySummaryRepository.save(mapper.convertMapToDailySummary(map)).subscribe(s -> {
 			}, (e) -> {
 			}, completeConsumer);
+			
 		}
 	}
 
@@ -156,37 +158,36 @@ public class StoreService {
 	private void saveAnalysis(String type, Map<String, Object> map, Runnable completeConsumer) {
 
 		if (type.equals(INSTRUMENT_TYPE_ETF)) {
-			AnalysisETF analysis = mapper.convertMapToAnalysisETF(map);
-			analysisETFRepository.save(analysis).subscribe(s -> {
+			
+			analysisETFRepository.save(mapper.convertMapToAnalysisETF(map)).subscribe(s -> {
 			}, (e) -> {
 			}, completeConsumer);
+			
 		} else {
-			Analysis analysis = mapper.convertMapToAnalysis(map);
-			analysisRepository.save(analysis).subscribe(s -> {
+			
+			analysisRepository.save(mapper.convertMapToAnalysis(map)).subscribe(s -> {
 			}, (e) -> {
 			}, completeConsumer);
+			
 		}
 	}
 
 	public void saveMap(int objType, String type, Map<String, Object> map, Runnable completeConsumer) {
 		if (objType == OBJECT_TYPE_INSTRUMENT) {
 
-			Instrument instrument = mapper.convertMapToInstrument(map);
-			instrumentRepository.save(instrument).subscribe(s -> {
+			instrumentRepository.save(mapper.convertMapToInstrument(map)).subscribe(s -> {
 			}, (e) -> {
 			}, completeConsumer);
 
 		} else if (objType == OBJECT_TYPE_HISTORICAL) {
 
-			Historical historical = mapper.convertMapToHistorical(map);
-			historicalRepository.save(historical).subscribe(s -> {
+			historicalRepository.save(mapper.convertMapToHistorical(map)).subscribe(s -> {
 			}, (e) -> {
 			}, completeConsumer);
 
 		} else if (objType == OBJECT_TYPE_TRADEDATE) {
 
-			TradeDate tradeDate = mapper.convertMapToTradeDate(map);
-			tradeDateRepository.save(tradeDate).subscribe(s -> {
+			tradeDateRepository.save(mapper.convertMapToTradeDate(map)).subscribe(s -> {
 			}, (e) -> {
 			}, completeConsumer);
 
