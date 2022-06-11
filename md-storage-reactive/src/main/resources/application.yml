@@ -18,6 +18,43 @@ tpd:
   topic-name: advice-topic
   messages-per-request: 10    
 
+kafka:
+  topic:
+    create-dailysummary-list: create-dailysummary-list
+    enrich-exchange-list: enrich-exchange-list
+    enrich-historical-list: enrich-historical-list
+    enrich-analysis-list: enrich-analysis-list
+    parse-daily-list: parse-daily-list
+    parse-daily-single: parse-daily-single
+    parse-historical-list: parse-historical-list
+    parse-detail-list: parse-detail-list
+    parse-detail-single: parse-detail-single
+    parse-info-single: parse-info-single
+    parse-exchange-data: parse-exchange-data
+    parse-historical-single: parse-historical-single
+    save-dailysummary-list: save-dailysummary-list
+    save-tradedate-list: save-tradedate-list
+    save-exchange-list: save-exchange-list
+    save-analysis-list: save-analysis-list
+    save-historical-list: save-historical-list
+    save-instrument-list: save-instrument-list
+    save-instrument-single: save-instrument-single
+    dbget-exchange-data: dbget-exchange-data
+    dbget-total-from-instrument: dbget-total-from-instrument
+    dbget-summary-single: dbget-summary-single
+    dbget-summary-list: dbget-summary-list
+    dbget-historical-single: dbget-historical-single
+    dbget-historical-list: dbget-historical-list
+    dbget-analysis-single: dbget-analysis-single
+    dbget-analysis-list: dbget-analysis-list
+    dbget-tradedate-single: dbget-tradedate-single
+    dbget-tradedate-list: dbget-tradedate-list
+    dbget-analysis-tradedate: dbget-analysis-tradedate
+    dbget-dailysummary-single: dbget-dailysummary-single
+    dbupdate-historical-all: dbupdate-historical-all
+    retrieve-yahoo-single: retrieve-yahoo-single 
+    retrieve-yahoo-list: retrieve-yahoo-list
+    
 map-key-parameter:
   wait: wait
   steps: steps

@@ -1,6 +1,7 @@
 package com.thinkbox.md.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
@@ -32,7 +33,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 @Slf4j
@@ -49,51 +49,71 @@ public class KafkaService {
 	@Autowired
 	private MapKeyParameter mapKey;
 
+	@Value("${kafka.topic.save-dailysummary-list}")
+	private String topicSaveDailysummaryList;
+
+	@Value("${kafka.topic.save-tradedate-list}")
+	private String topicSaveTradedateList;
+
+	@Value("${kafka.topic.save-exchange-list}")
+	private String topicSaveExchangeList;
+
+	@Value("${kafka.topic.save-analysis-list}")
+	private String topicSaveAnalysisList;
+
+	@Value("${kafka.topic.save-historical-list}")
+	private String topicSaveHistoricalList;
+
+	@Value("${kafka.topic.save-instrument-list}")
+	private String topicSaveInstrumentList;
+
+	@Value("${kafka.topic.save-instrument-single}")
+	private String topicSaveInstrumentSingle;
+
+	@Value("${kafka.topic.dbget-exchange-data}")
+	private String topicDBgetExchangeData;
+
+	@Value("${kafka.topic.dbget-total-from-instrument}")
+	private String topicDBgetTotalFromInstrument;
+
+	@Value("${kafka.topic.dbget-summary-single}")
+	private String topciDBgetSummarySingle;
+
+	@Value("${kafka.topic.dbget-summary-list}")
+	private String topicDBgetSummaryList;
+
+	@Value("${kafka.topic.dbget-historical-single}")
+	private String topicDBgetHistoricalSingle;
+
+	@Value("${kafka.topic.dbget-historical-list}")
+	private String topicDBgetHistoricalList;
+
+	@Value("${kafka.topic.dbget-analysis-single}")
+	private String topicDBgetAnalysisSingle;
+
+	@Value("${kafka.topic.dbget-analysis-list}")
+	private String topicDBgetAnalysisList;
+
+	@Value("${kafka.topic.dbget-tradedate-single}")
+	private String topicDBgetTradedateSingle;
+
+	@Value("${kafka.topic.dbget-tradedate-list}")
+	private String topicDBgetTradedateList;
+
+	@Value("${kafka.topic.dbget-analysis-tradedate}")
+	private String topicDBgetAnalysisTradedate;
+
+//	@Value("${kafka.topic.dbget-dailysummary-single}")
+//	private String TOPIC_DBGET_DAILYSUMMARY_SINGLE;
+//
+//	@Value("${kafka.topic.dbupdate-historical-all}")
+//	private String TOPIC_DBUPDATE_HISTORICAL_ALL;
+	
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	private final static String USER_HOME = "user.home";
 
 	private final static String ASYNC_EXECUTOR = "asyncExecutor";
-
-	private final static String TOPIC_SAVE_DAILYSUMMARY_LIST = "save-dailysummary-list";
-
-	private final static String TOPIC_SAVE_TRADEDATE_LIST = "save-tradedate-list";
-
-	private final static String TOPIC_SAVE_EXCHANGE_LIST = "save-exchange-list";
-
-	private final static String TOPIC_SAVE_ANALYSIS_LIST = "save-analysis-list";
-
-	private final static String TOPIC_SAVE_HISTORICAL_LIST = "save-historical-list";
-
-	private final static String TOPIC_SAVE_INSTRUMENT_LIST = "save-instrument-list";
-
-	private final static String TOPIC_SAVE_INSTRUMENT_SINGLE = "save-instrument-single";
-
-	private final static String TOPIC_DBGET_EXCHANGE_DATA = "dbget-exchange-data";
-
-	private final static String TOPIC_DBGET_TOTAL_FROM_INSTRUMENT = "dbget-total-from-instrument";
-
-	private final static String TOPIC_DBGET_SUMMARY_SINGLE = "dbget-summary-single";
-
-	private final static String TOPIC_DBGET_SUMMARY_LIST = "dbget-summary-list";
-
-	private final static String TOPIC_DBGET_HISTORICAL_SINGLE = "dbget-historical-single";
-
-	private final static String TOPIC_DBGET_HISTORICAL_LIST = "dbget-historical-list";
-
-	private final static String TOPIC_DBGET_ANALYSIS_SINGLE = "dbget-analysis-single";
-
-	private final static String TOPIC_DBGET_ANALYSIS_LIST = "dbget-analysis-list";
-
-	private final static String TOPIC_DBGET_TRADEDATE_SINGLE = "dbget-tradedate-single";
-
-	private final static String TOPIC_DBGET_TRADEDATE_LIST = "dbget-tradedate-list";
-
-	private final static String TOPIC_DBGET_ANALYSIS_TRADEDATE = "dbget-analysis-tradedate";
-
-	private final static String TOPIC_DBGET_DAILYSUMMARY_SINGLE = "dbget-dailysummary-single";
-
-	private final static String TOPIC_DBUPDATE_HISTORICAL_ALL = "dbupdate-historical-all";
 
 	private final static String CONTAINER_FACTORY_LIST = "listListener";
 
@@ -178,9 +198,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_SAVE_EXCHANGE_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.save-exchange-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveExchangeList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_EXCHANGE_LIST, list.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicSaveExchangeList, list.toString());
 		storeService.saveMapList(OBJECT_TYPE_INSTRUMENT, list, () -> {
 		});
 	}
@@ -234,9 +254,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_SAVE_DAILYSUMMARY_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.save-dailysummary-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveDailySummaryList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_DAILYSUMMARY_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicSaveDailysummaryList, list.get(0).toString());
 
 		final Map<String, Object> firstMap = list.get(0);
 		final String date = firstMap.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
@@ -246,17 +266,17 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_SAVE_TRADEDATE_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.save-tradedate-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveTradeDateList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_TRADEDATE_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicSaveTradedateList, list.get(0).toString());
 
 		saveList(list, OBJECT_TYPE_TRADEDATE, "tradedates");
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_SAVE_INSTRUMENT_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.save-instrument-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveInstrumentList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_INSTRUMENT_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicSaveInstrumentList, list.get(0).toString());
 
 		Map<String, Object> firstMap = list.get(0);
 		final String subExch = firstMap.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
@@ -264,9 +284,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_SAVE_ANALYSIS_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.save-analysis-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveAnalysisList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_ANALYSIS_LIST, list.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicSaveAnalysisList, list.toString());
 
 		Map<String, Object> firstMap = list.get(0);
 		final String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
@@ -274,9 +294,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_SAVE_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.save-historical-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveHistoricalList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_HISTORICAL_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicSaveHistoricalList, list.get(0).toString());
 
 		Map<String, Object> firstMap = list.get(0);
 		final String fileName = firstMap.getOrDefault(mapKey.getFileName(), DEFAULT_STRING_VALUE).toString();
@@ -391,9 +411,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_SAVE_INSTRUMENT_SINGLE, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.save-instrument-single}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void saveInstrument(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_SAVE_INSTRUMENT_SINGLE, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicSaveInstrumentSingle, list.get(0).toString());
 
 		final Map<String, Object> secondMap = list.get(1);
 		final Map<String, Object> firstMap = list.get(0);
@@ -428,9 +448,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_DBGET_TOTAL_FROM_INSTRUMENT, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = "${kafka.topic.dbget-total-from-instrument}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void getHistoricalTotalFromInstruments(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_TOTAL_FROM_INSTRUMENT, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetTotalFromInstrument, map.toString());
 
 		List<Map<String, Object>> outputList = null;
 
@@ -464,9 +484,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_DBGET_EXCHANGE_DATA, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = "${kafka.topic.dbget-exchange-data}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void getInstruments(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_EXCHANGE_DATA, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetExchangeData, map.toString());
 
 		List<Map<String, Object>> outputList = null;
 		List<Map<String, Object>> outList = null;
@@ -511,9 +531,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_DBGET_ANALYSIS_TRADEDATE, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.dbget-analysis-tradedate}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void getAnalysisDate(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_ANALYSIS_TRADEDATE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetAnalysisTradedate, map.toString());
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		final String topic = getTopicFromList(map);
 
@@ -538,9 +558,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_DBGET_TRADEDATE_LIST, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = "${kafka.topic.dbget-tradedate-list}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void getTradeDateList(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_TRADEDATE_LIST, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetTradedateList, map.toString());
 
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		final String type = map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
@@ -584,9 +604,9 @@ public class KafkaService {
 //	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_DBGET_TRADEDATE_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = "${kafka.topic.dbget-tradedate-single}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void getTradeDateSingle(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_TRADEDATE_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetTradedateSingle, map.toString());
 
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		final String type = map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
@@ -599,9 +619,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_DBGET_ANALYSIS_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.dbget-analysis-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void getAnalysisList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_ANALYSIS_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetAnalysisList, list.get(0).toString());
 		final Map<String, Object> firstMap = list.get(0);
 		final String type = firstMap.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
 
@@ -609,9 +629,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_DBGET_HISTORICAL_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.dbget-historical-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void getHistoricalList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_HISTORICAL_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetHistoricalList, list.get(0).toString());
 		final Map<String, Object> firstMap = list.get(0);
 		final String type = firstMap.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
 
@@ -619,9 +639,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_DBGET_ANALYSIS_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = "${kafka.topic.dbget-analysis-single}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void getAnalysis(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_ANALYSIS_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetAnalysisSingle, map.toString());
 
 		final String ticker = map.get(mapKey.getTicker()).toString();
 		Map<String, Object> instrument = storeService.getInstrument(ticker);
@@ -634,9 +654,9 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_DBGET_HISTORICAL_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = "${kafka.topic.dbget-historical-single}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void getHistorical(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_HISTORICAL_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetHistoricalSingle, map.toString());
 
 		final String ticker = map.get(mapKey.getTicker()).toString();
 
@@ -845,9 +865,9 @@ public class KafkaService {
 
 	// TODO rewrite in reactive style
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_DBGET_SUMMARY_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.dbget-summary-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void getHistoricalSummaryList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_SUMMARY_LIST, list.get(0).toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetSummaryList, list.get(0).toString());
 
 		final Map<String, Object> firstMap = list.get(0);
 		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
@@ -949,9 +969,9 @@ public class KafkaService {
 //	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_DBGET_SUMMARY_SINGLE, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.dbget-summary-single}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void getHistoricalSummary(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_DBGET_SUMMARY_SINGLE, map.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topciDBgetSummarySingle, map.toString());
 
 		final String topic = getTopicFromList(map);
 

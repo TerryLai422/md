@@ -1,6 +1,7 @@
 package com.thinkbox.md.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
@@ -26,14 +27,16 @@ public class KafkaService {
 	@Autowired
 	private RetrieveService retrieveService;
 
+	@Value("${kafka.topic.retrieve-yahoo-single}")
+	private String topicRetrieveYahooSingle;
+
+	@Value("${kafka.topic.retrieve-yahoo-list}")
+	private String topicRetrieveYahooList;
+	
 	@Autowired
 	private MapKeyParameter mapKey;
 
 	private final String ASYNC_EXECUTOR = "asyncExecutor";
-
-	private final String TOPIC_RETRIEVE_YAHOO_SINGLE = "retrieve-yahoo-single";
-	
-	private final String TOPIC_RETRIEVE_YAHOO_LIST = "retrieve-yahoo-list";
 	
 	private final String CONTAINER_FACTORY_MAP = "mapListener";
 
@@ -60,17 +63,17 @@ public class KafkaService {
 	}
 
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_RETRIEVE_YAHOO_SINGLE, containerFactory = CONTAINER_FACTORY_MAP)
+	@KafkaListener(topics = "${kafka.topic.retrieve-yahoo-single}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void retreiveYahoo(Map<String, Object> map) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_RETRIEVE_YAHOO_SINGLE, map);
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicRetrieveYahooSingle, map);
 		
 		retrieveService.retrieveYahoo(map);
 	}
 	
 	@Async(ASYNC_EXECUTOR)
-	@KafkaListener(topics = TOPIC_RETRIEVE_YAHOO_LIST, containerFactory = CONTAINER_FACTORY_LIST)
+	@KafkaListener(topics = "${kafka.topic.retrieve-yahoo-list}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void retrieveYahooList(List<Map<String, Object>> list) {
-		log.info(STRING_LOGGER_RECEIVED_MESSAGE, TOPIC_RETRIEVE_YAHOO_LIST, list.toString());
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicRetrieveYahooList, list.toString());
 
 		Map<String, Object> firstMap = list.get(0);
 		
