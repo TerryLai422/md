@@ -1,6 +1,0 @@
-server:
-  port: 8185
-
-spring:
-  application:
-    name: md-file-parser
