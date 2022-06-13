@@ -2,8 +2,6 @@ server:
   port: 8184
 
 spring:
-  application:
-    name: md-storage
   data:
     mongodb:
       authentication-database: admin
@@ -12,7 +10,3 @@ spring:
       database: marketdata
       port: 27017
       host: localhost 
-   
-md-storage:
-  controller:
-    enabled: true

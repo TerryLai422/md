@@ -1,5 +1,0 @@
-spring:
-  profiles: dev
-  cloud:
-    config:
-      uri: http://md-config:8090
