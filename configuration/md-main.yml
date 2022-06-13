@@ -1,9 +1,5 @@
 server:
   port: 8187
-
-spring:
-  application:
-    name: md-main
       
 rest-parameter:
   topic:
