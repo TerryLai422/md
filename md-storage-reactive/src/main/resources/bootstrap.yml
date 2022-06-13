@@ -2,4 +2,5 @@ spring:
   cloud:
     config:
       uri: http://localhost:8090
-      enabled: false
+  application:
+    name: md-storage-reactive
