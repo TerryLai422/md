@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<property name="LOG_DIRECTORY" value="/Users/admin/data/logstash/logs/in" />
+   <appender name="file" class="ch.qos.logback.core.FileAppender"> 
+        <file>${LOG_DIRECTORY}/md-main.log</file> 
+         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender> 
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <Pattern>%d{yyyy-MM-dd} | %d{HH:mm:ss.SSS} | %-5level | [%15.-15t] | ${PID:-} | %40.-40logger{39} : %m%n</Pattern>
+        </encoder>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="stdout"/>
+        <appender-ref ref="file"/>
+    </root>
+</configuration>
