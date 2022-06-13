@@ -136,6 +136,7 @@ map-key-parameter:
   length: length
   method: method
   dataFormat: dataFormat
+  requestID: requestID
   
 map-value-parameter:
   daily: D
