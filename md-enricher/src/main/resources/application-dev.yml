@@ -1,6 +1,0 @@
-server:
-  port: 8182
-
-spring:
-  application:
-    name: md-enricher
