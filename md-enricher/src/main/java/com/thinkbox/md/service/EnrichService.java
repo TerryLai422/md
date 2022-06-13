@@ -313,7 +313,7 @@ public class EnrichService {
 
 	@SuppressWarnings("unchecked")
 	private List<Map<String, Object>> getFilterList(List<Map<String, Object>> list, String key1, String key2) {
-		return list.stream().filter(x -> {
+		return list.stream().filter(x -> !x.toString().equals("{}")).filter(x -> {
 			Map<String, Object> y = (Map<String, Object>) x.get(mapKey.getInd());
 			Double i = Double.valueOf(y.getOrDefault(key1, 0).toString());
 			Double j = Double.valueOf(y.getOrDefault(key2, 0).toString());
@@ -340,8 +340,13 @@ public class EnrichService {
 
 	@SuppressWarnings("unchecked")
 	private Map<String, Long> consolidate(List<Map<String, Object>> list, String key1, String key2) {
-		Map<String, Long> map = list.stream().map(x -> {
+		Map<String, Long> map = list.stream().filter(x -> !x.toString().equals("{}")).map(x -> {
+//			System.out.println("X:" + x.toString());
 			Map<String, Object> y = (Map<String, Object>) x.get(key1);
+			if (y == null) {
+				System.out.println("y is null:" + x.toString() + ":" + (x == null));
+				return "";
+			}
 			return y.getOrDefault(key2, "").toString();
 		}).collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 		return map;
@@ -349,9 +354,18 @@ public class EnrichService {
 
 	@SuppressWarnings("unchecked")
 	private Map<String, Long> consolidate(List<Map<String, Object>> list, String key1, String key2, String key3) {
-		Map<String, Long> map = list.stream().map(x -> {
+		Map<String, Long> map = list.stream().filter(x -> !x.toString().equals("{}")).map(x -> {
+//			System.out.println("X:" + x.toString());
 			Map<String, Object> y = (Map<String, Object>) x.get(key1);
+			if (y == null) {
+				System.out.println("y is null:" + x.toString() + ":" + (x == null));
+				return "";				
+			}
 			Map<String, Object> z = (Map<String, Object>) y.get(key2);
+			if (z == null) {
+				System.out.println("z is null:" + y.toString() + ":" + (y == null));
+				return "";				
+			}			
 			return z.getOrDefault(key3, "").toString();
 		}).collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 		return map;
