@@ -54,6 +54,7 @@ kafka:
     dbupdate-historical-all: dbupdate-historical-all
     retrieve-yahoo-single: retrieve-yahoo-single 
     retrieve-yahoo-list: retrieve-yahoo-list
+    consolidate-historical-ticker: consolidate-historical-ticker
     
 map-key-parameter:
   wait: wait
