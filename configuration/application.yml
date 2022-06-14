@@ -138,6 +138,7 @@ map-key-parameter:
   method: method
   dataFormat: dataFormat
   requestID: requestID
+  files: files
   
 map-value-parameter:
   daily: D
