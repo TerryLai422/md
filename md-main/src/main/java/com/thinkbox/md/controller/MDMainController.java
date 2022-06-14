@@ -3,6 +3,7 @@ package com.thinkbox.md.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.kafka.common.Uuid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.thinkbox.md.config.MapKeyParameter;
 import com.thinkbox.md.config.RestParameterProperties;
 import com.thinkbox.md.service.KafkaService;
 import com.thinkbox.md.service.MainService;
@@ -25,6 +27,9 @@ public class MDMainController {
 	private RestParameterProperties restParameterProperties;
 
 	@Autowired
+	private MapKeyParameter mapKey;
+	
+	@Autowired
 	private KafkaService kafKaService;
 
 	@Autowired
@@ -36,15 +41,15 @@ public class MDMainController {
 	public ResponseEntity<Object> process(@RequestBody Map<String, Object> map) {
 		log.info("Received map: {}", map.toString());
 
-		Object objNext = map.get("next");
+		Object objNext = map.get(mapKey.getNext());
 		int next = 0;
 		if (objNext == null) {
-			map.put("next", next);
+			map.put(mapKey.getNext(), next);
 		} else {
 			next = Integer.valueOf(objNext.toString());
 		}
 
-		Object objStep = map.get("steps");
+		Object objStep = map.get(mapKey.getSteps());
 		if (objStep == null) {
 			log.info("Missing Steps -> {}", map.toString());
 			return ResponseEntity.badRequest().body("Missing Steps");
@@ -82,7 +87,7 @@ public class MDMainController {
 						return ResponseEntity.badRequest().body("Missing Parameter: " + missing);
 
 					}
-
+					map.put(mapKey.getRequestID(), Uuid.randomUuid().toString());
 					kafKaService.publish(topic, map);
 				}
 			}

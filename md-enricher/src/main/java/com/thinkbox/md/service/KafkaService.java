@@ -238,7 +238,8 @@ public class KafkaService {
 		final String currentTopic = getCurrentTopicFromList(map);
 		final String topic = getTopicFromList(map);
 
-		Flux<Map<String, Object>> flux = enrichService.enrichFlux(type, date, getFullFileName(currentTopic, ticker));
+		final String requestID = map.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
+		Flux<Map<String, Object>> flux = enrichService.enrichFlux(type, date, getFullFileName(requestID, currentTopic, ticker));
 
 		Mono<Long> count = flux.count();
 		long size = count.block();
@@ -257,7 +258,8 @@ public class KafkaService {
 	private void processFlux(Flux<Map<String, Object>> flux, final Map<String, Object> map, final String topic,
 			final String fileName, final Long size) {
 
-		final String outFileName = getFullFileName(topic, fileName);
+		final String requestID = map.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
+		final String outFileName = getFullFileName(requestID, topic, fileName);
 		final String dataFormat = map.getOrDefault(mapKey.getDataFormat(), DEFAULT_STRING_VALUE).toString();
 
 		Path opPath = Paths.get(outFileName);
@@ -359,7 +361,7 @@ public class KafkaService {
 		}
 	}
 
-	private String getFullFileName(String currentTopic, String fileName) {
+	private String getFullFileName(String requestID, String currentTopic, String fileName) {
 		String[] topicBreakDown = currentTopic.split(TOPIC_DELIMITER);
 		String topicAction = DEFAULT_TOPIC_ACTION;
 		String topicType = DEFAULT_TOPIC_TYPE;
@@ -368,7 +370,7 @@ public class KafkaService {
 			topicType = topicBreakDown[1];
 		}
 		return System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
-				+ File.separator + fileName + FILE_EXTENSION;
+				+ File.separator + requestID + "." + fileName + FILE_EXTENSION;
 
 	}
 
@@ -376,7 +378,8 @@ public class KafkaService {
 
 		List<Map<String, Object>> mapperList = null;
 		try {
-			File file = new File(getFullFileName(currentTopic, fileName));
+			final String requestID = firstMap.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
+			File file = new File(getFullFileName(requestID, currentTopic, fileName));
 
 			mapperList = objectMapper.readValue(new FileInputStream(file),
 					new TypeReference<List<Map<String, Object>>>() {
@@ -401,8 +404,9 @@ public class KafkaService {
 				topicAction = topicBreakDown[0];
 				topicType = topicBreakDown[1];
 			}
+			final String requestID = map.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
 			File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator
-					+ topicType + File.separator + fileName + FILE_EXTENSION);
+					+ topicType + File.separator + requestID + "." + fileName + FILE_EXTENSION);
 			objectMapper.writeValue(file, outputList);
 
 			Map<String, Object> newMap = map.entrySet().stream()
@@ -433,8 +437,9 @@ public class KafkaService {
 				topicAction = topicBreakDown[0];
 				topicType = topicBreakDown[1];
 			}
+			final String requestID = map.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
 			File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator
-					+ topicType + File.separator + fileName + FILE_EXTENSION);
+					+ topicType + File.separator + requestID + "." + fileName + FILE_EXTENSION);
 			objectMapper.writeValue(file, outMap);
 
 			Map<String, Object> newMap = map.entrySet().stream()

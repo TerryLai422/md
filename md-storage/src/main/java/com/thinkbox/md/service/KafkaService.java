@@ -18,6 +18,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -192,8 +194,9 @@ public class KafkaService {
 			topicAction = topicBreakDown[0];
 			topicType = topicBreakDown[1];
 		}
+		final String requestID = firstMap.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
 		File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
-				+ File.separator + fileName + FILE_EXTENSION);
+				+ File.separator + requestID + "." + fileName + FILE_EXTENSION);
 		Map<String, Object> map = null;
 		try (FileInputStream fileInputStream = new FileInputStream(file)) {
 			
@@ -672,7 +675,8 @@ public class KafkaService {
 
 	private void outputAsFile(Map<String, Object> outMap, Map<String, Object> map, String topic, String fileName) {
 		try {
-			File file = getFile(topic, fileName);
+			final String requestID = map.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
+			File file = getFile(requestID, topic, fileName);
 
 			objectMapper.writeValue(file, outMap);
 
@@ -686,7 +690,8 @@ public class KafkaService {
 	private void outputAsFileList(List<Map<String, Object>> outputList, Map<String, Object> map, String topic,
 			String fileName) {
 		try {
-			File file = getFile(topic, fileName);
+			final String requestID = map.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
+			File file = getFile(requestID, topic, fileName);
 
 			objectMapper.writeValue(file, outputList);
 
@@ -697,7 +702,7 @@ public class KafkaService {
 		}
 	}
 
-	private File getFile(String topic, String fileName) {
+	private File getFile(String requestID, String topic, String fileName) {
 		String[] topicBreakDown = topic.split(TOPIC_DELIMITER);
 		String topicAction = DEFAULT_TOPIC_ACTION;
 		String topicType = DEFAULT_TOPIC_TYPE;
@@ -707,7 +712,7 @@ public class KafkaService {
 		}
 
 		return new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
-				+ File.separator + fileName + FILE_EXTENSION);
+				+ File.separator + requestID + "." + fileName + FILE_EXTENSION);
 
 	}
 
@@ -814,7 +819,7 @@ public class KafkaService {
 		if (!format.equals(DEFAULT_STRING_VALUE)) {
 			list = readFileList(firstMap, currentTopic, subExch);
 		}
-		Long start = System.currentTimeMillis();
+		Instant start = Instant.now();
 
 		list.remove(0);
 		list.stream().parallel().forEach(x -> {
@@ -827,8 +832,7 @@ public class KafkaService {
 
 		});
 
-		Long end = System.currentTimeMillis();
-		log.info("Total time for getting summary:" + (end - start));
+		log.info("Total time for getting summary:" + logTime(start));
 		if (list.size() > 0) {
 			if (topic != null) {
 				if (format.equals(DEFAULT_STRING_VALUE)) {
@@ -993,5 +997,9 @@ public class KafkaService {
 			map.put(mapKey.getNext(), next);
 		}
 		return topic;
+	}
+	
+	private String logTime(Instant start) {
+		return Duration.between(start, Instant.now()).toMillis() + "ms";
 	}
 }

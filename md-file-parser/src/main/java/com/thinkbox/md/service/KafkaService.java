@@ -309,13 +309,16 @@ public class KafkaService {
 			final String directory = map.getOrDefault(mapKey.getDirectory(), DEFAULT_STRING_VALUE).toString();
 
 			List<String> files = fileParseService.getSymbolsfromDailyDirectory(directory);
-			files.forEach(System.out::println);
+			files.forEach(log::info);
 
+			final int numberOfFiles = files.size();
+			
 			files.stream().parallel().forEach(x -> {
 				final Map<String, Object> fileMap = new TreeMap<>();
 				map.forEach((i, j) -> {
 					fileMap.put(i, j);
 				});
+				fileMap.put("files", numberOfFiles);
 				fileMap.put(mapKey.getFileName(), x);
 				if (format.equals(DEFAULT_STRING_VALUE)) {
 					parseDailyData(fileMap);
@@ -423,7 +426,7 @@ public class KafkaService {
 		return topic;
 	}
 
-	private String getOutFullFileName(String topic, String fileName) {
+	private String getOutFullFileName(String requestID, String topic, String fileName) {
 		String[] topicBreakDown = topic.split(TOPIC_DELIMITER);
 		String topicAction = DEFAULT_TOPIC_ACTION;
 		String topicType = DEFAULT_TOPIC_TYPE;
@@ -432,7 +435,7 @@ public class KafkaService {
 			topicType = topicBreakDown[1];
 		}
 		return System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
-				+ File.separator + fileName + FILE_EXTENSION_JSON;
+				+ File.separator + requestID + "." + fileName + FILE_EXTENSION_JSON;
 	}
 
 	private void publishAfterOutputAsFile(Map<String, Object> map, String topic, long size) {
@@ -462,10 +465,11 @@ public class KafkaService {
 		final String dataSource = map.getOrDefault(mapKey.getDataSource(), DEFAULT_STRING_VALUE).toString();
 		final String fileName = map.getOrDefault(mapKey.getFileName(), DEFAULT_STRING_VALUE).toString();
 		final String dataFormat = map.getOrDefault(mapKey.getDataFormat(), DEFAULT_STRING_VALUE).toString();
+		final String requestID = map.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
 		final String topic = getTopicFromList(map);
 		final String inFilePath = fileParseService.getDailyFullFileName(subDirectory, fileName, dataSource, symbol,
 				ticker);
-		final String outFilePath = getOutFullFileName(topic, fileName);
+		final String outFilePath = getOutFullFileName(requestID, topic, fileName);
 		final List<Integer> columns = fileParseService.getColumnsPosition(dataSource);
 		final String dateFormat = fileParseService.getDateFormat(dataSource);
 		final int intervalPosition = fileParseService.getIntervalPosition(dataSource);

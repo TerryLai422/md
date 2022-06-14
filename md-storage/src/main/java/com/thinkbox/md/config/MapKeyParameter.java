@@ -176,4 +176,8 @@ public class MapKeyParameter {
 	private String length;
 	
 	private String method;
+	
+	private String dataFormat;
+	
+	private String requestID;
 }

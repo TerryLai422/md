@@ -103,6 +103,10 @@ public class KafkaService {
 	@Value("${kafka.topic.dbget-analysis-tradedate}")
 	private String topicDBgetAnalysisTradedate;
 
+	@Value("${kafka.topic.consolidate-historical-ticker}")
+	private String topicConsolidateHistoricalTicker;
+
+	
 //	@Value("${kafka.topic.dbget-dailysummary-single}")
 //	private String TOPIC_DBGET_DAILYSUMMARY_SINGLE;
 //
@@ -236,8 +240,10 @@ public class KafkaService {
 			topicAction = topicBreakDown[0];
 			topicType = topicBreakDown[1];
 		}
+		final String requestID = firstMap.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
+		
 		File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
-				+ File.separator + fileName + FILE_EXTENSION_JSON);
+				+ File.separator + requestID + "." + fileName + FILE_EXTENSION_JSON);
 		List<Map<String, Object>> mapperList = null;
 
 		try (FileInputStream fileInputStream = new FileInputStream(file)) {
@@ -709,13 +715,15 @@ public class KafkaService {
 	private void processFlux(Flux<Map<String, Object>> flux, final Map<String, Object> map, final String topic,
 			final String fileName, final Long size) {
 
-		final String outFileName = getFullFileName(topic, fileName);
+		final String requestID = map.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
+		final String outFileName = getFullFileName(requestID, topic, fileName);
 		final String dataFormat = map.getOrDefault(mapKey.getDataFormat(), DEFAULT_STRING_VALUE).toString();
 
-		final Path opPath = Paths.get(outFileName);
+		final Path outPath = Paths.get(outFileName);
+		System.out.println("out path:" + outPath);
 		try {
 			BufferedWriter bw;
-			bw = Files.newBufferedWriter(opPath, StandardOpenOption.CREATE);
+			bw = Files.newBufferedWriter(outPath, StandardOpenOption.CREATE);
 			if (dataFormat.equals(OUTPUT_FORMAT_JSON)) {
 				bw.write(STRING_SQUARE_OPEN_BRACKET);
 			}
@@ -784,7 +792,8 @@ public class KafkaService {
 
 	private void outputAsFile(Map<String, Object> outMap, Map<String, Object> map, String topic, String fileName) {
 		try {
-			File file = getFile(topic, fileName);
+			final String requestID = map.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
+			File file = getFile(requestID, topic, fileName);
 
 			objectMapper.writeValue(file, outMap);
 
@@ -798,8 +807,10 @@ public class KafkaService {
 	private void outputAsFileList(List<Map<String, Object>> outputList, Map<String, Object> map, String topic,
 			String fileName) {
 		try {
-			File file = getFile(topic, fileName);
+			final String requestID = map.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
+			File file = getFile(requestID, topic, fileName);
 
+			System.out.println("FILE: " + file);
 			objectMapper.writeValue(file, outputList);
 
 			publishAfterOutputAsFile(map, file, topic, outputList.size());
@@ -809,13 +820,13 @@ public class KafkaService {
 		}
 	}
 
-	private File getFile(String topic, String fileName) {
+	private File getFile(String requestID, String topic, String fileName) {
 
-		return new File(getFullFileName(topic, fileName));
+		return new File(getFullFileName(requestID, topic, fileName));
 
 	}
 
-	private String getFullFileName(String topic, String fileName) {
+	private String getFullFileName(String requestID, String topic, String fileName) {
 		String[] topicBreakDown = topic.split(TOPIC_DELIMITER);
 		String topicAction = DEFAULT_TOPIC_ACTION;
 		String topicType = DEFAULT_TOPIC_TYPE;
@@ -825,7 +836,7 @@ public class KafkaService {
 		}
 
 		return System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
-				+ File.separator + fileName + FILE_EXTENSION_JSON;
+				+ File.separator + requestID + "." + fileName + FILE_EXTENSION_JSON;
 	}
 
 	private void publishAfterOutputAsFile(Map<String, Object> map, String topic, long size) {
@@ -995,6 +1006,35 @@ public class KafkaService {
 			log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 		}
 	}
+	
+	@Async(ASYNC_EXECUTOR)
+	@KafkaListener(topics = "${kafka.topic.consolidate-historical-ticker}", containerFactory = CONTAINER_FACTORY_LIST)
+	public void consolidateHistoricalList(Map<String, Object> map) {
+		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicConsolidateHistoricalTicker, map.toString());
+
+//		final String topic = getTopicFromList(map);
+//
+//		final String ticker = map.get(mapKey.getTicker()).toString();
+//
+//		Map<String, Object> instrumentMap = storeService.getInstrument(ticker);
+//
+//		Map<String, Object> summaryMap = storeService.getHistoricalSummary(ticker);
+//
+//		summaryMap.forEach((i, j) -> {
+//			instrumentMap.put(i, j);
+//		});
+//
+//		if (topic != null) {
+//			List<Map<String, Object>> outputList = new ArrayList<>();
+//			outputList.add(0, map);
+//			outputList.add(1, instrumentMap);
+//
+//			publish(topic, outputList);
+//		} else {
+//			log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+//		}
+	}
+	
 
 //	@Async(ASYNC_EXECUTOR)
 //	@KafkaListener(topics = TOPIC_DBUPDATE_HISTORICAL_ALL, containerFactory = CONTAINER_FACTORY_MAP)
