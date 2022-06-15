@@ -14,8 +14,8 @@ import reactor.core.publisher.Mono;
 
 public interface HistoricalRepository extends ReactiveMongoRepository<Historical, String> {
 
-	@Query("{ticker: {$exists:false}}")
-	List<Historical> findAllNull();
+//	@Query("{ticker: {$exists:false}}")
+//	List<Historical> findAllNull();
 //
 //	@Query("{ticker: {$exists:false}}")
 //	List<Historical> findAllNull(Pageable pageable);
