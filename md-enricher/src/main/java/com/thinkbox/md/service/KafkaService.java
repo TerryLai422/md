@@ -138,25 +138,25 @@ public class KafkaService {
 		Map<String, Object> firstMap = list.get(0);
 
 //		final String dataFormat = firstMap.getOrDefault(mapKey.getDataFormat(), DEFAULT_STRING_VALUE).toString();
-		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+//		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String date = firstMap.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
 
-		if (!format.equals(DEFAULT_STRING_VALUE)) {
+//		if (!format.equals(DEFAULT_STRING_VALUE)) {
 			list = readJSONFile(firstMap, currentTopic, date);
-		}
+//		}
 
 		Map<String, Object> outMap = enrichService.createDailySummary(list);
 		if (outMap != null) {
 			if (topic != null) {
-				if (format.equals(DEFAULT_STRING_VALUE)) {
-					List<Map<String, Object>> outputList = new ArrayList<>();
-					outputList.add(outMap);
-					publish(topic, firstMap, outputList);
-				} else {
+//				if (format.equals(DEFAULT_STRING_VALUE)) {
+//					List<Map<String, Object>> outputList = new ArrayList<>();
+//					outputList.add(outMap);
+//					publish(topic, firstMap, outputList);
+//				} else {
 					outputAsFile(outMap, firstMap, topic, date);
-				}
+//				}
 			} else {
 				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
@@ -335,24 +335,24 @@ public class KafkaService {
 
 		Map<String, Object> firstMap = list.get(0);
 
-		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+//		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
 
-		if (!format.equals(DEFAULT_STRING_VALUE)) {
+//		if (!format.equals(DEFAULT_STRING_VALUE)) {
 			list = readJSONFile(firstMap, currentTopic, ticker);
-		}
+//		}
 		outputList = enrichService.enrichList(list, type);
 
 		int size = outputList.size();
 		if (size > 0) {
 			if (topic != null) {
-				if (format.equals(DEFAULT_STRING_VALUE)) {
-					publish(topic, firstMap, outputList);
-				} else {
+//				if (format.equals(DEFAULT_STRING_VALUE)) {
+//					publish(topic, firstMap, outputList);
+//				} else {
 					outputAsFile(outputList, firstMap, topic, ticker);
-				}
+//				}
 			} else {
 				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
