@@ -251,16 +251,6 @@ public class StoreService {
 
 	}
 
-//	public List<Map<String, Object>> getHistoricalMapList(final String ticker, final String date) {
-//		List<Map<String, Object>> list = null;
-//		if (date.equals(DEFAULT_STRING_VALUE)) {
-//			list = getHistoricalList(ticker);
-//		} else {
-//			list = getHistoricalList(ticker, date);
-//		}
-//		return list;
-//	}
-
 	public Flux<Map<String, Object>> getHistoricalMapFlux(final String ticker, final String date) {
 		Flux<Map<String, Object>> flux = null;
 		if (date.equals(DEFAULT_STRING_VALUE)) {
@@ -271,46 +261,15 @@ public class StoreService {
 		return flux;
 	}
 
-//	private List<Map<String, Object>> getHistoricalList(final String ticker) {
-//
-//		return historicalRepository.findByTicker(ticker).map(x -> x.getOthers()).collectList().block();
-//	}
-
 	private Flux<Map<String, Object>> getHistoricalFlux(final String ticker) {
 
 		return historicalRepository.findByTicker(ticker).map(x -> x.getOthers());
 	}
 
-//	private List<Map<String, Object>> getHistoricalList(final String ticker, String date) {
-//
-//		return historicalRepository.findByTickerAndDate(ticker, date).map(x -> x.getOthers()).collectList().block();
-//	}
-
 	private Flux<Map<String, Object>> getHistoricalFlux(final String ticker, String date) {
 
 		return historicalRepository.findByTickerAndDate(ticker, date).map(x -> x.getOthers());
 	}
-
-//	public List<Map<String, Object>> getHistoricalList(int page) {
-//
-//		PageRequest pageRequest = PageRequest.of(page, 2000);
-//
-//		List<Historical> historicals = historicalRepository.findAllNull(pageRequest);
-//
-//		return historicals.stream().limit(2000).map(x -> x.getOthers()).collect(Collectors.toList());
-//
-//	}
-//	private List<Map<String, Object>> getHistoricalList(final String ticker, long limit) {
-//
-//		List<Historical> list = Arrays.asList();
-//
-//		if (getHistoricalsTotal(ticker) <= limit) {
-//			list = historicalRepository.findByTicker(ticker).collectList().block();
-//		}
-//
-//		return list.stream().sorted((i, j) -> i.getDate().toString().compareTo(j.getDate().toString()))
-//				.map(x -> x.getOthers()).collect(Collectors.toList());
-//	}
 
 	public Map<String, Object> getHistoricalSummary(final String ticker) {
 
@@ -410,22 +369,6 @@ public class StoreService {
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
 
-//	public List<Map<String, Object>> getAnalysisMapListByTickerAndDate(String type, String ticker, String date) {
-//
-//		List<Map<String, Object>> list = null;
-//		if (ticker.equals(DEFAULT_STRING_VALUE)) {
-//			list = getAnalysisListByDate(type, date);
-//		} else {
-//			if (date.equals(DEFAULT_STRING_VALUE)) {
-//				list = getAnalysisListByTicker(type, ticker);
-//
-//			} else {
-//				list = getAnalysisListByTickerAndDate(type, ticker, date);
-//			}
-//		}
-//		return list;
-//	}
-
 	public Flux<Map<String, Object>> getAnalysisMapFluxByTickerAndDate(String type, String ticker, String date) {
 
 		Flux<Map<String, Object>> flux = null;
@@ -442,21 +385,6 @@ public class StoreService {
 		return flux;
 	}
 
-//	private List<Map<String, Object>> getAnalysisListByTicker(String type, String ticker) {
-//
-//		List<Map<String, Object>> outList = null;
-//
-//		if (type.equals(INSTRUMENT_TYPE_ETF)) {
-//			List<AnalysisETF> list = analysisETFRepository.findByTicker(ticker).collectList().block();
-//			outList = list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
-//		} else {
-//			List<Analysis> list = analysisRepository.findByTicker(ticker).collectList().block();
-//			outList = list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
-//		}
-//
-//		return outList;
-//	}
-
 	private Flux<Map<String, Object>> getAnalysisFluxByTicker(String type, String ticker) {
 
 		Flux<Map<String, Object>> outList = null;
@@ -472,20 +400,6 @@ public class StoreService {
 		return outList;
 	}
 
-//	private List<Map<String, Object>> getAnalysisListByTickerAndDate(String type, String ticker, String date) {
-//
-//		List<Map<String, Object>> outList = null;
-//
-//		if (type.equals(INSTRUMENT_TYPE_ETF)) {
-//			List<AnalysisETF> list = analysisETFRepository.findByTickerAndDate(ticker, date).collectList().block();
-//			outList = list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
-//		} else {
-//			List<Analysis> list = analysisRepository.findByTickerAndDate(ticker, date).collectList().block();
-//			outList = list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
-//		}
-//		return outList;
-//	}
-
 	private Flux<Map<String, Object>> getAnalysisFluxByTickerAndDate(String type, String ticker, String date) {
 
 		Flux<Map<String, Object>> outList = null;
@@ -499,26 +413,6 @@ public class StoreService {
 		}
 		return outList;
 	}
-
-//	private List<Map<String, Object>> getAnalysisListByDate(String type, String date) {
-//		Long start = System.currentTimeMillis();
-//		log.info("Start to get analysis list by trade date");
-//
-//		List<Map<String, Object>> outList = null;
-//
-//		if (type.equals(INSTRUMENT_TYPE_ETF)) {
-//			List<AnalysisETF> list = analysisETFRepository.findByDate(date).collectList().block();
-//			outList = list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
-//		} else {
-//			List<Analysis> list = analysisRepository.findByDate(date).collectList().block();
-//			outList = list.stream().map(mapper::convertAnalysisToMap).collect(Collectors.toList());
-//		}
-//
-//		Long end = System.currentTimeMillis();
-//		log.info("Total time for getting analysis list by trade date:" + (end - start));
-//
-//		return outList;
-//	}
 
 	private Flux<Map<String, Object>> getAnalysisFluxByDate(String type, String date) {
 		Long start = System.currentTimeMillis();
@@ -563,10 +457,4 @@ public class StoreService {
 
 		return outFlux;
 	}
-//	public int countByCriterion(String criterion) {
-//
-//		List<Analysis> list = analysisRepository.countByCriterion(criterion);
-//		return list.size();
-//
-//	}
 }
