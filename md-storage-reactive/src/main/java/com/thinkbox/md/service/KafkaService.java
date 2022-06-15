@@ -27,6 +27,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -335,18 +337,12 @@ public class KafkaService {
 
 	private void saveList(List<Map<String, Object>> list, int objType, String fileName) {
 		final Map<String, Object> firstMap = list.get(0);
-//		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
 
-//		final List<Map<String, Object>> finalList = (!format.equals(DEFAULT_STRING_VALUE))
-//				? readFileList(firstMap, currentTopic, fileName)
-//				: list;
-		
-		final List<Map<String, Object>> finalList = readFileList(firstMap, currentTopic, fileName)
-				;
+		final List<Map<String, Object>> finalList = readFileList(firstMap, currentTopic, fileName);
 		storeService.saveMapList(objType, finalList, () -> {
-			completeActionForSaveMapList(finalList, firstMap, topic, "file", fileName);
+			completeActionForSaveMapList(finalList, firstMap, topic, fileName);
 		});
 
 //		if (list.size() > 0) {
@@ -366,14 +362,10 @@ public class KafkaService {
 	}
 
 	private void completeActionForSaveMapList(List<Map<String, Object>> list, Map<String, Object> firstMap,
-			String topic, String format, String fileName) {
+			String topic, String fileName) {
 		if (list.size() > 0) {
 			if (topic != null) {
-//				if (format.equals(DEFAULT_STRING_VALUE)) {
-//					publish(topic, list.remove(0), list);
-//				} else {
-					outputAsFileList(list, firstMap, topic, fileName);
-//				}
+				outputAsFileList(list, firstMap, topic, fileName);
 			} else {
 				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
@@ -383,17 +375,13 @@ public class KafkaService {
 	}
 
 	private void saveMap(Map<String, Object> firstMap, int objType, String type, final String fileName) {
-//		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
 
 		final Map<String, Object> map = readFile(firstMap, currentTopic, fileName);
-//		if (!format.equals(DEFAULT_STRING_VALUE)) {
-//			map = readFile(firstMap, currentTopic, fileName);
-//		}
 
 		storeService.saveMap(objType, type, map, () -> {
-			completeActionForSaveMap(map, firstMap, topic, "file", fileName);
+			completeActionForSaveMap(map, firstMap, topic, fileName);
 		});
 
 //		if (map != null) {
@@ -415,16 +403,12 @@ public class KafkaService {
 	}
 
 	private void completeActionForSaveMap(Map<String, Object> map, Map<String, Object> firstMap, String topic,
-			String format, String fileName) {
+			String fileName) {
 		if (map != null) {
 			if (topic != null) {
 				List<Map<String, Object>> list = new ArrayList<>();
 				list.add(map);
-//				if (format.equals(DEFAULT_STRING_VALUE)) {
-//					publish(topic, firstMap, list);
-//				} else {
-					outputAsFile(map, firstMap, topic, fileName);
-//				}
+				outputAsFile(map, firstMap, topic, fileName);
 			} else {
 				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
@@ -514,7 +498,6 @@ public class KafkaService {
 		List<Map<String, Object>> outputList = null;
 		List<Map<String, Object>> outList = null;
 
-//		final String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
 		final String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
 		final String type = map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
@@ -535,11 +518,7 @@ public class KafkaService {
 		int size = outList.size();
 		if (size > 0) {
 			if (topic != null) {
-//				if (format.equals(DEFAULT_STRING_VALUE)) {
-//					publish(topic, map, outList);
-//				} else {
-					outputAsFileList(outList, map, topic, subExch);
-//				}
+				outputAsFileList(outList, map, topic, subExch);
 			} else {
 				printList(outList);
 				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
@@ -788,13 +767,10 @@ public class KafkaService {
 	private void getDataList(List<Map<String, Object>> list, int objType, String type) {
 		final Map<String, Object> firstMap = list.get(0);
 
-//		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String subExch = firstMap.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
 
-//		if (!format.equals(DEFAULT_STRING_VALUE)) {
-			list = readFileList(firstMap, currentTopic, subExch);
-//		}
+		list = readFileList(firstMap, currentTopic, subExch);
 
 		list.stream().skip(1).forEach(x -> {
 			Map<String, Object> newMap = firstMap.entrySet().stream()
@@ -898,37 +874,24 @@ public class KafkaService {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetSummaryList, list.get(0).toString());
 
 		final Map<String, Object> firstMap = list.get(0);
-//		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
-//		final String method = firstMap.getOrDefault(mapKey.getMethod(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
 		final String subExch = firstMap.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
 
-//		if (!format.equals(DEFAULT_STRING_VALUE)) {
-			list = readFileList(firstMap, currentTopic, subExch);
-//		}
-		Long start = System.currentTimeMillis();
+		list = readFileList(firstMap, currentTopic, subExch);
+
+		Instant start = Instant.now();
 
 		list.remove(0);
 		list.stream().parallel().forEach(x -> {
 
-//			if (method.equals(DEFAULT_STRING_VALUE)) {
 			updateSummary(x);
-//			} else {
-//				updateSummaryFromAllRecords(x);
-//			}
-
 		});
 
-		Long end = System.currentTimeMillis();
-		log.info("Total time for getting summary:" + (end - start));
+		log.info("Total time for getting summary:" + logTime(start));
 		if (list.size() > 0) {
 			if (topic != null) {
-//				if (format.equals(DEFAULT_STRING_VALUE)) {
-//					publish(topic, firstMap, list);
-//				} else {
-					outputAsFileList(list, firstMap, topic, subExch);
-//				}
+				outputAsFileList(list, firstMap, topic, subExch);
 			} else {
 				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
@@ -1033,7 +996,7 @@ public class KafkaService {
 		final Integer files = (Integer) map.getOrDefault(mapKey.getFiles(), 0);
 		final String fileName = map.getOrDefault(mapKey.getFileName(), DEFAULT_STRING_VALUE).toString();
 		final String topic = getCurrentTopicFromList(map);
-		
+
 		AtomicInteger atomicInteger = counterMap.get(requestID);
 		List<String> fileList = fileMap.get(requestID);
 		if (atomicInteger == null) {
@@ -1113,5 +1076,9 @@ public class KafkaService {
 			map.put(mapKey.getNext(), next);
 		}
 		return topic;
+	}
+	
+	private String logTime(Instant start) {
+		return Duration.between(start, Instant.now()).toMillis() + "ms";
 	}
 }
