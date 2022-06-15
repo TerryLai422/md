@@ -293,21 +293,21 @@ public class KafkaService {
 
 	private void saveList(List<Map<String, Object>> list, int objType, String fileName) {
 		final Map<String, Object> firstMap = list.get(0);
-		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+//		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
 
-		if (!format.equals(DEFAULT_STRING_VALUE)) {
+//		if (!format.equals(DEFAULT_STRING_VALUE)) {
 			list = readFileList(firstMap, currentTopic, fileName);
-		}
+//		}
 		storeService.saveMapList(objType, list);
 		if (list.size() > 0) {
 			if (topic != null) {
-				if (format.equals(DEFAULT_STRING_VALUE)) {
-					publish(topic, list.remove(0), list);
-				} else {
+//				if (format.equals(DEFAULT_STRING_VALUE)) {
+//					publish(topic, list.remove(0), list);
+//				} else {
 					outputAsFileList(list, firstMap, topic, fileName);
-				}
+//				}
 			} else {
 				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
@@ -318,14 +318,14 @@ public class KafkaService {
 	}
 
 	private void saveMap(Map<String, Object> firstMap, int objType, String type, String fileName) {
-		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+//		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
 
 		Map<String, Object> map = null;
-		if (!format.equals(DEFAULT_STRING_VALUE)) {
+//		if (!format.equals(DEFAULT_STRING_VALUE)) {
 			map = readFile(firstMap, currentTopic, fileName);
-		}
+//		}
 //		if (objType == OBJECT_TYPE_INSTRUMENT) {
 //			storeService.saveInstrument(map);
 //		} else if (objType == OBJECT_TYPE_TRADEDATE) {
@@ -340,11 +340,11 @@ public class KafkaService {
 			if (topic != null) {
 				List<Map<String, Object>> list = new ArrayList<>();
 				list.add(map);
-				if (format.equals(DEFAULT_STRING_VALUE)) {
-					publish(topic, firstMap, list);
-				} else {
+//				if (format.equals(DEFAULT_STRING_VALUE)) {
+//					publish(topic, firstMap, list);
+//				} else {
 					outputAsFile(map, firstMap, topic, fileName);
-				}
+//				}
 			} else {
 				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
@@ -420,7 +420,7 @@ public class KafkaService {
 		List<Map<String, Object>> outputList = null;
 		List<Map<String, Object>> outList = null;
 
-		final String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+//		final String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
 		final String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
 		final String type = map.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
@@ -451,11 +451,11 @@ public class KafkaService {
 		int size = outList.size();
 		if (size > 0) {
 			if (topic != null) {
-				if (format.equals(DEFAULT_STRING_VALUE)) {
-					publish(topic, map, outList);
-				} else {
+//				if (format.equals(DEFAULT_STRING_VALUE)) {
+//					publish(topic, map, outList);
+//				} else {
 					outputAsFileList(outList, map, topic, subExch);
-				}
+//				}
 			} else {
 				printList(outList);
 				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
@@ -473,7 +473,7 @@ public class KafkaService {
 	@KafkaListener(topics = "${kafka.topic.dbget-analysis-tradedate}", containerFactory = CONTAINER_FACTORY_LIST)
 	public void getAnalysisDate(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetAnalysisTradedate, map.toString());
-		final String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+//		final String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		final String topic = getTopicFromList(map);
 
@@ -484,11 +484,11 @@ public class KafkaService {
 		int size = outputList.size();
 		if (size > 0) {
 			if (topic != null) {
-				if (format.equals(DEFAULT_STRING_VALUE)) {
+//				if (format.equals(DEFAULT_STRING_VALUE)) {
 //					publishList(outputList, map, ticker, topic, date, size, day);
-				} else {
+//				} else {
 					outputAsFileList(outputList, map, topic, "tradedates");
-				}
+//				}
 			} else {
 				log.info("Size: " + size);
 				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
@@ -607,7 +607,7 @@ public class KafkaService {
 
 	private void getData(Map<String, Object> map, int objType, String type, String criterion) {
 
-		final String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+//		final String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		final Integer day = Integer.parseInt(map.getOrDefault(mapKey.getDay(), 0).toString());
 		final String topic = getTopicFromList(map);
@@ -637,11 +637,11 @@ public class KafkaService {
 		int size = outputList.size();
 		if (size > 0) {
 			if (topic != null) {
-				if (format.equals(DEFAULT_STRING_VALUE)) {
-					publishList(outputList, map, criterion, topic, date, size, day);
-				} else {
+//				if (format.equals(DEFAULT_STRING_VALUE)) {
+//					publishList(outputList, map, criterion, topic, date, size, day);
+//				} else {
 					outputAsFileList(outputList, map, topic, criterion);
-				}
+//				}
 			} else {
 				log.info("Size: " + size);
 				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
@@ -654,13 +654,13 @@ public class KafkaService {
 	private void getDataList(List<Map<String, Object>> list, int objType, String type) {
 		final Map<String, Object> firstMap = list.get(0);
 
-		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+//		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String subExch = firstMap.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
 
-		if (!format.equals(DEFAULT_STRING_VALUE)) {
+//		if (!format.equals(DEFAULT_STRING_VALUE)) {
 			list = readFileList(firstMap, currentTopic, subExch);
-		}
+//		}
 
 		list.stream().skip(1).forEach(x -> {
 			Map<String, Object> newMap = firstMap.entrySet().stream()
@@ -810,15 +810,15 @@ public class KafkaService {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetSummaryList, list.get(0).toString());
 
 		final Map<String, Object> firstMap = list.get(0);
-		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
+//		final String format = firstMap.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
 //		final String method = firstMap.getOrDefault(mapKey.getMethod(), DEFAULT_STRING_VALUE).toString();
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 		final String topic = getTopicFromList(firstMap);
 		final String subExch = firstMap.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
 
-		if (!format.equals(DEFAULT_STRING_VALUE)) {
+//		if (!format.equals(DEFAULT_STRING_VALUE)) {
 			list = readFileList(firstMap, currentTopic, subExch);
-		}
+//		}
 		Instant start = Instant.now();
 
 		list.remove(0);
@@ -835,11 +835,11 @@ public class KafkaService {
 		log.info("Total time for getting summary:" + logTime(start));
 		if (list.size() > 0) {
 			if (topic != null) {
-				if (format.equals(DEFAULT_STRING_VALUE)) {
-					publish(topic, firstMap, list);
-				} else {
+//				if (format.equals(DEFAULT_STRING_VALUE)) {
+//					publish(topic, firstMap, list);
+//				} else {
 					outputAsFileList(list, firstMap, topic, subExch);
-				}
+//				}
 			} else {
 				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
 			}
