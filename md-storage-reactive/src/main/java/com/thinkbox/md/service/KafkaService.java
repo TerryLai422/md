@@ -552,7 +552,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.dbget-tradedate-list}", containerFactory = CONTAINER_FACTORY_MAP)
-	public void getTradeDateList(Map<String, Object> map) {
+	private void getTradeDateList(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetTradedateList, map.toString());
 
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
@@ -942,7 +942,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.dbget-summary-single}", containerFactory = CONTAINER_FACTORY_LIST)
-	public void getHistoricalSummary(Map<String, Object> map) {
+	private void getHistoricalSummary(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topciDBgetSummarySingle, map.toString());
 
 		final String topic = getTopicFromList(map);
@@ -970,7 +970,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.consolidate-historical-ticker}", containerFactory = CONTAINER_FACTORY_LIST)
-	public void consolidateHistoricalList(Map<String, Object> map) {
+	private void consolidateHistoricalList(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicConsolidateHistoricalTicker, map.toString());
 
 		final String requestID = map.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
