@@ -421,7 +421,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.save-instrument-single}", containerFactory = CONTAINER_FACTORY_LIST)
-	public void saveInstrument(List<Map<String, Object>> list) {
+	private void saveInstrument(List<Map<String, Object>> list) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicSaveInstrumentSingle, list.get(0).toString());
 
 		final Map<String, Object> secondMap = list.get(1);
@@ -483,7 +483,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.dbget-exchange-data}", containerFactory = CONTAINER_FACTORY_MAP)
-	public void getInstruments(Map<String, Object> map) {
+	private void getInstruments(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetExchangeData, map.toString());
 
 		List<Map<String, Object>> outputList = null;
@@ -525,7 +525,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.dbget-analysis-tradedate}", containerFactory = CONTAINER_FACTORY_LIST)
-	public void getAnalysisDate(Map<String, Object> map) {
+	private void getAnalysisDate(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetAnalysisTradedate, map.toString());
 		final String date = map.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
 		final String topic = getTopicFromList(map);
