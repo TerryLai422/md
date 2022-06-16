@@ -312,7 +312,7 @@ public class KafkaService {
 			files.forEach(log::info);
 
 			final int numberOfFiles = files.size();
-			
+
 			files.stream().parallel().forEach(x -> {
 				final Map<String, Object> fileMap = new TreeMap<>();
 				map.forEach((i, j) -> {
@@ -323,7 +323,7 @@ public class KafkaService {
 //				if (format.equals(DEFAULT_STRING_VALUE)) {
 //					parseDailyData(fileMap);
 //				} else {
-					parseDailyDataAndSaveAsFile(fileMap);
+				parseDailyDataAndSaveAsFile(fileMap);
 //				}
 			});
 
@@ -343,7 +343,7 @@ public class KafkaService {
 //		if (format.equals(DEFAULT_STRING_VALUE)) {
 //			parseDailyData(map);
 //		} else {
-			parseDailyDataAndSaveAsFile(map);
+		parseDailyDataAndSaveAsFile(map);
 //		}
 	}
 
@@ -477,15 +477,16 @@ public class KafkaService {
 
 		final Path inPath = Paths.get(inFilePath);
 		final Path outPath = Paths.get(outFilePath);
-		
+
 		try {
 			BufferedWriter bw;
 			bw = Files.newBufferedWriter(outPath, StandardOpenOption.CREATE);
 			bw.write(STRING_SQUARE_OPEN_BRACKET);
-			Flux.using(() -> Files.lines(inPath), Flux::fromStream, BaseStream::close).skip(1)
+			final Flux<Map<String, Object>> flux = Flux
+					.using(() -> Files.lines(inPath), Flux::fromStream, BaseStream::close).skip(1)
 					.map(s -> fileParseService.parseStringArray(s.split(STRING_COMMA), columns, dateFormat,
-							intervalPosition, timePosition, symbol, ticker))
-					.subscribe(s -> write(bw, s), (e) -> close(bw), () -> complete(dataFormat, bw, map, topic, 0));
+							intervalPosition, timePosition, symbol, ticker));
+			flux.subscribe(s -> write(bw, s), (e) -> close(bw), () -> complete(flux, dataFormat, bw, map, topic, 0));
 
 		} catch (IOException e1) {
 			e1.printStackTrace();
@@ -501,14 +502,15 @@ public class KafkaService {
 		}
 	}
 
-	private void complete(String dataFormat, BufferedWriter bw, Map<String, Object> map, String topic, long size) {
+	private void complete(Flux<Map<String, Object>> flux, String dataFormat, BufferedWriter bw, Map<String, Object> map,
+			String topic, long size) {
 		try {
 			if (dataFormat.equals(OUTPUT_FORMAT_JSON)) {
 				bw.write(STRING_CURLY_BRACKET + STRING_SQUARE_CLOSE_BRACKET);
 			}
 			bw.close();
 			if (topic != null) {
-				publishAfterOutputAsFile(map, topic, size);
+				publishAfterOutputAsFile(map, topic, flux.count().block());
 			}
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
