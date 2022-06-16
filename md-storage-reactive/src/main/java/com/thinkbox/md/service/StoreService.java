@@ -1,5 +1,7 @@
 package com.thinkbox.md.service;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -384,35 +386,37 @@ public class StoreService {
 	}
 
 	public List<Map<String, Object>> getTradeDateList() {
-		Long start = System.currentTimeMillis();
+
+		Instant start = Instant.now();
 		log.info("Start to get tradedate list");
 
 		List<TradeDate> list = tradeDateRepository.findAll().collectList().block();
 		System.out.println("Size:" + list.size());
-		Long end = System.currentTimeMillis();
-		log.info("Total time for getting tradedate list:" + (end - start));
+
+
+		log.info("Total time for getTradeDateList:" + logTime(start));
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
 
 	public List<Map<String, Object>> getTradeDateGreaterThanList(String date) {
-		Long start = System.currentTimeMillis();
+
+		Instant start = Instant.now();
 		log.info("Start to get tradedate list");
 
 		List<TradeDate> list = tradeDateRepository.findByDateGreaterThan(date).collectList().block();
 
-		Long end = System.currentTimeMillis();
-		log.info("Total time for getting tradedate list:" + (end - start));
+		log.info("Total time for getTradeDateGreaterThanList:" + logTime(start));
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
 
 	public List<Map<String, Object>> getTradeDateList(String date) {
-		Long start = System.currentTimeMillis();
+
+		Instant start = Instant.now();
 		log.info("Start to get tradedate list");
 
 		List<TradeDate> list = tradeDateRepository.findByDate(date).collectList().block();
 
-		Long end = System.currentTimeMillis();
-		log.info("Total time for getting tradedate list:" + (end - start));
+		log.info("Total time for getTradeDateList(date):" + logTime(start));
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
 
@@ -462,8 +466,8 @@ public class StoreService {
 	}
 
 	private Flux<Map<String, Object>> getAnalysisFluxByDate(String type, String date) {
-		Long start = System.currentTimeMillis();
-		log.info("Start to get analysis list by trade date");
+
+		Instant start = Instant.now();
 
 		Flux<Map<String, Object>> outList = null;
 
@@ -475,8 +479,7 @@ public class StoreService {
 			outList = flux.map(mapper::convertAnalysisToMap);
 		}
 
-		Long end = System.currentTimeMillis();
-		log.info("Total time for getting analysis list by trade date:" + (end - start));
+		log.info("Total time for getAnalysisFluxByDate:" + logTime(start));
 
 		return outList;
 	}
@@ -486,8 +489,8 @@ public class StoreService {
 	}
 
 	public Flux<Map<String, Object>> getDateMapList(String date) {
-		Long start = System.currentTimeMillis();
-		log.info("Start to get dates");
+		
+		Instant start = Instant.now();
 
 		Flux<Map<String, Object>> outFlux = null;
 		Flux<TradeDate> flux = null;
@@ -499,9 +502,12 @@ public class StoreService {
 		}
 		outFlux = flux.map(mapper::convertTradeDateToMap);
 
-		Long end = System.currentTimeMillis();
-		log.info("Total time for getting summary:" + (end - start));
+		log.info("Total time for getDateMapList:" + logTime(start));
 
 		return outFlux;
+	}
+	
+	private String logTime(Instant start) {
+		return Duration.between(start, Instant.now()).toMillis() + "ms";
 	}
 }

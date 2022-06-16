@@ -38,9 +38,10 @@ public class MDMainController {
 	private static final String APPLICATION_JSON_TYPE = "application/json";
 
 	@PostMapping(consumes = APPLICATION_JSON_TYPE, produces = APPLICATION_JSON_TYPE)
-	public ResponseEntity<Object> process(@RequestBody Map<String, Object> map) {
+	private ResponseEntity<Object> process(@RequestBody Map<String, Object> map) {
 		log.info("Received map: {}", map.toString());
 
+		System.out.println("mapKey:"+ mapKey.toString());
 		Object objNext = map.get(mapKey.getNext());
 		int next = 0;
 		if (objNext == null) {

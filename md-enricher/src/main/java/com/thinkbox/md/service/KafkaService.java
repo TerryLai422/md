@@ -114,7 +114,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.create-dailysummary-list}", containerFactory = CONTAINER_FACTORY_LIST)
-	private void createDailySummaryList(List<Map<String, Object>> list) {
+	public void createDailySummaryList(List<Map<String, Object>> list) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicCreateDailySummaryList, list.get(0).toString());
 
 		Map<String, Object> firstMap = list.get(0);
@@ -140,7 +140,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.enrich-exchange-list}", containerFactory = CONTAINER_FACTORY_LIST)
-	private void processExchangeData(List<Map<String, Object>> list) {
+	public void processExchangeData(List<Map<String, Object>> list) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicEnrichExchangeList, list.get(0).toString());
 
 		List<Map<String, Object>> outputList = enrichService.enrichExchange(list);
@@ -166,7 +166,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.enrich-analysis-list}", containerFactory = CONTAINER_FACTORY_LIST)
-	private void enrichAnalysisList(List<Map<String, Object>> list) {
+	public void enrichAnalysisList(List<Map<String, Object>> list) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicEnrichAnalysisList, list.get(0).toString());
 
 		Map<String, Object> firstMap = list.get(0);
