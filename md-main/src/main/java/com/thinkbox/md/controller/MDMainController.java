@@ -41,7 +41,6 @@ public class MDMainController {
 	private ResponseEntity<Object> process(@RequestBody Map<String, Object> map) {
 		log.info("Received map: {}", map.toString());
 
-		System.out.println("mapKey:"+ mapKey.toString());
 		Object objNext = map.get(mapKey.getNext());
 		int next = 0;
 		if (objNext == null) {
