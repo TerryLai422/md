@@ -303,8 +303,6 @@ public class KafkaService {
 	public void parseDailyList(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseDailyList, map.toString());
 
-//		String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
-
 		try {
 			final String directory = map.getOrDefault(mapKey.getDirectory(), DEFAULT_STRING_VALUE).toString();
 
@@ -320,11 +318,7 @@ public class KafkaService {
 				});
 				fileMap.put("files", numberOfFiles);
 				fileMap.put(mapKey.getFileName(), x);
-//				if (format.equals(DEFAULT_STRING_VALUE)) {
-//					parseDailyData(fileMap);
-//				} else {
 				parseDailyDataAndSaveAsFile(fileMap);
-//				}
 			});
 
 		} catch (IOException e) {
@@ -338,58 +332,9 @@ public class KafkaService {
 	public void parseDaily(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseDailySingle, map.toString());
 
-//		String format = map.getOrDefault(mapKey.getFormat(), DEFAULT_STRING_VALUE).toString();
-
-//		if (format.equals(DEFAULT_STRING_VALUE)) {
-//			parseDailyData(map);
-//		} else {
 		parseDailyDataAndSaveAsFile(map);
-//		}
-	}
 
-//	private void parseDailyData(Map<String, Object> map) {
-//		try {
-//			String dataSource = map.getOrDefault(mapKey.getDataSource(), DEFAULT_STRING_VALUE).toString();
-//			String directory = map.getOrDefault(mapKey.getDirectory(), DEFAULT_STRING_VALUE).toString();
-//			String fileName = map.getOrDefault(mapKey.getFileName(), DEFAULT_STRING_VALUE).toString();
-//
-//			final String topic = getTopicFromList(map);
-//
-//			List<Map<String, Object>> outputList = fileParseService.parseDailyFile(directory, fileName, dataSource);
-//
-//			if (topic != null) {
-//				log.info("Number of records:" + outputList.size());
-//				if (outputList.size() >= 2) {
-//					final Map<String, Object> firstMap = outputList.remove(0);
-//					map.forEach((i, j) -> {
-//						firstMap.put(i, j);
-//					});
-//
-//					int size = outputList.size();
-//
-//					if (size <= BATCH_LIMIT) {
-//						outputList.add(0, firstMap);
-//						publish(topic, outputList);
-//					} else {
-//						List<Map<String, Object>> subList = null;
-//						for (int i = 0; i < size; i += BATCH_LIMIT) {
-//							subList = outputList.stream().skip(i).limit(BATCH_LIMIT).map(y -> y)
-//									.collect(Collectors.toList());
-//							firstMap.put(mapKey.getTotal(), subList.size());
-//							subList.add(0, firstMap);
-//							publish(topic, subList);
-//						}
-//					}
-//				}
-//			} else {
-//				log.info(outputList.toString());
-//				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
-//			}
-//
-//		} catch (IOException e) {
-//			log.info(e.toString());
-//		}
-//	}
+	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.parse-info-single}", containerFactory = CONTAINER_FACTORY_MAP)
