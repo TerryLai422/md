@@ -120,7 +120,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.parse-exchange-data}", containerFactory = CONTAINER_FACTORY_MAP)
-	public void parseExchange(Map<String, Object> map) {
+	private void parseExchange(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseExchangeData, map.toString());
 
 		try {
@@ -151,7 +151,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.parse-detail-list}", containerFactory = CONTAINER_FACTORY_MAP)
-	public void parseDetailList(Map<String, Object> map) {
+	private void parseDetailList(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseDetailList, map.toString());
 
 		try {
@@ -192,7 +192,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.parse-detail-single}", containerFactory = CONTAINER_FACTORY_MAP)
-	public void parseDetail(Map<String, Object> map) {
+	private void parseDetail(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseDetailSingle, map.toString());
 
 		try {
@@ -220,7 +220,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.parse-historical-list}", containerFactory = CONTAINER_FACTORY_MAP)
-	public void parseHistoricalList(Map<String, Object> map) {
+	private void parseHistoricalList(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseHistoricalList, map.toString());
 
 		try {
@@ -245,7 +245,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.parse-historical-single}", containerFactory = CONTAINER_FACTORY_MAP)
-	public void parseHisterical(Map<String, Object> map) {
+	private void parseHisterical(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseHistoricalSingle, map.toString());
 
 		parseHistericalData(map);
@@ -300,7 +300,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.parse-daily-list}", containerFactory = CONTAINER_FACTORY_MAP)
-	public void parseDailyList(Map<String, Object> map) {
+	private void parseDailyList(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseDailyList, map.toString());
 
 		try {
@@ -329,7 +329,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.parse-daily-single}", containerFactory = CONTAINER_FACTORY_MAP)
-	public void parseDaily(Map<String, Object> map) {
+	private void parseDaily(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseDailySingle, map.toString());
 
 		parseDailyDataAndSaveAsFile(map);
@@ -338,7 +338,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.parse-info-single}", containerFactory = CONTAINER_FACTORY_MAP)
-	public void parseInfo(Map<String, Object> map) {
+	private void parseInfo(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseInfoSingle, map.toString());
 
 		try {

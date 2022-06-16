@@ -64,7 +64,7 @@ public class KafkaService {
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.retrieve-yahoo-single}", containerFactory = CONTAINER_FACTORY_MAP)
-	public void retreiveYahoo(Map<String, Object> map) {
+	private void retreiveYahoo(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicRetrieveYahooSingle, map);
 		
 		retrieveService.retrieveYahoo(map);
@@ -72,7 +72,7 @@ public class KafkaService {
 	
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.retrieve-yahoo-list}", containerFactory = CONTAINER_FACTORY_LIST)
-	public void retrieveYahooList(List<Map<String, Object>> list) {
+	private void retrieveYahooList(List<Map<String, Object>> list) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicRetrieveYahooList, list.toString());
 
 		Map<String, Object> firstMap = list.get(0);
