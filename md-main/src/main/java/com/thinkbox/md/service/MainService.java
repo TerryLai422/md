@@ -1,6 +1,8 @@
 package com.thinkbox.md.service;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -17,15 +19,15 @@ public class MainService {
 
 	@Async(ASYNC_EXECUTOR)
 	public void cleanupFolders() {
-		log.info("Start deleting files");	
-		File file = new File(System.getProperty(USER_HOME) + File.separator + "save");
-		deleteFiles(file);
-		File file1 = new File(System.getProperty(USER_HOME) + File.separator + "create");
-		deleteFiles(file1);
-		File file2 = new File(System.getProperty(USER_HOME) + File.separator + "enrich");
-		deleteFiles(file2);
-		File file3 = new File(System.getProperty(USER_HOME) + File.separator + "dbget");
-		deleteFiles(file3);
+		log.info("Start deleting files");
+		List<String> list = Arrays.asList("save", "create", "enrich", "dbget", "consolidate");
+		
+
+		list.forEach(x -> {
+			deleteFiles(new File(System.getProperty(USER_HOME) + File.separator + x));
+			log.info("Deleted: " + x);
+		});
+
 		log.info("Finished deleting files");
 
 	}
