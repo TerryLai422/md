@@ -82,17 +82,46 @@ public class StoreService {
 	private void saveDailySummary(String type, Map<String, Object> map, Runnable completeConsumer) {
 
 		if (type.equals(INSTRUMENT_TYPE_ETF)) {
-			
+
 			dailySummaryETFRepository.save(mapper.convertMapToDailySummaryETF(map)).subscribe(s -> {
 			}, (e) -> {
 			}, completeConsumer);
-			
+
 		} else {
-			
+
 			dailySummaryRepository.save(mapper.convertMapToDailySummary(map)).subscribe(s -> {
 			}, (e) -> {
 			}, completeConsumer);
-			
+
+		}
+	}
+
+	public void saveMapListFlux(int objType, Flux<Map<String, Object>> flux, Runnable completeConsumer) {
+
+		if (objType == OBJECT_TYPE_INSTRUMENT) {
+			System.out.println("save instrument");
+
+			flux.map(s -> instrumentRepository.save(mapper.convertMapToInstrument(s)).subscribe()).subscribe(s -> {
+			}, (e) -> {
+			}, completeConsumer);
+
+		} else if (objType == OBJECT_TYPE_HISTORICAL) {
+			System.out.println("save historical");
+			flux.map(s -> historicalRepository.save(mapper.convertMapToHistorical(s)).subscribe()).subscribe(s -> { 
+			}, (e) -> {
+			}, completeConsumer);
+
+		} else if (objType == OBJECT_TYPE_TRADEDATE) {
+			System.out.println("save tradedate");
+
+			flux.map(s -> tradeDateRepository.save(mapper.convertMapToTradeDate(s)).subscribe()).subscribe(s -> {
+			}, (e) -> {
+			}, completeConsumer);
+
+		} else if (objType == OBJECT_TYPE_ANALYSIS) {
+			saveAnalysisListFlux(flux, completeConsumer);
+		} else {
+			log.info("Cannot find the corresponding object type");
 		}
 	}
 
@@ -129,6 +158,24 @@ public class StoreService {
 		}
 	}
 
+	private void saveAnalysisListFlux(Flux<Map<String, Object>> flux, Runnable completeConsumer) {
+
+		flux.map(x -> {
+			String ticker = x.get(mapKey.getTicker()).toString();
+			Map<String, Object> inst = getInstrument(ticker);
+			String type = inst.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString();
+			x.put(mapKey.getInst(), inst);
+			if (type.equals(INSTRUMENT_TYPE_ETF)) {
+				analysisETFRepository.save(mapper.convertMapToAnalysisETF(x)).subscribe();
+			} else {
+				analysisRepository.save(mapper.convertMapToAnalysis(x)).subscribe();
+			}
+			return x;
+		}).subscribe(s -> {
+		}, (e) -> {
+		}, completeConsumer);
+	}
+
 	private void saveAnalysisList(List<Map<String, Object>> list, Runnable completeConsumer) {
 
 		final Map<String, Object> firstMap = list.get(0);
@@ -158,17 +205,17 @@ public class StoreService {
 	private void saveAnalysis(String type, Map<String, Object> map, Runnable completeConsumer) {
 
 		if (type.equals(INSTRUMENT_TYPE_ETF)) {
-			
+
 			analysisETFRepository.save(mapper.convertMapToAnalysisETF(map)).subscribe(s -> {
 			}, (e) -> {
 			}, completeConsumer);
-			
+
 		} else {
-			
+
 			analysisRepository.save(mapper.convertMapToAnalysis(map)).subscribe(s -> {
 			}, (e) -> {
 			}, completeConsumer);
-			
+
 		}
 	}
 
