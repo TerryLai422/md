@@ -180,4 +180,6 @@ public class MapKeyParameter {
 	private String dataFormat;
 	
 	private String requestID;
+	
+	private String files;
 }
