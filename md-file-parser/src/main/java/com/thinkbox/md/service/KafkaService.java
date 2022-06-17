@@ -92,6 +92,8 @@ public class KafkaService {
 
 	private final static String USER_HOME = "user.home";
 
+	private final static String STRING_PERIOD = ".";
+	
 	private final static String STRING_COMMA = ",";
 
 	private final static String STRING_SQUARE_OPEN_BRACKET = "[";
@@ -316,7 +318,7 @@ public class KafkaService {
 				map.forEach((i, j) -> {
 					fileMap.put(i, j);
 				});
-				fileMap.put("files", numberOfFiles);
+				fileMap.put(mapKey.getFiles(), numberOfFiles);
 				fileMap.put(mapKey.getFileName(), x);
 				parseDailyDataAndSaveAsFile(fileMap);
 			});
@@ -380,7 +382,7 @@ public class KafkaService {
 			topicType = topicBreakDown[1];
 		}
 		return System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
-				+ File.separator + requestID + "." + fileName + FILE_EXTENSION_JSON;
+				+ File.separator + requestID + STRING_PERIOD + fileName + FILE_EXTENSION_JSON;
 	}
 
 	private void publishAfterOutputAsFile(Map<String, Object> map, String topic, long size) {
