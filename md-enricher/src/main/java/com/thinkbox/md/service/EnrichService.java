@@ -108,96 +108,90 @@ public class EnrichService {
 
 	public Flux<Map<String, Object>> enrichFlux(int type, final String date, String inFullFileName) {
 
-		log.info("Flux Flow");
 		final List<Indicator> indicators = getIndicators(type);
 
 		Path path = Paths.get(inFullFileName);
 
-		return Flux.using(() -> Files.lines(path), Flux::fromStream, BaseStream::close).map(x -> {
-			String y = x.replace("[", STRING_EMPTY_SPACE).replace("]", STRING_EMPTY_SPACE);
-			if (y.length() <= 2) {
-				return STRING_EMPTY_SPACE;
-			} else {
-				return y.substring(0, y.length() - 1);
-			}
-		}).map(y -> {
+		return Flux.using(() -> Files.lines(path), Flux::fromStream, BaseStream::close).filter(x -> x.length() >= 4)
+				.map(x -> {
+					String y = x.replace("[", STRING_EMPTY_SPACE).replace("]", STRING_EMPTY_SPACE);
+					y = y.substring(0, y.length() - 1);
+//					System.out.println("y:" + y);
+					Map<String, Object> z = new TreeMap<>();
+					try {
+						z = objectMapper.readValue(y, new TypeReference<Map<String, Object>>() {
+						});
+						if (z.containsKey(mapKey.getDate())) {
 
-			Map<String, Object> x = new TreeMap<>();
-			try {
-				x = objectMapper.readValue(y, new TypeReference<Map<String, Object>>() {
-				});
-				if (x.containsKey(mapKey.getDate())) {
+							if (z.get(mapKey.getDate()).toString().compareTo(date) > 0) {
+								z.put(mapKey.getSave(), true);
+							} else {
+								z.put(mapKey.getSave(), false);
+							}
 
-					if (x.get(mapKey.getDate()).toString().compareTo(date) > 0) {
-						x.put(mapKey.getSave(), true);
-					} else {
-						x.put(mapKey.getSave(), false);
+							if (!z.containsKey(mapKey.getInd())) {
+								z.put(mapKey.getInd(), new TreeMap<>());
+							}
+
+							for (Indicator indicator : indicators) {
+								indicator.process(z);
+							}
+						} else {
+							z.put(mapKey.getSave(), false);
+						}
+					} catch (JsonProcessingException e) {
+						e.printStackTrace();
+						log.info("Y (can't parse):" + y);
+						z.put(mapKey.getSave(), false);
+					} catch (RuntimeException e) {
+						e.printStackTrace();
+						log.info("X:" + z.toString());
+						z.put(mapKey.getSave(), false);
 					}
-
-					if (!x.containsKey(mapKey.getInd())) {
-						x.put(mapKey.getInd(), new TreeMap<>());
-					}
-
-					for (Indicator indicator : indicators) {
-						indicator.process(x);
-					}
-				} else {
-					x.put(mapKey.getSave(), false);
-				}
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-				log.info("Y (can't parse):" + y);
-				x.put(mapKey.getSave(), false);
-			} catch (RuntimeException e) {
-				e.printStackTrace();
-				log.info("X:" + x.toString());
-				x.put(mapKey.getSave(), false);
-			}
-			return x;
-
-		}).filter(x -> Boolean.valueOf(x.getOrDefault(mapKey.getSave(), false).toString()));
+					return z;
+				}).filter(x -> Boolean.valueOf(x.getOrDefault(mapKey.getSave(), false).toString()));
 
 	}
 
-	public List<Map<String, Object>> enrichList(List<Map<String, Object>> list, int type) {
-
-		log.info("List Flow");
-		Map<String, Object> firstMap = list.get(0);
-
-		final String date = firstMap.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
-
-		final List<Indicator> indicators = getIndicators(type);
-
-		return list.stream().skip(1).map(x -> {
-
-			try {
-				if (x.containsKey(mapKey.getDate())) {
-					if (x.get(mapKey.getDate()).toString().compareTo(date) > 0) {
-						x.put(mapKey.getSave(), true);
-					} else {
-						x.put(mapKey.getSave(), false);
-					}
-
-					if (!x.containsKey(mapKey.getInd())) {
-						x.put(mapKey.getInd(), new TreeMap<>());
-					}
-
-					for (Indicator indicator : indicators) {
-						indicator.process(x);
-					}
-				} else {
-					x.put(mapKey.getSave(), false);
-				}
-			} catch (RuntimeException e) {
-				e.printStackTrace();
-				System.out.println("X:" + x.toString());
-				x.put(mapKey.getSave(), false);
-			}
-			return x;
-		}).filter(x -> Boolean.valueOf(x.getOrDefault(mapKey.getSave(), false).toString()))
-				.collect(Collectors.toList());
-
-	}
+//	public List<Map<String, Object>> enrichList(List<Map<String, Object>> list, int type) {
+//
+//		log.info("List Flow");
+//		Map<String, Object> firstMap = list.get(0);
+//
+//		final String date = firstMap.getOrDefault(mapKey.getDate(), DEFAULT_STRING_VALUE).toString();
+//
+//		final List<Indicator> indicators = getIndicators(type);
+//
+//		return list.stream().skip(1).map(x -> {
+//
+//			try {
+//				if (x.containsKey(mapKey.getDate())) {
+//					if (x.get(mapKey.getDate()).toString().compareTo(date) > 0) {
+//						x.put(mapKey.getSave(), true);
+//					} else {
+//						x.put(mapKey.getSave(), false);
+//					}
+//
+//					if (!x.containsKey(mapKey.getInd())) {
+//						x.put(mapKey.getInd(), new TreeMap<>());
+//					}
+//
+//					for (Indicator indicator : indicators) {
+//						indicator.process(x);
+//					}
+//				} else {
+//					x.put(mapKey.getSave(), false);
+//				}
+//			} catch (RuntimeException e) {
+//				e.printStackTrace();
+//				System.out.println("X:" + x.toString());
+//				x.put(mapKey.getSave(), false);
+//			}
+//			return x;
+//		}).filter(x -> Boolean.valueOf(x.getOrDefault(mapKey.getSave(), false).toString()))
+//				.collect(Collectors.toList());
+//
+//	}
 
 	public List<Map<String, Object>> enrichExchange(List<Map<String, Object>> list) {
 
@@ -359,13 +353,13 @@ public class EnrichService {
 			Map<String, Object> y = (Map<String, Object>) x.get(key1);
 			if (y == null) {
 				System.out.println("y is null:" + x.toString() + ":" + (x == null));
-				return "";				
+				return "";
 			}
 			Map<String, Object> z = (Map<String, Object>) y.get(key2);
 			if (z == null) {
 				System.out.println("z is null:" + y.toString() + ":" + (y == null));
-				return "";				
-			}			
+				return "";
+			}
 			return z.getOrDefault(key3, "").toString();
 		}).collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 		return map;
