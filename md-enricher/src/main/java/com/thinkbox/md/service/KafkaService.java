@@ -171,23 +171,23 @@ public class KafkaService {
 
 		Map<String, Object> firstMap = list.get(0);
 
-		final String method = firstMap.getOrDefault(mapKey.getMethod(), DEFAULT_STRING_VALUE).toString();
+//		final String method = firstMap.getOrDefault(mapKey.getMethod(), DEFAULT_STRING_VALUE).toString();
 
-		if (method.equals(DEFAULT_STRING_VALUE)) {
-			enrichList(OBJECT_TYPE_ANALYSIS, list);
-		} else {
+//		if (method.equals(DEFAULT_STRING_VALUE)) {
+//			enrichList(OBJECT_TYPE_ANALYSIS, list);
+//		} else {
 			enrichFlux(OBJECT_TYPE_ANALYSIS, firstMap);
-		}
+//		}
 	}
 
 	@Async(ASYNC_EXECUTOR)
 	@KafkaListener(topics = "${kafka.topic.enrich-historical-list}", containerFactory = CONTAINER_FACTORY_LIST)
-	private void enrichHistericalList(List<Map<String, Object>> list) {
+	public void enrichHistericalList(List<Map<String, Object>> list) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicEnrichHistoricalList, list.get(0).toString());
 
 		Map<String, Object> firstMap = list.get(0);
 
-		final String method = firstMap.getOrDefault(mapKey.getMethod(), DEFAULT_STRING_VALUE).toString();
+//		final String method = firstMap.getOrDefault(mapKey.getMethod(), DEFAULT_STRING_VALUE).toString();
 
 //		List<Map<String, Object>> weeklyList = enrichService.consolidate(mapValue.getWeekly(), list);
 //		weeklyList.forEach(System.out::println);
@@ -195,12 +195,12 @@ public class KafkaService {
 //		List<Map<String, Object>> monthlyList = enrichService.consolidate(mapValue.getMonthly(), list);	
 //		monthlyList.forEach(System.out::println);
 
-		log.info("Method:" + method);
-		if (method.equals(DEFAULT_STRING_VALUE)) {
-			enrichList(OBJECT_TYPE_HISTORICAL, list);
-		} else {
+//		log.info("Method:" + method);
+//		if (method.equals(DEFAULT_STRING_VALUE)) {
+//			enrichList(OBJECT_TYPE_HISTORICAL, list);
+//		} else {
 			enrichFlux(OBJECT_TYPE_HISTORICAL, firstMap);
-		}
+//		}
 
 	}
 
@@ -302,29 +302,29 @@ public class KafkaService {
 		publish(topic, outList);
 	}
 
-	private void enrichList(int type, List<Map<String, Object>> list) {
-		List<Map<String, Object>> outputList = null;
-
-		Map<String, Object> firstMap = list.get(0);
-
-		final String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
-		final String currentTopic = getCurrentTopicFromList(firstMap);
-		final String topic = getTopicFromList(firstMap);
-
-		list = readJSONFile(firstMap, currentTopic, ticker);
-		outputList = enrichService.enrichList(list, type);
-
-		int size = outputList.size();
-		if (size > 0) {
-			if (topic != null) {
-				outputAsFile(outputList, firstMap, topic, ticker);
-			} else {
-				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
-			}
-		} else {
-			log.info("outputList size is zero");
-		}
-	}
+//	private void enrichList(int type, List<Map<String, Object>> list) {
+//		List<Map<String, Object>> outputList = null;
+//
+//		Map<String, Object> firstMap = list.get(0);
+//
+//		final String ticker = firstMap.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
+//		final String currentTopic = getCurrentTopicFromList(firstMap);
+//		final String topic = getTopicFromList(firstMap);
+//
+//		list = readJSONFile(firstMap, currentTopic, ticker);
+//		outputList = enrichService.enrichList(list, type);
+//
+//		int size = outputList.size();
+//		if (size > 0) {
+//			if (topic != null) {
+//				outputAsFile(outputList, firstMap, topic, ticker);
+//			} else {
+//				log.info(STRING_LOGGER_FINISHED_MESSAGE, firstMap.toString());
+//			}
+//		} else {
+//			log.info("outputList size is zero");
+//		}
+//	}
 
 	private String getFullFileName(String requestID, String topic, String fileName) {
 		String[] topicBreakDown = topic.split(TOPIC_DELIMITER);
@@ -358,30 +358,30 @@ public class KafkaService {
 		return mapperList;
 	}
 
-	private void outputAsFile(List<Map<String, Object>> outputList, Map<String, Object> map, String topic,
-			String fileName) {
-		try {
-			final String requestID = map.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
-			File file = new File(getFullFileName(requestID, topic, fileName));
-			objectMapper.writeValue(file, outputList);
-
-			Map<String, Object> newMap = map.entrySet().stream()
-					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-//			newMap.put(mapKey.getTicker(), ticker);
-			newMap.put(mapKey.getTotal(), outputList.size());
-
-			if (file != null) {
-				newMap.put(mapKey.getLength(), file.length());
-			}
-			List<Map<String, Object>> outList = new ArrayList<>();
-
-			outList.add(0, newMap);
-			publish(topic, outList);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+//	private void outputAsFile(List<Map<String, Object>> outputList, Map<String, Object> map, String topic,
+//			String fileName) {
+//		try {
+//			final String requestID = map.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
+//			File file = new File(getFullFileName(requestID, topic, fileName));
+//			objectMapper.writeValue(file, outputList);
+//
+//			Map<String, Object> newMap = map.entrySet().stream()
+//					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+////			newMap.put(mapKey.getTicker(), ticker);
+//			newMap.put(mapKey.getTotal(), outputList.size());
+//
+//			if (file != null) {
+//				newMap.put(mapKey.getLength(), file.length());
+//			}
+//			List<Map<String, Object>> outList = new ArrayList<>();
+//
+//			outList.add(0, newMap);
+//			publish(topic, outList);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
 
 	private void outputAsFile(Map<String, Object> outMap, Map<String, Object> map, String topic, String fileName) {
 
