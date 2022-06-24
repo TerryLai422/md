@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -147,7 +148,7 @@ public class RetrieveService {
 					log.info(e.toString());
 				}
 				return map;
-			}).toList();
+			}).collect(Collectors.toList());
 
 		}
 		return outputList;
