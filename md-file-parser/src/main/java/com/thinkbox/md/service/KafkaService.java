@@ -304,7 +304,7 @@ public class KafkaService {
 	@KafkaListener(topics = "${kafka.topic.parse-daily-list}", containerFactory = CONTAINER_FACTORY_MAP)
 	public void parseDailyList(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicParseDailyList, map.toString());
-
+		System.out.println("Testing");
 		try {
 			final String directory = map.getOrDefault(mapKey.getDirectory(), DEFAULT_STRING_VALUE).toString();
 

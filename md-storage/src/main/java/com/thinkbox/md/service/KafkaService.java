@@ -126,8 +126,10 @@ public class KafkaService {
 	private final static String DEFAULT_STRING_VALUE = "-";
 
 	private final static Double DEFAULT_DOUBLE_VALUE = 0d;
+	
+	private final static String STRING_PERIOD = ".";
 
-	private final static String FILE_EXTENSION = ".json";
+	private final static String FILE_EXTENSION_JSON = ".json";
 
 	private final static String TOPIC_DELIMITER = "[-]";
 
@@ -196,7 +198,7 @@ public class KafkaService {
 		}
 		final String requestID = firstMap.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
 		File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
-				+ File.separator + requestID + "." + fileName + FILE_EXTENSION);
+				+ File.separator + requestID + "." + fileName + FILE_EXTENSION_JSON);
 		Map<String, Object> map = null;
 		try (FileInputStream fileInputStream = new FileInputStream(file)) {
 			
@@ -210,16 +212,11 @@ public class KafkaService {
 		return map;
 	}
 
-	private List<Map<String, Object>> readFileList(Map<String, Object> firstMap, String currentTopic, String fileName) {
-		String[] topicBreakDown = currentTopic.split(TOPIC_DELIMITER);
-		String topicAction = DEFAULT_TOPIC_ACTION;
-		String topicType = DEFAULT_TOPIC_TYPE;
-		if (topicBreakDown.length >= 2) {
-			topicAction = topicBreakDown[0];
-			topicType = topicBreakDown[1];
-		}
-		File file = new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
-				+ File.separator + fileName + FILE_EXTENSION);
+	private List<Map<String, Object>> readFileList(Map<String, Object> firstMap, String topic, String fileName) {
+
+		final String requestID = firstMap.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
+		File file = getFile(requestID, topic, fileName);
+		
 		List<Map<String, Object>> mapperList = null;
 
 		try (FileInputStream fileInputStream = new FileInputStream(file)) {
@@ -701,8 +698,14 @@ public class KafkaService {
 			e.printStackTrace();
 		}
 	}
-
+	
 	private File getFile(String requestID, String topic, String fileName) {
+
+		return new File(getFullFileName(requestID, topic, fileName));
+
+	}
+
+	private String getFullFileName(String requestID, String topic, String fileName) {
 		String[] topicBreakDown = topic.split(TOPIC_DELIMITER);
 		String topicAction = DEFAULT_TOPIC_ACTION;
 		String topicType = DEFAULT_TOPIC_TYPE;
@@ -711,11 +714,10 @@ public class KafkaService {
 			topicType = topicBreakDown[1];
 		}
 
-		return new File(System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
-				+ File.separator + requestID + "." + fileName + FILE_EXTENSION);
-
+		return System.getProperty(USER_HOME) + File.separator + topicAction + File.separator + topicType
+				+ File.separator + requestID + STRING_PERIOD + fileName + FILE_EXTENSION_JSON;
 	}
-
+	
 	private void publishAfterOutputAsFile(Map<String, Object> map, File file, String topic, int size) {
 		Map<String, Object> newMap = map.entrySet().stream()
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -730,62 +732,62 @@ public class KafkaService {
 		publish(topic, outList);
 	}
 
-	private void publishList(List<Map<String, Object>> outputList, Map<String, Object> map, String ticker, String topic,
-			String date, int size, int day) {
-		final Integer limit = Integer.parseInt(map.getOrDefault(mapKey.getLimit(), 0).toString());
-
-		if (topic != null) {
-			if (size < limit) {
-
-				log.info("Send without processing: " + ticker);
-				Map<String, Object> newMap = map.entrySet().stream()
-						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-				newMap.put(mapKey.getTicker(), ticker);
-				newMap.put(mapKey.getTotal(), size);
-				outputList.add(0, newMap);
-				publish(topic, outputList);
-
-			} else {
-
-				log.info("Processing before sending: " + ticker);
-				int skip = 0;
-				int count = 0;
-				String oDate = date;
-				while (size > (skip)) {
-					List<Map<String, Object>> oList = outputList.stream().skip(skip).limit(limit)
-							.collect(Collectors.toList());
-					int oSize = oList.size();
-
-					Map<String, Object> newMap = map.entrySet().stream()
-							.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-					newMap.put(mapKey.getTicker(), ticker);
-					newMap.put(mapKey.getTotal(), oSize);
-					newMap.put(mapKey.getDate(), oDate);
-
-					oList.add(0, newMap);
-
-					if (oSize < limit) {
-						skip += oSize;
-					} else {
-						Map<String, Object> oMap = oList.get(oList.size() - 1);
-						oDate = oMap.get(mapKey.getDate()).toString();
-						count++;
-						skip = count * (limit - day);
-					}
-
-					publish(topic, oList);
-				}
-
-			} // if (size < limit)
-
-		} else {
-
-			log.info("outputList size: " + outputList.size());
-			log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
-
-		}
-	}
+//	private void publishList(List<Map<String, Object>> outputList, Map<String, Object> map, String ticker, String topic,
+//			String date, int size, int day) {
+//		final Integer limit = Integer.parseInt(map.getOrDefault(mapKey.getLimit(), 0).toString());
+//
+//		if (topic != null) {
+//			if (size < limit) {
+//
+//				log.info("Send without processing: " + ticker);
+//				Map<String, Object> newMap = map.entrySet().stream()
+//						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+//				newMap.put(mapKey.getTicker(), ticker);
+//				newMap.put(mapKey.getTotal(), size);
+//				outputList.add(0, newMap);
+//				publish(topic, outputList);
+//
+//			} else {
+//
+//				log.info("Processing before sending: " + ticker);
+//				int skip = 0;
+//				int count = 0;
+//				String oDate = date;
+//				while (size > (skip)) {
+//					List<Map<String, Object>> oList = outputList.stream().skip(skip).limit(limit)
+//							.collect(Collectors.toList());
+//					int oSize = oList.size();
+//
+//					Map<String, Object> newMap = map.entrySet().stream()
+//							.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+//
+//					newMap.put(mapKey.getTicker(), ticker);
+//					newMap.put(mapKey.getTotal(), oSize);
+//					newMap.put(mapKey.getDate(), oDate);
+//
+//					oList.add(0, newMap);
+//
+//					if (oSize < limit) {
+//						skip += oSize;
+//					} else {
+//						Map<String, Object> oMap = oList.get(oList.size() - 1);
+//						oDate = oMap.get(mapKey.getDate()).toString();
+//						count++;
+//						skip = count * (limit - day);
+//					}
+//
+//					publish(topic, oList);
+//				}
+//
+//			} // if (size < limit)
+//
+//		} else {
+//
+//			log.info("outputList size: " + outputList.size());
+//			log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
+//
+//		}
+//	}
 
 	private Calendar getCalendar(String dateFormat, String date) {
 		Calendar calendar = null;

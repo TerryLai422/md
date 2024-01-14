@@ -233,7 +233,7 @@ public class KafkaService {
 	private Map<String, Object> readFile(Map<String, Object> firstMap, String topic, String fileName) {
 
 		final String requestID = firstMap.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
-		File file = new File(getFullFileName(requestID, topic, fileName));
+		File file = getFile(requestID, topic, fileName);
 		Map<String, Object> map = null;
 		try (FileInputStream fileInputStream = new FileInputStream(file)) {
 
@@ -251,31 +251,25 @@ public class KafkaService {
 
 		Path path = Paths.get(fullFileName);
 
-		return Flux.using(() -> Files.lines(path), Flux::fromStream, BaseStream::close).map(x -> {
-			String y = x.replace("[", STRING_EMPTY_SPACE).replace("]", STRING_EMPTY_SPACE);
-			if (y.length() <= 2) {
-				return STRING_EMPTY_SPACE;
-			} else {
-				return y.substring(0, y.length() - 1);
-			}
-		}).map(y -> {
-			System.out.println("y:" + y);
-			Map<String, Object> x = new TreeMap<>();
-			if (y.length() > 0) {
-				try {
-					x = objectMapper.readValue(y, new TypeReference<Map<String, Object>>() {
-					});
-				} catch (JsonProcessingException e) {
-					e.printStackTrace();
-					log.info("Y (can't parse):" + y);
-				} catch (RuntimeException e) {
-					e.printStackTrace();
-					log.info("X:" + x.toString());
-				}
-			}
-			return x;
+		return Flux.using(() -> Files.lines(path), Flux::fromStream, BaseStream::close).filter(x -> x.length() >= 4)
+				.map(x -> {
+					String y = x.replace("[", STRING_EMPTY_SPACE).replace("]", STRING_EMPTY_SPACE);
+					y = y.substring(0, y.length() - 1);
+//			System.out.println("y:" + y);
+					Map<String, Object> z = new TreeMap<>();
+					try {
+						z = objectMapper.readValue(y, new TypeReference<Map<String, Object>>() {
+						});
+					} catch (JsonProcessingException e) {
+						e.printStackTrace();
+						log.info("Y (can't parse):" + y);
+					} catch (RuntimeException e) {
+						e.printStackTrace();
+						log.info("X:" + x.toString());
+					}
+					return z;
 
-		}).filter(x -> x.containsKey(mapKey.getTicker()));
+				}).filter(x -> x.containsKey(mapKey.getTicker()));
 	}
 
 	private List<Map<String, Object>> readFileList2(Map<String, Object> firstMap, String currentTopic,
@@ -373,10 +367,10 @@ public class KafkaService {
 
 	private void completeActionForSaveMapListFlux(Map<String, Object> map, String topic, String currentFullFileName,
 			String nextFullFileName) {
-		System.out.println("Current: " + currentFullFileName);
-		System.out.println("Next: " + nextFullFileName);
-		System.out.println("FirstMap: " + map);
-		System.out.println("Topic: " + topic);
+//		System.out.println("Current: " + currentFullFileName);
+//		System.out.println("Next: " + nextFullFileName);
+//		System.out.println("FirstMap: " + map);
+//		System.out.println("Topic: " + topic);
 		if (topic != null) {
 			Path sourcePath = Paths.get(currentFullFileName);
 			Path targetPath = Paths.get(nextFullFileName);
@@ -473,14 +467,14 @@ public class KafkaService {
 //		}
 //	}
 
-	private void printList(List<Map<String, Object>> outputList) {
-		outputList.forEach(x -> {
-			log.info("Ticker: " + x.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString() + " - "
-					+ x.getOrDefault(mapKey.getHTotal(), 0).toString() + " -- "
-					+ x.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString());
-		});
-		log.info("Total: " + outputList.size());
-	}
+//	private void printList(List<Map<String, Object>> outputList) {
+//		outputList.forEach(x -> {
+//			log.info("Ticker: " + x.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString() + " - "
+//					+ x.getOrDefault(mapKey.getHTotal(), 0).toString() + " -- "
+//					+ x.getOrDefault(mapKey.getType(), DEFAULT_STRING_VALUE).toString());
+//		});
+//		log.info("Total: " + outputList.size());
+//	}
 
 	// TODO rewrite in reactive style
 	@Async(ASYNC_EXECUTOR)
@@ -488,8 +482,8 @@ public class KafkaService {
 	public void getInstruments(Map<String, Object> map) {
 		log.info(STRING_LOGGER_RECEIVED_MESSAGE, topicDBgetExchangeData, map.toString());
 
-		List<Map<String, Object>> outputList = null;
-		List<Map<String, Object>> outList = null;
+		Flux<Map<String, Object>> outputList = null;
+		Flux<Map<String, Object>> outList = null;
 
 		final String subExch = map.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
 		final String ticker = map.getOrDefault(mapKey.getTicker(), DEFAULT_STRING_VALUE).toString();
@@ -498,27 +492,26 @@ public class KafkaService {
 
 		int max = Integer.valueOf(map.getOrDefault("max", 0).toString());
 
-		outputList = storeService.getInstrumentMapList(subExch, type, ticker);
+		outputList = storeService.getInstrumentMapListFlux(subExch, type, ticker);
 
-		log.info("list size: " + outputList.size());
 		if (max != 0) {
-			outList = outputList.stream().limit(max).collect(Collectors.toList());
+			outList = outputList.take(max);
 		} else {
 			outList = outputList;
 		}
-		log.info("Limited list size: " + outList.size());
 
-		int size = outList.size();
-		if (size > 0) {
-			if (topic != null) {
-				outputAsFileList(outList, map, topic, subExch);
-			} else {
-				printList(outList);
-				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
-			}
+//		int size = outList.size();
+//		if (size > 0) {
+		if (topic != null) {
+			processFlux(outList, map, topic, subExch);
 		} else {
-			log.info("outList size is zero");
+//				printList(outList);
+			log.info("Size: " + outList.count().block());
+			log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 		}
+//		} else {
+//			log.info("outList size is zero");
+//		}
 //		System.out.println(storeService.updateAnalysisField("RFP", "20220502", "ind.obv", 21));
 //		System.out.println("50 > 200 Counter:" + storeService.countByCriterion("this.ind.sma50>this.ind.sma200"));
 //		System.out.println("21 > 50 Counter:" + storeService.countByCriterion("this.ind.sma21>this.ind.sma50"));
@@ -537,20 +530,20 @@ public class KafkaService {
 		outputList = storeService.getDateMapList(date);
 
 		// TODO redesign to avoid counting
-		Mono<Long> count = outputList.count();
-		long size = count.block();
-		if (size > 0) {
-			if (topic != null) {
+//		Mono<Long> count = outputList.count();
+//		long size = count.block();
+//		if (size > 0) {
+		if (topic != null) {
 
-				processFlux(outputList, map, topic, "tradedates", size);
+			processFlux(outputList, map, topic, "tradedates");
 
-			} else {
-				log.info("Size: " + size);
-				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
-			}
 		} else {
-			log.info("outputList size is zero");
+			log.info("Size: " + outputList.count().block());
+			log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 		}
+//		} else {
+//			log.info("outputList size is zero");
+//		}
 	}
 
 	// TODO rewrite in reactive style
@@ -654,7 +647,7 @@ public class KafkaService {
 		final Integer day = Integer.parseInt(map.getOrDefault(mapKey.getDay(), 0).toString());
 		final String topic = getTopicFromList(map);
 
-		Flux<Map<String, Object>> outputList = null;
+		Flux<Map<String, Object>> flux = null;
 
 		Calendar calendar = getCalendar(DATE_FORMAT, date);
 
@@ -667,45 +660,48 @@ public class KafkaService {
 		}
 
 		if (objType == OBJECT_TYPE_HISTORICAL) {
-			outputList = storeService.getHistoricalMapFlux(criterion, formattedDate);
+			flux = storeService.getHistoricalMapFlux(criterion, formattedDate);
 		} else if (objType == OBJECT_TYPE_ANALYSIS) {
-			outputList = storeService.getAnalysisMapFluxByTickerAndDate(type, criterion, formattedDate);
+			flux = storeService.getAnalysisMapFluxByTickerAndDate(type, criterion, formattedDate);
 		} else if (objType == OBJECT_TYPE_TRADEDATE) {
-			outputList = storeService.getAnalysisMapFluxByTickerAndDate(type, DEFAULT_STRING_VALUE, criterion);
+			flux = storeService.getAnalysisMapFluxByTickerAndDate(type, DEFAULT_STRING_VALUE, criterion);
 		} else {
 
 		}
 
-		Mono<Long> count = outputList.count();
-		long size = count.block();
-		if (size > 0) {
-			if (topic != null) {
-				processFlux(outputList, map, topic, criterion, size);
-			} else {
-				log.info("Flux Size: " + size);
-				log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
-			}
+//		System.out.println("Criterion: " + criterion);		
+//		Mono<Long> count = outputList.count();
+//		long size = count.block();
+//		System.out.println("Size: " + size);
+//		if (size > 0) {
+		if (topic != null) {
+			processFlux(flux, map, topic, criterion);
 		} else {
-			log.info("outputList size is zero");
+			log.info("Flux Size: " + flux.count().block());
+			log.info(STRING_LOGGER_FINISHED_MESSAGE, map.toString());
 		}
+//		} else {
+//			log.info("outputList size is zero");
+//		}
 	}
 
 	private void processFlux(Flux<Map<String, Object>> flux, final Map<String, Object> map, final String topic,
-			final String fileName, final Long size) {
+			final String fileName) {
 
 		final String requestID = map.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
 		final String outFileName = getFullFileName(requestID, topic, fileName);
 		final String dataFormat = map.getOrDefault(mapKey.getDataFormat(), DEFAULT_STRING_VALUE).toString();
 
 		final Path outPath = Paths.get(outFileName);
+		System.out.println("OutPath: " + outPath.toString());
 		try {
 			BufferedWriter bw;
 			bw = Files.newBufferedWriter(outPath, StandardOpenOption.CREATE);
 			if (dataFormat.equals(OUTPUT_FORMAT_JSON)) {
 				bw.write(STRING_SQUARE_OPEN_BRACKET);
 			}
-			flux.subscribe(s -> write(dataFormat, bw, s), (e) -> close(bw), // close file if error / oncomplete
-					() -> complete(dataFormat, bw, map, topic, size));
+			flux.subscribe(s -> writeOutputToFile(dataFormat, bw, s), (e) -> closeOutputToFile(bw),
+					() -> completeOutputToFile(flux, dataFormat, bw, map, topic));
 
 		} catch (IOException e) {
 			log.info("Exception when processing Flux: " + e.toString());
@@ -713,7 +709,7 @@ public class KafkaService {
 		}
 	}
 
-	private void close(Closeable closeable) {
+	private void closeOutputToFile(Closeable closeable) {
 		try {
 			closeable.close();
 		} catch (IOException e) {
@@ -721,21 +717,22 @@ public class KafkaService {
 		}
 	}
 
-	private void complete(String dataFormat, BufferedWriter bw, Map<String, Object> map, String topic, long size) {
+	private void completeOutputToFile(Flux<Map<String, Object>> flux, String dataFormat, BufferedWriter bw,
+			Map<String, Object> map, String topic) {
 		try {
 			if (dataFormat.equals(OUTPUT_FORMAT_JSON)) {
 				bw.write(STRING_CURLY_BRACKET + STRING_SQUARE_CLOSE_BRACKET);
 			}
 			bw.close();
 			if (topic != null) {
-				publishAfterOutputAsFile(map, topic, size);
+				publishAfterOutputAsFile(map, topic, 0);
 			}
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
 	}
 
-	private void write(String dataFormat, BufferedWriter bw, Map<String, Object> map) {
+	private void writeOutputToFile(String dataFormat, BufferedWriter bw, Map<String, Object> map) {
 		try {
 			bw.write(objectMapper.writeValueAsString(map)
 					+ (dataFormat.equals(OUTPUT_FORMAT_JSON) ? STRING_COMMA : STRING_EMPTY_SPACE));
@@ -750,11 +747,13 @@ public class KafkaService {
 
 		final String currentTopic = getCurrentTopicFromList(firstMap);
 
+		final String fileName = firstMap.getOrDefault(mapKey.getFileName(), DEFAULT_STRING_VALUE).toString();
 		final String subExch = firstMap.getOrDefault(mapKey.getSubExch(), DEFAULT_STRING_VALUE).toString();
 		final String requestID = firstMap.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
 
-		final String currentFullFileName = getFullFileName(requestID, currentTopic, subExch);
+		final String currentFullFileName = getFullFileName(requestID, currentTopic, !fileName.equals(DEFAULT_STRING_VALUE)?fileName:subExch);
 
+		System.out.println("currentFullFileName:" + currentFullFileName);
 		Flux<Map<String, Object>> fluxMap = readFileListFlux(currentFullFileName);
 
 		fluxMap.map(x -> {
@@ -835,6 +834,7 @@ public class KafkaService {
 		List<Map<String, Object>> outList = new ArrayList<>();
 
 		outList.add(0, newMap);
+//		System.out.println("Before publish");
 		publish(topic, outList);
 	}
 
@@ -982,8 +982,10 @@ public class KafkaService {
 		final String requestID = map.getOrDefault(mapKey.getRequestID(), DEFAULT_STRING_VALUE).toString();
 		final Integer files = (Integer) map.getOrDefault(mapKey.getFiles(), 0);
 		final String fileName = map.getOrDefault(mapKey.getFileName(), DEFAULT_STRING_VALUE).toString();
-		final String topic = getCurrentTopicFromList(map);
-
+		final String dataFormat = map.getOrDefault(mapKey.getDataFormat(), DEFAULT_STRING_VALUE).toString();
+		final String currentTopic = getCurrentTopicFromList(map);
+		
+		final String topic = getTopicFromList(map);
 		AtomicInteger atomicInteger = counterMap.get(requestID);
 		List<String> fileList = fileMap.get(requestID);
 		if (atomicInteger == null) {
@@ -992,22 +994,44 @@ public class KafkaService {
 			fileList = new ArrayList<>();
 			fileMap.put(requestID, fileList);
 		}
-		fileList.add(getFullFileName(requestID, topic, fileName));
+		fileList.add(getFullFileName(requestID, currentTopic, fileName));
 		if (atomicInteger.incrementAndGet() == files) {
-			System.out.println("Done: " + atomicInteger.get() + " - " + files);
-			System.out.println("Files path: " + fileList.toString());
-//			fileList.stream()
-			Flux<String> fluxString = Flux.fromIterable(fileList);
-//			fluxString.subscribe(System.out::println);
-			fluxString.map(x -> readDataFromHistoricalFiles(x).subscribe()).log().subscribe(x-> System.out.println(x.toString()), (e) -> {}, () -> {});
-		} else {
-			System.out.println("++: " + atomicInteger.get() + " - " + files);
+//			System.out.println("Done: " + atomicInteger.get() + " - " + files);
+//			System.out.println("Files path: " + fileList.toString());
+
+			final String outFileName = getFullFileName(requestID, topic, "consolidate");
+			final Path outPath = Paths.get(outFileName);
+
+			map.put(mapKey.getFileName(), "consolidate");
+			List<Flux<String>> fluxList = new ArrayList<>();
+			fileList.parallelStream().forEach(x -> {
+				fluxList.add(getTickerFromFiles(x));
+			});
+			try {
+				BufferedWriter bw;
+				bw = Files.newBufferedWriter(outPath, StandardOpenOption.CREATE);
+				if (dataFormat.equals(OUTPUT_FORMAT_JSON)) {
+					bw.write(STRING_SQUARE_OPEN_BRACKET);
+				}
+
+				Flux<Map<String, Object>> flux = Flux.merge(fluxList).distinct().map(x -> {
+					Map<String, Object> m = Map.ofEntries(Map.entry(mapKey.getTicker(), x));
+					return m;
+				});
+				flux.subscribe(s -> writeOutputToFile(dataFormat, bw, s), (e) -> closeOutputToFile(bw),
+						() -> completeOutputToFile(flux, dataFormat, bw, map, topic));
+			} catch (IOException e) {
+				log.info("Exception when processing Flux: " + e.toString());
+				e.printStackTrace();
+			}
+//			System.out.println("Count: " + fluxString.count().block());
+//		} else {
+//			System.out.println("++: " + atomicInteger.get() + " - " + files);
 		}
 	}
 
-	private Flux<String> readDataFromHistoricalFiles(String fullFileName) {
+	private Flux<String> getTickerFromFiles(String fullFileName) {
 		return readFileListFlux(fullFileName).map(x -> x.get("ticker").toString());
-//		return null;
 	}
 
 //	@Async(ASYNC_EXECUTOR)

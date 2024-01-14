@@ -109,7 +109,7 @@ public class StoreService {
 
 		} else if (objType == OBJECT_TYPE_HISTORICAL) {
 			System.out.println("save historical");
-			flux.map(s -> historicalRepository.save(mapper.convertMapToHistorical(s)).subscribe()).subscribe(s -> { 
+			flux.map(s -> historicalRepository.save(mapper.convertMapToHistorical(s)).subscribe()).subscribe(s -> {
 			}, (e) -> {
 			}, completeConsumer);
 
@@ -262,6 +262,30 @@ public class StoreService {
 		return null;
 	}
 
+	public Flux<Map<String, Object>> getInstrumentMapListFlux(final String subExch, final String type,
+			final String ticker) {
+		Flux<Map<String, Object>> outList = null;
+		if (!subExch.equals(DEFAULT_STRING_VALUE)) {
+			if (!type.equals(DEFAULT_STRING_VALUE)) {
+				if (!ticker.equals(DEFAULT_STRING_VALUE)) {
+
+					outList = instrumentRepository.findBySubExchAndTypeAndTicker(subExch, type, ticker)
+							.map(x -> x.getOthers());
+
+				} else {
+
+					outList = instrumentRepository.findBySubExchAndType(subExch, type).map(x -> x.getOthers());
+
+				}
+			} else {
+
+				outList = instrumentRepository.findBySubExch(subExch).map(x -> x.getOthers());
+
+			}
+		}
+		return outList;
+	}
+
 	public List<Map<String, Object>> getInstrumentMapList(final String subExch, final String type,
 			final String ticker) {
 		List<Map<String, Object>> outList = null;
@@ -393,7 +417,6 @@ public class StoreService {
 		List<TradeDate> list = tradeDateRepository.findAll().collectList().block();
 		System.out.println("Size:" + list.size());
 
-
 		log.info("Total time for getTradeDateList:" + logTime(start));
 		return list.stream().map(mapper::convertTradeDateToMap).collect(Collectors.toList());
 	}
@@ -489,7 +512,7 @@ public class StoreService {
 	}
 
 	public Flux<Map<String, Object>> getDateMapList(String date) {
-		
+
 		Instant start = Instant.now();
 
 		Flux<Map<String, Object>> outFlux = null;
@@ -506,7 +529,7 @@ public class StoreService {
 
 		return outFlux;
 	}
-	
+
 	private String logTime(Instant start) {
 		return Duration.between(start, Instant.now()).toMillis() + "ms";
 	}
